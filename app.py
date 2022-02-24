@@ -215,7 +215,7 @@ study_roles = {
     576464270041022467 : 945569054335303710,
 }
 
-text_prompts = {}
+text_prompts = {"version" : "v2.0"}
 
 @client.event
 async def on_ready():
