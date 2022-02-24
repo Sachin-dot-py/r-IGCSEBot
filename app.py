@@ -1,12 +1,15 @@
-TOKEN = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" # Discord API Token
-API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" # Kvstore.io API Key
-
+import os
 import datetime
 import requests
 import time
 import operator
 import traceback
 import nextcord as discord
+
+# Set up Discord API Token and KVStore API Key in a .env file and use the command "heroku local" to run the bot locally.
+
+TOKEN = os.environ.get("IGCSEBOT_TOKEN")
+API_KEY = os.environ.get("KVSTORE_API_KEY")
 
 intents = discord.Intents().all()
 client = discord.Client(intents=intents)
