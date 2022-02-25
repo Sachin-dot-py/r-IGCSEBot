@@ -2,7 +2,6 @@ import os
 import datetime
 import requests
 import time
-import operator
 import traceback
 import nextcord as discord
 
@@ -26,15 +25,6 @@ async def refreshReactionRoles():
     messages = await channel.history(limit=500).flatten()
     reactionroles = {int(message.content.splitlines()[0]) : {i.split()[0]: int(i.split()[1]) for i in message.content.splitlines()[1:]} for message in messages}
     return reactionroles
-
-async def getLeaderboard():
-    channel = client.get_channel(862171720965029898)
-    try:
-        message = await channel.history(limit=1).flatten()
-        return message[0], {message[0].guild.get_member(int(line.split(" - ")[0].replace("<@","").replace(">","").replace("!",""))) : int(line.split(" - ")[1]) for line in message[0].content.splitlines()[1:]}
-    except:
-        message = await channel.send("**REP LEADERBOARD**")
-        return message, dict()
 
 async def removeUser(userid):
     req = requests.delete(f"https://api.kvstore.io/collections/rep_leaderboard/items/{userid}", headers={"Content-Type" : "text/plain", "kvstoreio_api_key" : API_KEY})
@@ -61,55 +51,6 @@ async def getLeaderboardNew(offset=0):
     if len(leaderboard) == 100:
         leaderboard = {**leaderboard, **(await getLeaderboardNew(offset+100))}
     return {k: v for k, v in sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)} # Descending sort by rep
-
-async def addRep(user):
-    message, leaderboard = await getLeaderboard()
-    try:
-        current_rep = leaderboard[user]
-    except:
-        current_rep = 0
-    leaderboard[user] = current_rep + 1
-    leaderboard = dict(sorted(leaderboard.items(), key=operator.itemgetter(1),reverse=True))
-    new_leaderboard = "**REP LEADERBOARD**"
-    for user,rep in leaderboard.items():
-        try:
-            if rep > 0:
-                new_leaderboard += f"\n{user.mention} - {rep}"
-        except:
-            pass
-    await message.edit(content=new_leaderboard)
-    backup_channel= client.get_channel(869753809428160602)
-    backup = await backup_channel.send(".")
-    await backup.edit(content=new_leaderboard)
-    members = list(leaderboard.keys())[:3]
-    role = discord.utils.get(member.guild.roles, name="Reputed")
-    for m in role.members:
-            await m.remove_roles(role)
-    for member in members:
-        await member.add_roles(role)
-    return current_rep + 1
-
-async def changeRep(user, new_rep):
-    message, leaderboard = await getLeaderboard()
-    leaderboard[user] = new_rep
-    leaderboard = dict(sorted(leaderboard.items(), key=operator.itemgetter(1),reverse=True))
-    new_leaderboard = "**REP LEADERBOARD**"
-    for user,rep in leaderboard.items():
-        try:
-            if rep > 0:
-                new_leaderboard += f"\n{user.mention} - {rep}"
-        except:
-            pass
-    await message.edit(content=new_leaderboard)
-    backup_channel= client.get_channel(869753809428160602)
-    backup = await backup_channel.send(".")
-    await backup.edit(content=new_leaderboard)
-    members = list(leaderboard.keys())[:3]
-    role = discord.utils.get(member.guild.roles, name="Reputed")
-    for m in role.members:
-        await m.remove_roles(role)
-    for member in members:
-        await member.add_roles(role)
 
 async def lowLikelihood(message):
     role = discord.utils.get(message.guild.roles, name="Discord Mod")
@@ -261,6 +202,7 @@ Afterwards, react to the corresponding roles in {member.guild.get_channel(932570
     
 @client.event
 async def on_raw_reaction_add(reaction):
+    if reaction.member.bot: return
     chnl = await client.fetch_channel(reaction.channel_id)
     msg = await chnl.fetch_message(reaction.message_id)
 
@@ -294,6 +236,23 @@ async def on_raw_reaction_add(reaction):
             await msg.reply(f"The submission by {msg.mentions[0]} for the emote {str(emoji)} has passed.")
         else:
             await msg.reply(f"The submission by {msg.mentions[0]} for the emote `:{name}:`has failed.")
+
+    if reaction.channel_id == 946670402371997726 and str(reaction.emoji) == "🔒": # Emote suggestion channel - Finalise button clicked
+        author = msg.channel.guild.get_member(reaction.user_id)
+        roles = [role.name for role in author.roles]
+        if (not ("Discord Mod" in roles or "Temp Mod" in roles)) or author == client.user: return
+        upvotes = 0
+        downvotes = 0
+        for r in msg.reactions:
+            if r.emoji == "👍":
+                upvotes += r.count
+            elif r.emoji == "👎":
+                downvotes += r.count
+        name = msg.content[msg.content.find('`')+1 : msg.content.find('`', msg.content.find('`')+1)]
+        if upvotes/downvotes >= 3:
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote `{name}` has passed.")
+        else:
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote `{name}`has failed.")
 
     if not msg.guild and msg.author == client.user and "Firstly, how old are you?" in msg.embeds[0].description:  # Old DM Verification System
         guild = client.get_guild(576460042774118420)
@@ -510,7 +469,7 @@ React with one of the following
 
 @client.event
 async def on_raw_reaction_remove(reaction):
-
+    if reaction.member.bot: return
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
@@ -1258,9 +1217,6 @@ async def on_message(message):
                         msg = await message.channel.send(f"New emote suggestion by {message.author.mention} `{message.clean_content}`", file=await message.attachments[0].to_file())
                     elif len(message.content) > 0:
                         msg = await message.channel.send(f"New emote suggestion by {message.author.mention} `:{message.clean_content}:`", file=await message.attachments[0].to_file())
-                    else:
-                        channel = await message.author.create_dm()
-                        await channel.send("To submit an emote suggestion, please send an image, and a name for the emote in the form :name: , both in the same message in this channel. Please make sure they are sent in the same message or else it will not work.\n\nContact the mods by replying in this chat if you are facing any difficulties.")   
             await message.delete()
             if msg:
                 await msg.add_reaction("👍")
@@ -1269,6 +1225,21 @@ async def on_message(message):
             else:
                 channel = await message.author.create_dm()
                 await channel.send("To submit an emote suggestion, please send an image, and a name for the emote in the form :name: , both in the same message in this channel. Please make sure they are sent in the same message or else it will not work.\n\nContact the mods by replying in this chat if you are facing any difficulties.")
+        
+        if message.channel.id == 946670402371997726: # New sticker suggestion
+            msg = None
+            if message.attachments:
+                if "image" in message.attachments[0].content_type:
+                    if len(message.content) > 0:
+                        msg = await message.channel.send(f"New sticker suggestion by {message.author.mention} `{message.clean_content}`", file=await message.attachments[0].to_file())
+            await message.delete()
+            if msg:
+                await msg.add_reaction("👍")
+                await msg.add_reaction("🔒")
+                await msg.add_reaction("👎")
+            else:
+                channel = await message.author.create_dm()
+                await channel.send("To submit an sticker suggestion, please send an image, and a name for the sticker in the form `name` , both in the same message in this channel. Please make sure they are sent in the same message or else it will not work.\n\nContact the mods by replying in this chat if you are facing any difficulties.")
         
         if ("nitro" in message.content.lower() and "http" in message.content.lower()) or ("http" in message.content.lower() and "@everyone" in message.clean_content.lower()) or ("http" in message.content.lower() and "gifts" in message.clean_content.lower()) or ("http" in message.content.lower() and "gift" in message.clean_content.lower()):
             user = message.author # Catch free nitro scams and mute the user
@@ -1421,17 +1392,18 @@ Reason: Sending invite link to another server"""
                 if msg.author != message.author:
                     if not (message.author.mentioned_in(msg) and ('thanks' in msg.content.lower() or 'thank you' in msg.content.lower() or 'thx' in msg.content.lower() or 'tysm' in msg.content.lower() or 'thank u' in msg.content.lower() or 'thnks' in msg.content.lower() or 'tanks' in msg.content.lower() or "thanku" in msg.content.lower() or "ty" in msg.content.lower().split())):
                         rep = await addRepNew(message.author.id)
+                        await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})")
                         leaderboard = await getLeaderboardNew()
                         members = list(leaderboard.keys())[:3]
                         if leaderboard[members[-1]] == list(leaderboard.values())[len(members)]: # If 3rd and 4th position have same rep
                             members.append(list(leaderboard.keys())[len(members)]) # Add 4th position to list of reputed members
                         role = discord.utils.get(message.author.guild.roles, name="Reputed")
-                        for m in role.members:
-                            await m.remove_roles(role)
-                        for member in members:
-                            member = message.guild.get_member(member)
-                            await member.add_roles(role)
-                        await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})")
+                        if [member.id for member in role.members] != members: # If Reputed has changed
+                            for m in role.members:
+                                await m.remove_roles(role)
+                            for member in members:
+                                member = message.guild.get_member(member)
+                                await member.add_roles(role)
             except:
                 pass
 
@@ -1491,15 +1463,16 @@ Reason: Sending invite link to another server"""
                 if leaderboard[members[-1]] == list(leaderboard.values())[len(members)]: # If 3rd and 4th position have same rep
                     members.append(list(leaderboard.keys())[len(members)]) # Add 4th position to list of reputed members
                 role = discord.utils.get(message.author.guild.roles, name="Reputed")
-                for m in role.members:
-                    await m.remove_roles(role)
-                for member in members:
-                    member = message.guild.get_member(member)
-                    await member.add_roles(role)
                 await message.channel.send(f"Gave +1 Rep to {mention.mention} ({rep})")
+                if [member.id for member in role.members] != members: # If Reputed has changed
+                    for m in role.members:
+                        await m.remove_roles(role)
+                    for member in members:
+                        member = message.guild.get_member(member)
+                        await member.add_roles(role)
             try:
                 backup_channel = client.get_channel(869753809428160602)
-                line = str(leaderboard)
+                line = str(leaderboard).replace(" ", "")
                 msgs = [line[i:i+2000] for i in range(0, len(line), 2000)]
                 for msg in msgs:
                     await backup_channel.send(msg)
