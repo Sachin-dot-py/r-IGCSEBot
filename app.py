@@ -521,41 +521,31 @@ async def on_message(message):
             return
 
         if not message.guild: # If DM
-            try:
-                msg = await message.channel.fetch_message(message.reference.message_id)
-                if "simply type your suggestion" in msg.content: # Old suggestion system
-                    channel = client.get_channel(758562162616303658)
-                    embedVar = discord.Embed(title=f"Suggestion by {message.author}", description=f"Total Votes: 0\n\n{'🟩'*10}\n\nSuggestion: {message.clean_content}", colour = discord.Colour.green())
-                    msg1 = await channel.send(embed=embedVar)
-                    await message.reply("Your suggestion has been noted! Thank you!")
-                    await msg1.add_reaction('✅')
-                    await msg1.add_reaction('❌')
-            except:
-                if "suggestion" in message.content.lower(): # Old suggestion system
-                    await message.reply("Hi there! To submit a suggestion for the r/IGCSE Server, simply type your suggestion as a REPLY to this message.")
-                else:
-                    if message.content or message.attachments: # Receiving Modmails system
-                        guild = client.get_guild(576460042774118420)
-                        category = discord.utils.get(guild.categories, name='COMMS')
+            if "suggestion" in message.content.lower(): # Old suggestion system
+                await message.reply("Hi there! To submit a suggestion for the r/IGCSE Server, simply type your suggestion as a REPLY to this message.")
+            else:
+                if message.content or message.attachments: # Receiving Modmails system
+                    guild = client.get_guild(576460042774118420)
+                    category = discord.utils.get(guild.categories, name='COMMS')
+                    channel = discord.utils.get(category.channels, topic=str(message.author.id))
+                    if not channel:
+                        category = discord.utils.get(guild.categories, name='COMMS2')
                         channel = discord.utils.get(category.channels, topic=str(message.author.id))
                         if not channel:
-                            category = discord.utils.get(guild.categories, name='COMMS2')
+                            category = discord.utils.get(guild.categories, name='COMMS3')
                             channel = discord.utils.get(category.channels, topic=str(message.author.id))
                             if not channel:
-                                category = discord.utils.get(guild.categories, name='COMMS3')
-                                channel = discord.utils.get(category.channels, topic=str(message.author.id))
-                                if not channel:
-                                    try:
-                                        channel = await guild.create_text_channel(str(message.author).replace("#","-"), category=category, topic=str(message.author.id))
-                                    except:
-                                        createdm_channel = client.get_channel(895961641219407923)
-                                        await createdm_channel.send(f"The category COMMS3 has reached its capacity limit. Please delete some channels from COMMS2 to allow for new incoming messages.\n\nNew Message Received:\n{message.author} - {message.clean_content}")
-                        embedVar = discord.Embed(title=f"Message Received", description=message.clean_content, colour = discord.Colour.green())
-                        embedVar.add_field(name="Author", value=message.author, inline=True)
-                        await channel.send(embed=embedVar)
-                        for attachment in message.attachments:
-                            await channel.send(file=await attachment.to_file())
-                        await message.reply("Your message has been forwarded to our moderators! Any reply by the mods will be conveyed to you by DM.")
+                                try:
+                                    channel = await guild.create_text_channel(str(message.author).replace("#","-"), category=category, topic=str(message.author.id))
+                                except:
+                                    createdm_channel = client.get_channel(895961641219407923)
+                                    await createdm_channel.send(f"The category COMMS3 has reached its capacity limit. Please delete some channels from COMMS2 to allow for new incoming messages.\n\nNew Message Received:\n{message.author} - {message.clean_content}")
+                    embedVar = discord.Embed(title=f"Message Received", description=message.clean_content, colour = discord.Colour.green())
+                    embedVar.add_field(name="Author", value=message.author, inline=True)
+                    await channel.send(embed=embedVar)
+                    for attachment in message.attachments:
+                        await channel.send(file=await attachment.to_file())
+                    await message.reply("Your message has been forwarded to our moderators! Any reply by the mods will be conveyed to you by DM.")
             return
 
         if message.channel.id == 895961641219407923: # Creating modmail channels in #create-dm
@@ -740,7 +730,7 @@ async def on_message(message):
                 if message.author.id == 604335693757677588: # Only for Flynn
                     try:
                         object = await eval(" ".join(message.content.splitlines()[0].split()[1:]))
-                        result = await eval(" ".join(message.content.splitlines()[1]))
+                        result = await eval(message.content.splitlines()[1])
                     except:
                         result = f"Error: {traceback.format_exc()}"
                     await message.reply(f"```py\n{result}\n```")
@@ -749,7 +739,7 @@ async def on_message(message):
                 if message.author.id == 604335693757677588: # Only for Flynn
                     try:
                         object = await eval(" ".join(message.content.splitlines()[0].split()[1:]))
-                        result = eval(" ".join(message.content.splitlines()[1]))
+                        result = eval(message.content.splitlines()[1])
                     except:
                         result = f"Error: {traceback.format_exc()}"
                     await message.reply(f"```py\n{result}\n```")
@@ -802,45 +792,6 @@ async def on_message(message):
                     await role.edit(position=num_roles-16)
                     await message.reply(f"Added colour {colour} to user {member.mention}")
 
-        if message.content.lower() == "setup verify channel" and message.author.id == 604335693757677588: # Old server verification system
-            await message.delete()
-
-            desc = """Before joining our server, we require all new users to answer a few questions. These make sure that you will have access to the appropriate roles and subject channels.
-    1. Firstly, how old are you?
-    React with one of the following
-    1️⃣ – Under 13
-    2️⃣ – Over 13"""
-            embedVar = discord.Embed(title="Welcome to r/IGCSE!", description=desc, colour = discord.Colour.green())
-            msg = await message.channel.send(embed=embedVar)
-            await msg.add_reaction('1️⃣')
-            await msg.add_reaction('2️⃣')
-
-            desc = """2. Are you planning to take IGCSE?
-    React with one of the following
-    1️⃣ – Yes
-    2️⃣ – No"""
-            embedVar = discord.Embed(title="Welcome to r/IGCSE!", description=desc, colour = discord.Colour.green())
-            m = await message.channel.send(embed=embedVar)
-            await m.add_reaction('1️⃣')
-            await m.add_reaction('2️⃣')
-
-            desc = """3. When do you plan to take IGCSE?
-    React with one of the following
-    1️⃣ – March 2022
-    2️⃣ – June 2022
-    3️⃣ – November 2022
-    4️⃣ – March 2023
-    5️⃣ – June 2023
-    6️⃣ – October 2023"""
-            embedVar = discord.Embed(title="Welcome to r/IGCSE!", description=desc, colour = discord.Colour.green())
-            m = await message.channel.send(embed=embedVar)
-            await m.add_reaction('1️⃣')
-            await m.add_reaction('2️⃣')
-            await m.add_reaction('3️⃣')
-            await m.add_reaction('4️⃣')
-            await m.add_reaction('5️⃣')
-            await m.add_reaction('6️⃣')
-
         if message.content.lower() == "helper": # Helper ping system
             def check(msg):
                 if msg.content.lower() == "cancel" and msg.channel == message.channel:
@@ -888,7 +839,7 @@ async def on_message(message):
             await refreshKeywords()
             await message.reply("Keywords have been updated!")
 
-        if message.channel.id == 929910420326727730:
+        if message.channel.id == 929910420326727730: # New keyword added
             await refreshKeywords()
 
         try: # Old Keyword autoreply system
@@ -1357,9 +1308,6 @@ async def on_message(message):
         except:
             pass
 
-        # if message.content.lower().startswith("i'm ") or message.content.lower().startswith("i am ") or message.content.lower().startswith("im "):
-        #     await message.reply("Hi"+"m".join(message.clean_content.split("m")[1:])+", I'm r/IGCSE Bot!")
-
         if "discord.gg" in message.content.lower() and not ("discord.gg/igcse" in message.content.lower() or "discord.gg/yZAyR6x" in message.content.lower() or "discord.gg/6thform" in message.content.lower() or "discord.gg/ibo" in message.content.lower() or "discord.gg/homework" in message.content.lower() or "discord.gg/bXUAtcNUWc" in message.content.lower() or "discord.gg/memers" in message.content.lower() or "discord.gg/znotes" in message.content.lower() or "discord.gg/v5zzkHNZks" in message.content.lower()):
             roles = [role.name for role in message.author.roles] # Catch not allowed server invite links and mute
             for role in roles:
@@ -1382,9 +1330,6 @@ Reason: Sending invite link to another server"""
             await ban_msg_channel.send(ban_msg)
             log_channel = client.get_channel(792775200394575882)
             await log_channel.send(content=f"Transcript of message sent by {user.mention}:\n\n{message.content}")
-
-        if ('hi' in message.content.lower().split() and client.user.mentioned_in(message)):
-            await message.channel.send(f"Hi {message.author.mention}!")
 
         if ("you're welcome" in message.content.lower() or "youre welcome" in message.content.lower() or "ur welcome" in message.content.lower() or "u r welcome" in message.content.lower() or "your welcome" in message.content.lower() or "welcome" == message.content.lower() or 'no problem' in message.content.lower() or 'np' in message.content.lower().split() or 'np!' in message.content.lower().split() or 'yw' in message.content.lower().split()):
             try: # Add rep to message author
@@ -1827,36 +1772,6 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
             await ban_msg_channel.send(ban_msg)
             await message.channel.send(f"{user.name}#{user.discriminator} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
         
-        if message.content.startswith('!tempmute'):  # Not in use anymore
-            action_type = "Temp Mute"
-            try:
-                user = message.mentions[0]
-            except:
-                try:
-                    user = message.guild.get_member(int(message.content.split()[1]))
-                except:
-                    user = message.guild.get_member_named(message.content.split()[1])
-            mod = message.author.mention
-            mod_roles = [role.name for role in message.author.roles]
-            if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
-                await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
-                return
-            user_roles = [role.name for role in user.roles]
-            if "Discord Mod" in user_roles:
-                        await message.channel.send(f"Sorry {mod}, you can't {action_type.lower()} a Moderator!")
-                        return
-            time_ = message.content.split()[2]
-            reason = " ".join(message.content.split()[3:])
-            ban_msg_channel = client.get_channel(690267603570393219)
-            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
-            ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
-Moderator: {mod} 
-Reason: {reason}
-Duration: {time_}"""
-            await ban_msg_channel.send(ban_msg)
-        
         if message.content.lower() == "study ping": # Conduct a study session ping
             roles = [role.name for role in message.author.roles]
             if "Discord Mod" in roles or "Temp Mod" in roles or "IGCSE Helper" in roles or "Study Session Host" in roles:
@@ -1890,5 +1805,12 @@ async def on_voice_state_update(member, before, after):
     if before.channel: # When user leaves a voice channel
         if "study session" in before.channel.name.lower() and before.channel.members == []: # If the study session is over
             await before.channel.edit(name="General") # Reset channel name
+
+    if after.channel: # When user enters a voice channel
+        if "general" in after.channel.name.lower(): # If there is no study session taking place
+            for role in member.roles:
+                if "study session host" == role.name.lower(): # If they are a study session host
+                    channel = await member.create_dm() # Create a DM Channel
+                    await channel.send("To start a study session, go to the respective subject channel on the discord server, and enter the keyword `study ping`. This will enable r/IGCSE bot to ping the study ping role in the #study-session channel, and interested members will be able to join your voice channel.")
 
 client.run(TOKEN)
