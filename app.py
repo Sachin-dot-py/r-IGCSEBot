@@ -1806,7 +1806,7 @@ async def on_voice_state_update(member, before, after):
         if "study session" in before.channel.name.lower() and before.channel.members == []: # If the study session is over
             await before.channel.edit(name="General") # Reset channel name
 
-    if after.channel: # When user enters a voice channel
+    if after.channel and after.channel != before.channel: # When user enters a voice channel
         if "general" in after.channel.name.lower(): # If there is no study session taking place
             for role in member.roles:
                 if "study session host" == role.name.lower(): # If they are a study session host
