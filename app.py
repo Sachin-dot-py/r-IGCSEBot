@@ -469,7 +469,6 @@ React with one of the following
 
 @client.event
 async def on_raw_reaction_remove(reaction):
-    if reaction.member.bot: return
     channel = client.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
@@ -1779,8 +1778,8 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
                 study_sesh_channel = client.get_channel(941276796937179157)
                 msg_history = await study_sesh_channel.history(limit=3).flatten()
                 for msg in msg_history:
-                    if str(message.author.mention) in msg.content and (msg.created_at.replace(tzinfo=None) + datetime.timedelta(minutes=60) > datetime.datetime.utcnow()):
-                        await message.reply("Please wait until one hour after your previous ping to start a new study session.")
+                    if (str(message.author.mention) in msg.content or str(role.mention) in msg.content) and (msg.created_at.replace(tzinfo=None) + datetime.timedelta(minutes=60) > datetime.datetime.utcnow()):
+                        await message.reply("Please wait until one hour after your previous ping or after a study session in the same subject to start a new study session.")
                         return
                 voice_channel = message.author.voice
                 if voice_channel == None:
@@ -1806,11 +1805,11 @@ async def on_voice_state_update(member, before, after):
         if "study session" in before.channel.name.lower() and before.channel.members == []: # If the study session is over
             await before.channel.edit(name="General") # Reset channel name
 
-    if after.channel: # When user enters a voice channel
-        if "general" in after.channel.name.lower(): # If there is no study session taking place
-            for role in member.roles:
-                if "study session host" == role.name.lower(): # If they are a study session host
-                    channel = await member.create_dm() # Create a DM Channel
-                    await channel.send("To start a study session, go to the respective subject channel on the discord server, and enter the keyword `study ping`. This will enable r/IGCSE bot to ping the study ping role in the #study-session channel, and interested members will be able to join your voice channel.")
+    # if after.channel: # When user enters a voice channel
+    #     if "general" in after.channel.name.lower(): # If there is no study session taking place
+    #         for role in member.roles:
+    #             if "study session host" == role.name.lower(): # If they are a study session host
+    #                 channel = await member.create_dm() # Create a DM Channel
+    #                 await channel.send("To start a study session, go to the respective subject channel on the discord server, and enter the keyword `study ping`. This will enable r/IGCSE bot to ping the study ping role in the #study-session channel, and interested members will be able to join your voice channel.")
 
 client.run(TOKEN)
