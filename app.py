@@ -1534,7 +1534,7 @@ Reason: Sending invite link to another server"""
                         return
             reason = " ".join(message.content.split()[2:])
             try:
-                await user.send(f"Hi there from r/IGCSE. You have been banned from the server due to {reason}. If you feel this ban was done in error, to appeal your ban, please fill the form below.\nhttps://forms.gle/Df5JKRKjcBo8o8s99")
+                await user.send(f"Hi there from r/IGCSE. You have been banned from the server due to {reason}. If you feel this ban was done in error, to appeal your ban, please fill the form below.\nhttps://forms.gle/8qnWpSFbLDLdntdt8")
             except:
                 pass
             ban_msg_channel = client.get_channel(690267603570393219)
