@@ -511,6 +511,35 @@ async def on_raw_reaction_remove(reaction):
                 pass
         await msg.edit(embed=embed)
 
+subreddits = {"group": {"subject": "url"}}
+
+class Groups(discord.ui.Select):
+    def __init__(self):
+        options = []
+        for group in subreddits.keys():
+            options.append(discord.SelectOption(label=group))
+        super().__init__(
+            placeholder="Choose a subject group...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        group = self.values[0]
+        view = discord.ui.View(timeout=None)
+        for subject in subreddits[group].keys():
+            view.add_item(discord.ui.Button(label=subject, style=discord.ButtonStyle.url, url=subreddits[group][subject]))
+        await interaction.response.edit_message(view=view)
+
+
+class DropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.add_item(Groups())
+
+subreddits = {"Maths": {"Maths": "https://google.com", "Additional Math" : "https://google.com.sg", "International Math" : "https://google.co.in"}, "English" : {"EFL" : "https://google.com.sg", "ESL" : "https://google.co.in"}}
+subreddits = {"Maths": {"Maths": "https://google.com", "Additional Math" : "https://google.com.sg", "International Math" : "https://google.co.in", "a" : "https://google.com", "b" : "https://google.com", "c" : "https://google.com", "d" : "https://google.com", "e" : "https://google.com", "f" : "https://google.com", "g" : "https://google.com", "h" : "https://google.com", "i" : "https://google.com", "j" : "https://google.com"}, "English" : {"EFL" : "https://google.com.sg", "ESL" : "https://google.co.in"}}
 
 @client.event
 async def on_message(message):
@@ -518,6 +547,10 @@ async def on_message(message):
         global keywords
         if message.author == client.user:
             return
+
+        if message.content.lower() == "wiki":
+            view = DropdownView()
+            await message.channel.send(view=view)
 
         if not message.guild: # If DM
             if "suggestion" in message.content.lower(): # Old suggestion system
@@ -1773,7 +1806,7 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
         
         if message.content.lower() == "study ping": # Conduct a study session ping
             roles = [role.name for role in message.author.roles]
-            if "Discord Mod" in roles or "Temp Mod" in roles or "IGCSE Helper" in roles or "Study Session Host" in roles:
+            if "Verified" in roles:
                 role = message.guild.get_role(study_roles[message.channel.id])
                 study_sesh_channel = client.get_channel(941276796937179157)
                 msg_history = await study_sesh_channel.history(limit=3).flatten()
