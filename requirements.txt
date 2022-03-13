@@ -1,2 +1,4 @@
 nextcord
 requests
+pytesseract
+Pillow

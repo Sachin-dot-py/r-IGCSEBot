@@ -3,6 +3,9 @@ import datetime
 import requests
 import time
 import traceback
+import pytesseract
+from PIL import Image
+import io
 import nextcord as discord
 
 # Set up Discord API Token and KVStore API Key in a .env file and use the command "heroku local" to run the bot locally.
@@ -538,9 +541,53 @@ class DropdownView(discord.ui.View):
         super().__init__()
         self.add_item(Groups())
 
-subreddits = {"Maths": {"Maths": "https://google.com", "Additional Math" : "https://google.com.sg", "International Math" : "https://google.co.in"}, "English" : {"EFL" : "https://google.com.sg", "ESL" : "https://google.co.in"}}
-subreddits = {"Maths": {"Maths": "https://google.com", "Additional Math" : "https://google.com.sg", "International Math" : "https://google.co.in", "a" : "https://google.com", "b" : "https://google.com", "c" : "https://google.com", "d" : "https://google.com", "e" : "https://google.com", "f" : "https://google.com", "g" : "https://google.com", "h" : "https://google.com", "i" : "https://google.com", "j" : "https://google.com"}, "English" : {"EFL" : "https://google.com.sg", "ESL" : "https://google.co.in"}}
+subreddits = {"Languages": {
 
+"First Language English" : "https://www.reddit.com/r/igcse/wiki/group1-languages/first-language-english",
+"Hindi as a Second Language" : "https://www.reddit.com/r/igcse/wiki/group1-languages/hindi",
+"English Literature, Mandarin, French, ESL, Malay, Spanish, German" : "https://www.reddit.com/r/igcse/wiki/group1-languages",
+"Other Languages" : "https://www.reddit.com/r/igcse/wiki/group1-languages"
+
+},
+
+"Humanities" : {
+
+"Economics" : "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/economics",
+"Environmental Management" : "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
+"Geography": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/geography",
+"Global Perspectives, Pakistan Studies and Sociology" : "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci",
+"History": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/history",
+"Islamiyat" : "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/islamiyat"
+
+},
+
+"Sciences" : {
+
+"Physics" : "https://www.reddit.com/r/igcse/wiki/group3-sciences/physics",
+"Chemistry": "https://www.reddit.com/r/igcse/wiki/group3-sciences/chemistry",
+"Biology" : "https://www.reddit.com/r/igcse/wiki/group3-sciences/biology",
+"Combined/Co-ordinated Sciences": "https://www.reddit.com/r/igcse/wiki/group3-sciences/combined-co-sci",
+"Environmental Management": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
+"Physical Education" : "https://www.reddit.com/r/igcse/wiki/group3-sciences"
+
+},
+
+"Mathematics" : {
+
+"Maths, Additional Maths and A-Level Maths" : "https://www.reddit.com/r/igcse/wiki/group4-maths"
+
+},
+"Creative and Professional" : {
+
+"Accounting" : "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/accounting",
+"Art and Design, Travel and Tourism and Food and Nutrition": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative",
+"Business Studies" : "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/business-studies",
+"Computer Science": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/computer-science",
+"ICT" : "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/ict"
+
+}
+
+}
 @client.event
 async def on_message(message):
     try:
@@ -627,7 +674,27 @@ async def on_message(message):
                                 await message.channel.send(embed=embedVar)
                             except:
                                 await message.reply("Unfortunately, the user has their DMs turned off.")
-
+        
+        if message.attachments:
+            for attachment in message.attachments:
+                if "image" in attachment.content_type:
+                    response = requests.get(attachment.url)
+                    img = Image.open(io.BytesIO(response.content))
+                    content = pytesseract.image_to_string(img).replace("\n", " ").replace("  ", "").replace("  ", "")
+                    response = requests.get(f"https://paper.sc/search/?as=json&query={content}").json()
+                    if len(response['list']) == 0:
+                        await message.reply("No results found in past papers.", delete_after=10.0)
+                    else:
+                        item = response['list'][0]
+                        embed = discord.Embed(title="Potential Match", description="The question in your image matched a past paper question!", colour = discord.Colour.green())
+                        embed.add_field(name="Subject", value=item['doc']['subject'], inline=True)
+                        embed.add_field(name="Paper", value=item['doc']['paper'], inline=True)
+                        embed.add_field(name="Session", value=item['doc']['time'], inline=True)
+                        embed.add_field(name="Variant", value=item['doc']['variant'], inline=True)
+                        embed.add_field(name="QP Link", value=f"https://paper.sc/doc/{item['doc']['_id']}", inline=True)
+                        embed.add_field(name="MS Link", value=f"https://paper.sc/doc/{item['related'][0]['_id']}", inline=True)
+                        await message.reply(embed=embed)
+        
         if len(message.content.split()):
             if message.content.split()[0].lower() == "help":
                 if message.channel.id not in [669286559404785665, 932548192329957376]: # Not in a designated bot channel
@@ -708,6 +775,21 @@ async def on_message(message):
                         await message.author.remove_roles(role)
                         await message.reply("Your colour has been removed.")
                         return
+
+            if "remove from role" == message.content.lower()[:16] and len(message.content.split()) > 4:
+                if message.author.id == 604335693757677588: # Only for Flynn
+                    member = message.guild.get_member(int(message.content.split()[2]))
+                    try:
+                        role = discord.utils.get(message.guild.roles, id=int(message.content.split()[4]))
+                    except:
+                        role = None
+                    if not role:
+                        role = discord.utils.get(message.guild.roles, name=" ".join(message.content.split()[4:]))
+                    count = 0
+                    for member in role.members:
+                        await member.remove_roles(role)
+                        count += 1
+                    await message.reply(f"Removed {count} members from {role.name}")
 
             if "remove role" == message.content.lower()[:11] and len(message.content.split()) > 3:
                 if message.author.id == 604335693757677588: # Only for Flynn
