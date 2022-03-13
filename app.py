@@ -597,7 +597,7 @@ async def on_message(message):
 
         if message.content.lower() == "wiki":
             view = DropdownView()
-            await message.channel.send("https://www.reddit.com/r/igcse/wiki/index", view=view)
+            await message.channel.send("<https://www.reddit.com/r/igcse/wiki/index>", view=view)
 
         if not message.guild: # If DM
             if "suggestion" in message.content.lower(): # Old suggestion system
@@ -696,6 +696,22 @@ async def on_message(message):
                         await message.reply(embed=embed)
         
         if len(message.content.split()):
+            if message.content.split()[0].lower() == ".search":
+                response = requests.get(f"https://paper.sc/search/?as=json&query={' '.join(message.content.split()[1:])}").json()
+                if len(response['list']) == 0:
+                    await message.reply("No results found in past papers.")
+                else:
+                    embed = discord.Embed(title="Potential Match", description="Your question matched a past paper question!", colour = discord.Colour.green())
+                    for n, item in enumerate(response['list'][:3]):
+                        # embed.add_field(name="Result No.", value=str(n+1), inline=False)
+                        embed.add_field(name="Subject", value=item['doc']['subject'], inline=True)
+                        embed.add_field(name="Paper", value=item['doc']['paper'], inline=True)
+                        embed.add_field(name="Session", value=item['doc']['time'], inline=True)
+                        embed.add_field(name="Variant", value=item['doc']['variant'], inline=True)
+                        embed.add_field(name="QP Link", value=f"https://paper.sc/doc/{item['doc']['_id']}", inline=True)
+                        embed.add_field(name="MS Link", value=f"https://paper.sc/doc/{item['related'][0]['_id']}", inline=True)
+                    await message.reply(embed=embed)
+
             if message.content.split()[0].lower() == "help":
                 if message.channel.id not in [669286559404785665, 932548192329957376]: # Not in a designated bot channel
                     msg = await message.reply(f"If you wish to use the help command, please use it in the {client.get_channel(669286559404785665).mention} channel.", delete_after=10.0)
