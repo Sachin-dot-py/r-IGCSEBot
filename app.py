@@ -597,7 +597,7 @@ async def on_message(message):
 
         if message.content.lower() == "wiki":
             view = DropdownView()
-            await message.channel.send(view=view)
+            await message.channel.send("https://www.reddit.com/r/igcse/wiki/index", view=view)
 
         if not message.guild: # If DM
             if "suggestion" in message.content.lower(): # Old suggestion system
