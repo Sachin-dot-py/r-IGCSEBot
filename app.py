@@ -3,7 +3,7 @@ import datetime
 import requests
 import time
 import traceback
-import pytesseract
+# import pytesseract
 from PIL import Image
 import io
 import nextcord as discord
@@ -122,6 +122,7 @@ helper_roles = {
     576464270041022467 : 863691773628907560,
     697072778553065542 : 578170681670369290,
     929349933432193085 : 929422215940825088,
+    947859228649992213 : 949941010430033950, # Test channel/role
 }
 
 study_roles = {
@@ -574,9 +575,12 @@ subreddits = {"Languages": {
 
 "Mathematics" : {
 
-"Maths, Additional Maths and A-Level Maths" : "https://www.reddit.com/r/igcse/wiki/group4-maths"
+"Maths:" : "https://www.reddit.com/r/igcse/wiki/group4-maths/mathematics",
+"Additional Maths:" : "https://www.reddit.com/r/igcse/wiki/group4-maths/additional-maths",
+"A-Level Maths" : "https://www.reddit.com/r/igcse/wiki/group4-maths"
 
 },
+
 "Creative and Professional" : {
 
 "Accounting" : "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/accounting",
@@ -945,6 +949,10 @@ async def on_message(message):
                 helper_role = discord.utils.get(message.guild.roles, id=helper_roles[message.channel.id])
             except:
                 await message.reply("There are no helper roles specified for this channel.")
+                return
+            roles = [role.name.lower() for role in message.author.roles]
+            if "server booster" in roles:
+                await message.reply(f"{helper_role.mention}\n(Requested by {message.author.mention})")
                 return
             m1 = await message.reply(f"The helper role for this channel, @{helper_role.name}, will automatically be pinged in 15 minutes. If your query has been resolved by then, please reply to this message with \"cancel\"")
             try:
