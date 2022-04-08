@@ -546,7 +546,9 @@ subreddits = {"Languages": {
 
 "First Language English" : "https://www.reddit.com/r/igcse/wiki/group1-languages/first-language-english",
 "Hindi as a Second Language" : "https://www.reddit.com/r/igcse/wiki/group1-languages/hindi",
-"English Literature, Mandarin, French, ESL, Malay, Spanish, German" : "https://www.reddit.com/r/igcse/wiki/group1-languages",
+"French" : "https://www.reddit.com/r/igcse/wiki/group1-languages/french",
+"English Literature" : "https://www.reddit.com/r/igcse/wiki/group1-languages/english-literature",
+"Mandarin, ESL, Malay, Spanish, German" : "https://www.reddit.com/r/igcse/wiki/group1-languages",
 "Other Languages" : "https://www.reddit.com/r/igcse/wiki/group1-languages"
 
 },
