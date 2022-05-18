@@ -187,7 +187,7 @@ text_prompts = {"version": "v2.0"}
 @client.event
 async def on_ready():
     print('Logged in as {0.user}'.format(client))
-    await client.change_presence(activity=discord.Game(name="Flynn#5627"))
+    await client.change_presence(activity=discord.Game(name="with black monkee"))
     await refreshKeywords()
     await refreshReactionRoles()
 
@@ -659,6 +659,8 @@ async def on_message(message):
         if message.content.lower() == "wiki":
             view = DropdownView()
             await message.channel.send("<https://www.reddit.com/r/igcse/wiki/index>", view=view)
+
+
 
         if not message.guild:  # If DM
             if "suggestion" in message.content.lower():  # Old suggestion system
@@ -2131,6 +2133,36 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
                     await voice_channel.channel.edit(
                         name=f"{role.name.lower().replace(' study ping', '').title()} Study Session")
 
+        time_window_milliseconds = 5000
+        max_msg_per_window = 5
+        author_msg_times = {}
+
+        author_id = message.author.id
+        curr_time = datetime.datetime.now().timestamp() * 1000
+
+        # Make empty list for author id, if it does not exist
+        if not author_msg_times.get(author_id, False):
+            author_msg_times[author_id] = []
+
+        # Append the time of this message to the users list of message times
+        author_msg_times[author_id].append(curr_time)
+
+        # Find the beginning of our time window.
+        expire_time = curr_time - time_window_milliseconds
+
+        # Find message times which occurred before the start of our window
+        expired_msgs = [
+            msg_time for msg_time in author_msg_times[author_id]
+            if msg_time < expire_time
+        ]
+
+        # Remove all the expired messages times from our list
+        for msg_time in expired_msgs:
+            author_msg_times[author_id].remove(msg_time)
+        # ^ note: we probably need to use a mutex here. Multiple threads
+
+        if len(author_msg_times[author_id]) > max_msg_per_window:
+            await message.channel.send(f"stop spamming <@{author_id}> !!")
     except:
         content = f"""Message Content - {message.content}
 Message Author - {message.author}
