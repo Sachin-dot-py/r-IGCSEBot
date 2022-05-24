@@ -15,7 +15,7 @@ API_KEY = os.environ.get("KVSTORE_API_KEY")
 
 intents = discord.Intents().all()
 client = discord.Client(intents=intents)
-
+channels_Sticks = {}
 
 async def refreshKeywords():
     global keywords
@@ -2172,6 +2172,39 @@ Message Link - {message.jump_url}
 Traceback - {traceback.format_exc()}"""
         await client.get_channel(936179101130190919).send(content)  # Send bug report to bot error log channel
 
+    global channels_Sticks
+    if message.content.lower().startswith("stick"):
+        mod = message.author.mention
+        mod_roles = [role.name for role in message.author.roles]
+        if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+            await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+            return
+        stick_content = message.content[5:]
+        channels_Sticks[message.channel] = [stick_content]
+        await message.channel.send("Channel sticked !")
+        # so here if mods called sent a message starting with stick ( also you can add $ or something so it is more like a command) the channel will be saved as a key in the dictionary with the message as the value
+
+    if message.content.lower().startswith("unstick"):
+        mod = message.author.mention
+        mod_roles = [role.name for role in message.author.roles]
+        if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+            await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+            return
+        for channel in channels_Sticks.keys():
+            if message.channel == channel:
+                channels_Sticks.pop(channel)
+                await message.channel.send("Channel unsticked !")
+                break
+
+    for channel in channels_Sticks.keys():
+        if message.channel == channel:
+            if len(channels_Sticks.get(channel)) == 2:
+                await channels_Sticks[channel][1].delete()
+            else:
+                channels_Sticks[channel].append("")
+            sticky_message = await channel.send(channels_Sticks.get(channel)[0])
+            channels_Sticks[channel][1] = sticky_message
+        message.channel.send("Message sticked in this channel !")
 
 @client.event
 async def on_voice_state_update(member, before, after):
