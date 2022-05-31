@@ -2192,7 +2192,8 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
                 return
             stick_content = message.content[5:]
             channels_Sticks[message.channel] = [stick_content]
-            await message.channel.send("Message stickied!")
+            await message.channel.send("Message stickied!", delete_after=5.0)
+            await message.delete()
 
         if message.content.lower().startswith("unstick"):
             mod = message.author.mention
@@ -2203,7 +2204,8 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
             for channel in channels_Sticks.keys():
                 if message.channel == channel:
                     channels_Sticks.pop(channel)
-                    await message.channel.send("Message unstickied!")
+                    await message.channel.send("Message unstickied!", delete_after=5.0)
+                    await message.delete()
                     break
 
         for channel in channels_Sticks.keys():
