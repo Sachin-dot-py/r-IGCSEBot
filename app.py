@@ -1792,8 +1792,10 @@ Reason: Sending invite link to another server"""
                     user = message.guild.get_member(int(message.content.split()[2]))
                 except:
                     user = message.guild.get_member_named(message.content.split()[2])
-            new_rep = int(await getRepNew(message.author.id)) - int(message.content.split()[3])
+            cur_rep = await getRepNew(user.id)
+            new_rep = int(cur_rep) - int(message.content.split()[3])
             await changeRepNew(user.id, new_rep)
+            await message.channel.send(f"Done! Changed rep to {new_rep}.")
             leaderboard = await getLeaderboardNew()
             members = list(leaderboard.keys())[:3]
             if leaderboard[members[-1]] == list(leaderboard.values())[
@@ -1805,7 +1807,7 @@ Reason: Sending invite link to another server"""
             for member in members:
                 member = message.guild.get_member(member)
                 await member.add_roles(role)
-            await message.channel.send("Done!")
+            
 
         if message.channel.id == 758562162616303658:  # New suggestion
             try:
