@@ -15,7 +15,7 @@ API_KEY = os.environ.get("KVSTORE_API_KEY")
 
 intents = discord.Intents().all()
 client = discord.Client(intents=intents)
-
+channels_Sticks = {}
 
 async def refreshKeywords():
     global keywords
@@ -187,7 +187,7 @@ text_prompts = {"version": "v2.0"}
 @client.event
 async def on_ready():
     print('Logged in as {0.user}'.format(client))
-    await client.change_presence(activity=discord.Game(name="Flynn#5627"))
+    await client.change_presence(activity=discord.Game(name="DM to contact staff"))
     await refreshKeywords()
     await refreshReactionRoles()
 
@@ -2148,6 +2148,72 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
                     await voice_channel.channel.edit(
                         name=f"{role.name.lower().replace(' study ping', '').title()} Study Session")
 
+        # time_window_milliseconds = 5000
+        # max_msg_per_window = 5
+        # author_msg_times = {}
+
+        # author_id = message.author.id
+        # curr_time = datetime.datetime.now().timestamp() * 1000
+
+        # # Make empty list for author id, if it does not exist
+        # if not author_msg_times.get(author_id, False):
+        #     author_msg_times[author_id] = []
+
+        # # Append the time of this message to the users list of message times
+        # author_msg_times[author_id].append(curr_time)
+
+        # # Find the beginning of our time window.
+        # expire_time = curr_time - time_window_milliseconds
+        # print(expire_time)
+
+        # # Find message times which occurred before the start of our window
+        # expired_msgs = [
+        #     msg_time for msg_time in author_msg_times[author_id]
+        #     if msg_time < expire_time
+        # ]
+        # print(expired_msgs)
+
+        # # Remove all the expired messages times from our list
+        # for msg_time in expired_msgs:
+        #     author_msg_times[author_id].remove(msg_time)
+        # # ^ note: we probably need to use a mutex here. Multiple threads
+
+        # if len(author_msg_times[author_id]) > max_msg_per_window:
+        #     await message.channel.send(f"Stop spamming <@{author_id}>!!")
+        # print(author_msg_times)
+
+
+        global channels_Sticks
+        if message.content.lower().startswith("stick"):
+            mod = message.author.mention
+            mod_roles = [role.name for role in message.author.roles]
+            if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+                await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+                return
+            stick_content = message.content[5:]
+            channels_Sticks[message.channel] = [stick_content]
+            await message.channel.send("Message stickied!")
+
+        if message.content.lower().startswith("unstick"):
+            mod = message.author.mention
+            mod_roles = [role.name for role in message.author.roles]
+            if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+                await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+                return
+            for channel in channels_Sticks.keys():
+                if message.channel == channel:
+                    channels_Sticks.pop(channel)
+                    await message.channel.send("Message unstickied!")
+                    break
+
+        for channel in channels_Sticks.keys():
+            if message.channel == channel:
+                if len(channels_Sticks.get(channel)) == 2:
+                    await channels_Sticks[channel][1].delete()
+                else:
+                    channels_Sticks[channel].append("")
+                sticky_message = await channel.send(channels_Sticks.get(channel)[0])
+                channels_Sticks[channel][1] = sticky_message
     except:
         content = f"""Message Content - {message.content}
 Message Author - {message.author}
@@ -2155,6 +2221,7 @@ Message ID - {message.id}
 Message Channel - {message.channel}
 Message Link - {message.jump_url}
 Traceback - {traceback.format_exc()}"""
+        print(content)
         await client.get_channel(936179101130190919).send(content)  # Send bug report to bot error log channel
 
 
