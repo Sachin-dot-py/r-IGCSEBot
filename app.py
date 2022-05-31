@@ -592,6 +592,13 @@ subreddits = {"Languages": {
 }
 
 }
+
+# @client.slash_command(name="vote", description="Vote for the next Helper of the Month!")
+# async def vote(interaction : discord.Interaction, nomination1: discord.Member, nomination2: discord.Member, nomination3: discord.Member):
+#     channel = await interaction.guild.get_channel(692686505889628281)
+#     await channel.send("HOTM Nomination by", str(interaction.user), "\n**Nomination 1:** " + str(nomination1), "**Nomination 2:** " + str(nomination2), "**Nomination 3:** " + str(nomination3))
+#     await interaction.send("Thank you. Your vote has been registered.")
+
 @client.event
 async def on_message(message):
     try:
@@ -1475,7 +1482,12 @@ Reason: Sending invite link to another server"""
                 if msg.author != message.author:
                     if not (message.author.mentioned_in(msg) and ('thanks' in msg.content.lower() or 'thank you' in msg.content.lower() or 'thx' in msg.content.lower() or 'tysm' in msg.content.lower() or 'thank u' in msg.content.lower() or 'thnks' in msg.content.lower() or 'tanks' in msg.content.lower() or "thanku" in msg.content.lower() or "ty" in msg.content.lower().split())):
                         rep = await addRepNew(message.author.id)
-                        await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})")
+                        if rep == 100 or rep == 500:
+                            role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
+                            await message.author.add_roles(role)
+                            await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
+                        else:
+                            await message.channel.send(f"Gave +1 Rep to {message.author} ({rep})")
                         leaderboard = await getLeaderboardNew()
                         members = list(leaderboard.keys())[:3]
                         if leaderboard[members[-1]] == list(leaderboard.values())[len(members)]: # If 3rd and 4th position have same rep
@@ -1546,7 +1558,12 @@ Reason: Sending invite link to another server"""
                 if leaderboard[members[-1]] == list(leaderboard.values())[len(members)]: # If 3rd and 4th position have same rep
                     members.append(list(leaderboard.keys())[len(members)]) # Add 4th position to list of reputed members
                 role = discord.utils.get(message.author.guild.roles, name="Reputed")
-                await message.channel.send(f"Gave +1 Rep to {mention.mention} ({rep})")
+                if rep == 100 or rep == 500:
+                    role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
+                    await mention.add_roles(role)
+                    await message.channel.send(f"Gave +1 Rep to {mention.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
+                else:
+                    await message.channel.send(f"Gave +1 Rep to {mention} ({rep})")
                 if [member.id for member in role.members] != members: # If Reputed has changed
                     for m in role.members:
                         await m.remove_roles(role)
