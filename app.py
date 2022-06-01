@@ -81,7 +81,7 @@ async def spamMessage(message, reporter):
     bot = message.guild.get_member(861445044790886467)
     mod_role = discord.utils.get(message.guild.roles, id=578170681670369290)
     await message.reply(
-        f"{message.author.mention} has been muted for sending scam messages. (Reported by {reporter.mention})\nIf this action was done in error, {mod_role.mention} will review the mute and revoke it if necessary")
+        f"{message.author.mention} has been muted for sending spam messages. (Reported by {reporter.mention})\nIf this action was done in error, {mod_role.mention} will review the mute and revoke it if necessary")
     ban_msg_channel = client.get_channel(690267603570393219)
     last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
     role = discord.utils.get(message.guild.roles, id=787670627967959087)
@@ -106,7 +106,6 @@ Reason: Spamming messages in channels"""
                         await m.delete()
                     except:
                         pass
-
 
 helper_roles = {
     576463745073807372: 696688133844238367,
