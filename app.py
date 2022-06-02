@@ -1344,20 +1344,20 @@ async def on_message(message):
                 await msg.edit(embed=embed)
                 await message.delete()
 
-        if message.content.lower().startswith(".clear") and len(message.content.split()) == 2:  # Clear messages
-            try:
-                num = int(message.content.split()[1])
-                roles = [role.name for role in message.author.roles]
-                if "Discord Mod" in roles or "Temp Mod" in roles:
-                    if num <= 100:
-                        try:
-                            await message.channel.purge(limit=num + 1)
-                        except:
-                            await message.reply("Oops! I can only delete messages sent in the last 14 days")
-                    else:
-                        await message.reply("Sorry, I can only delete up to 100 messages at a time.")  # Safety feature
-            except:
-                pass
+#         if message.content.lower().startswith(".clear") and len(message.content.split()) == 2:  # Clear messages
+#             try:
+#                 num = int(message.content.split()[1])
+#                 roles = [role.name for role in message.author.roles]
+#                 if "Discord Mod" in roles or "Temp Mod" in roles:
+#                     if num <= 100:
+#                         try:
+#                             await message.channel.purge(limit=num + 1)
+#                         except:
+#                             await message.reply("Oops! I can only delete messages sent in the last 14 days")
+#                     else:
+#                         await message.reply("Sorry, I can only delete up to 100 messages at a time.")  # Safety feature
+#             except:
+#                 pass
 
         if message.content.lower() == 'joke':  # A random joke
             req = requests.get("https://icanhazdadjoke.com/", headers={"Accept": "application/json"})
@@ -1525,80 +1525,80 @@ async def on_message(message):
                     if not worked:
                         await message.reply("Error.")
 
-        if "rep" == message.content.lower() or "leaderboard" == message.content.lower() or "rep leaderboard" == message.content.lower():
-            leaderboard = await getLeaderboardNew()  # Rep leaderboard
-            chunks = [list(leaderboard.items())[x:x + 9] for x in
-                      range(0, len(leaderboard), 9)]  # Split into groups of 9
+#         if "rep" == message.content.lower() or "leaderboard" == message.content.lower() or "rep leaderboard" == message.content.lower():
+#             leaderboard = await getLeaderboardNew()  # Rep leaderboard
+#             chunks = [list(leaderboard.items())[x:x + 9] for x in
+#                       range(0, len(leaderboard), 9)]  # Split into groups of 9
 
-            pages = []
-            for n, chunk in enumerate(chunks):
-                embedVar = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
-                                         colour=discord.Colour.green())
-                for user, rep in chunk:
-                    user_name = message.guild.get_member(user)
-                    if rep == 0 or user_name == None:
-                        channel = client.get_channel(692686505889628281)
-                        await channel.send(f"User ID {user} having {rep} rep has been removed from the rep leaderboard")
-                        await removeUser(user)
-                    else:
-                        embedVar.add_field(name=user_name, value=str(rep) + "\n", inline=True)
+#             pages = []
+#             for n, chunk in enumerate(chunks):
+#                 embedVar = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
+#                                          colour=discord.Colour.green())
+#                 for user, rep in chunk:
+#                     user_name = message.guild.get_member(user)
+#                     if rep == 0 or user_name == None:
+#                         channel = client.get_channel(692686505889628281)
+#                         await channel.send(f"User ID {user} having {rep} rep has been removed from the rep leaderboard")
+#                         await removeUser(user)
+#                     else:
+#                         embedVar.add_field(name=user_name, value=str(rep) + "\n", inline=True)
 
-                pages.append(embedVar)
+#                 pages.append(embedVar)
 
-            message = await message.reply(embed=pages[0])
+#             message = await message.reply(embed=pages[0])
 
-            await message.add_reaction('⏮')
-            await message.add_reaction('◀')
-            await message.add_reaction('🔒')
-            await message.add_reaction('▶')
-            await message.add_reaction('⏭')
+#             await message.add_reaction('⏮')
+#             await message.add_reaction('◀')
+#             await message.add_reaction('🔒')
+#             await message.add_reaction('▶')
+#             await message.add_reaction('⏭')
 
-            i = 0
-            reaction = None
+#             i = 0
+#             reaction = None
 
-            while True:
-                if str(reaction) == '⏮':
-                    i = 0
-                    await message.edit(embed=pages[i])
-                elif str(reaction) == '◀':
-                    if i > 0:
-                        i -= 1
-                        await message.edit(embed=pages[i])
-                elif str(reaction) == "🔒":
-                    await message.clear_reactions()
-                    return
-                elif str(reaction) == '▶':
-                    if i < len(pages) - 1:
-                        i += 1
-                        await message.edit(embed=pages[i])
-                elif str(reaction) == '⏭':
-                    i = len(pages) - 1
-                    await message.edit(embed=pages[i])
+#             while True:
+#                 if str(reaction) == '⏮':
+#                     i = 0
+#                     await message.edit(embed=pages[i])
+#                 elif str(reaction) == '◀':
+#                     if i > 0:
+#                         i -= 1
+#                         await message.edit(embed=pages[i])
+#                 elif str(reaction) == "🔒":
+#                     await message.clear_reactions()
+#                     return
+#                 elif str(reaction) == '▶':
+#                     if i < len(pages) - 1:
+#                         i += 1
+#                         await message.edit(embed=pages[i])
+#                 elif str(reaction) == '⏭':
+#                     i = len(pages) - 1
+#                     await message.edit(embed=pages[i])
 
-                try:
-                    reaction, user = await client.wait_for('reaction_add', timeout=30.0)
-                    if user == client.user:
-                        reaction, user = await client.wait_for('reaction_add', timeout=30.0)
-                    await message.remove_reaction(reaction, user)
-                except:
-                    break
+#                 try:
+#                     reaction, user = await client.wait_for('reaction_add', timeout=30.0)
+#                     if user == client.user:
+#                         reaction, user = await client.wait_for('reaction_add', timeout=30.0)
+#                     await message.remove_reaction(reaction, user)
+#                 except:
+#                     break
 
-            await message.clear_reactions()
+#             await message.clear_reactions()
 
-        if "my rep" == message.content.lower():
-            rep = await getRepNew(message.author.id)
-            await message.reply(f"Hi {message.author.mention}, you have {rep} rep!")
+#         if "my rep" == message.content.lower():
+#             rep = await getRepNew(message.author.id)
+#             await message.reply(f"Hi {message.author.mention}, you have {rep} rep!")
 
-        try:
-            if message.content.lower().split()[0] == "rep":
-                try:
-                    for mention in message.mentions:
-                        rep = await getRepNew(mention.id)
-                        await message.reply(f"{mention} has {rep} rep!")
-                except:
-                    pass
-        except:
-            pass
+#         try:
+#             if message.content.lower().split()[0] == "rep":
+#                 try:
+#                     for mention in message.mentions:
+#                         rep = await getRepNew(mention.id)
+#                         await message.reply(f"{mention} has {rep} rep!")
+#                 except:
+#                     pass
+#         except:
+#             pass
 
         if "discord.gg" in message.content.lower() and not (
                 "discord.gg/igcse" in message.content.lower() or "discord.gg/yZAyR6x" in message.content.lower() or "discord.gg/6thform" in message.content.lower() or "discord.gg/ibo" in message.content.lower() or "discord.gg/homework" in message.content.lower() or "discord.gg/bXUAtcNUWc" in message.content.lower() or "discord.gg/memers" in message.content.lower() or "discord.gg/znotes" in message.content.lower() or "discord.gg/v5zzkHNZks" in message.content.lower()):
