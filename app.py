@@ -1625,35 +1625,35 @@ Reason: Sending invite link to another server"""
             log_channel = client.get_channel(792775200394575882)
             await log_channel.send(content=f"Transcript of message sent by {user.mention}:\n\n{message.content}")
 
-        if (
-                "you're welcome" in message.content.lower() or "youre welcome" in message.content.lower() or "ur welcome" in message.content.lower() or "u r welcome" in message.content.lower() or "your welcome" in message.content.lower() or "welcome" == message.content.lower() or 'no problem' in message.content.lower() or 'np' in message.content.lower().split() or 'np!' in message.content.lower().split() or 'yw' in message.content.lower().split()):
-            try:  # Add rep to message author
-                msg = await message.channel.fetch_message(message.reference.message_id)
-                if msg.author != message.author:
-                    if not (message.author.mentioned_in(msg) and (
-                            'thanks' in msg.content.lower() or 'thank you' in msg.content.lower() or 'thx' in msg.content.lower() or 'tysm' in msg.content.lower() or 'thank u' in msg.content.lower() or 'thnks' in msg.content.lower() or 'tanks' in msg.content.lower() or "thanku" in msg.content.lower() or "ty" in msg.content.lower().split())):
-                        rep = await addRepNew(message.author.id)
-                        if rep == 100 or rep == 500:
-                            role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
-                            await message.author.add_roles(role)
-                            await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
-                        else:
-                            await message.channel.send(f"Gave +1 Rep to {message.author} ({rep})")
-                        leaderboard = await getLeaderboardNew()
-                        members = list(leaderboard.keys())[:3]
-                        if leaderboard[members[-1]] == list(leaderboard.values())[
-                            len(members)]:  # If 3rd and 4th position have same rep
-                            members.append(
-                                list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
-                        role = discord.utils.get(message.author.guild.roles, name="Reputed")
-                        if [member.id for member in role.members] != members:  # If Reputed has changed
-                            for m in role.members:
-                                await m.remove_roles(role)
-                            for member in members:
-                                member = message.guild.get_member(member)
-                                await member.add_roles(role)
-            except:
-                pass
+#         if (
+#                 "you're welcome" in message.content.lower() or "youre welcome" in message.content.lower() or "ur welcome" in message.content.lower() or "u r welcome" in message.content.lower() or "your welcome" in message.content.lower() or "welcome" == message.content.lower() or 'no problem' in message.content.lower() or 'np' in message.content.lower().split() or 'np!' in message.content.lower().split() or 'yw' in message.content.lower().split()):
+#             try:  # Add rep to message author
+#                 msg = await message.channel.fetch_message(message.reference.message_id)
+#                 if msg.author != message.author:
+#                     if not (message.author.mentioned_in(msg) and (
+#                             'thanks' in msg.content.lower() or 'thank you' in msg.content.lower() or 'thx' in msg.content.lower() or 'tysm' in msg.content.lower() or 'thank u' in msg.content.lower() or 'thnks' in msg.content.lower() or 'tanks' in msg.content.lower() or "thanku" in msg.content.lower() or "ty" in msg.content.lower().split())):
+#                         rep = await addRepNew(message.author.id)
+#                         if rep == 100 or rep == 500:
+#                             role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
+#                             await message.author.add_roles(role)
+#                             await message.channel.send(f"Gave +1 Rep to {message.author.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
+#                         else:
+#                             await message.channel.send(f"Gave +1 Rep to {message.author} ({rep})")
+#                         leaderboard = await getLeaderboardNew()
+#                         members = list(leaderboard.keys())[:3]
+#                         if leaderboard[members[-1]] == list(leaderboard.values())[
+#                             len(members)]:  # If 3rd and 4th position have same rep
+#                             members.append(
+#                                 list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
+#                         role = discord.utils.get(message.author.guild.roles, name="Reputed")
+#                         if [member.id for member in role.members] != members:  # If Reputed has changed
+#                             for m in role.members:
+#                                 await m.remove_roles(role)
+#                             for member in members:
+#                                 member = message.guild.get_member(member)
+#                                 await member.add_roles(role)
+#             except:
+#                 pass
 
         if message.content.lower() == "scam" or message.content.lower() == "spam":
             try:  # Scam/spam messages reported by the user
@@ -1697,43 +1697,43 @@ Reason: Sending invite link to another server"""
         if message.content.lower() in text_prompts.keys():
             await message.channel.send(text_prompts[message.content.lower()])
 
-        if 'thanks' in message.content.lower() or 'thank you' in message.content.lower() or 'thx' in message.content.lower() or 'tysm' in message.content.lower() or 'thank u' in message.content.lower() or 'thnks' in message.content.lower() or 'tanks' in message.content.lower() or "thanku" in message.content.lower() or "ty" == message.content.lower() or "ty" in message.content.lower().split():
-            mentions = message.mentions  # Give rep
-            for mention in mentions:
-                if mention == message.author:
-                    await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep yourself!")
-                    return
-                if mention.bot:
-                    await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep a bot!")
-                    return
-                rep = await addRepNew(mention.id)
-                leaderboard = await getLeaderboardNew()
-                members = list(leaderboard.keys())[:3]
-                if leaderboard[members[-1]] == list(leaderboard.values())[
-                    len(members)]:  # If 3rd and 4th position have same rep
-                    members.append(
-                        list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
-                role = discord.utils.get(message.author.guild.roles, name="Reputed")
-                if rep == 100 or rep == 500:
-                    role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
-                    await mention.add_roles(role)
-                    await message.channel.send(f"Gave +1 Rep to {mention.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
-                else:
-                    await message.channel.send(f"Gave +1 Rep to {mention} ({rep})")
-                if [member.id for member in role.members] != members: # If Reputed has changed
-                    for m in role.members:
-                        await m.remove_roles(role)
-                    for member in members:
-                        member = message.guild.get_member(member)
-                        await member.add_roles(role)
-            try:
-                backup_channel = client.get_channel(869753809428160602)
-                line = str(leaderboard).replace(" ", "")
-                msgs = [line[i:i + 2000] for i in range(0, len(line), 2000)]
-                for msg in msgs:
-                    await backup_channel.send(msg)
-            except:
-                pass
+#         if 'thanks' in message.content.lower() or 'thank you' in message.content.lower() or 'thx' in message.content.lower() or 'tysm' in message.content.lower() or 'thank u' in message.content.lower() or 'thnks' in message.content.lower() or 'tanks' in message.content.lower() or "thanku" in message.content.lower() or "ty" == message.content.lower() or "ty" in message.content.lower().split():
+#             mentions = message.mentions  # Give rep
+#             for mention in mentions:
+#                 if mention == message.author:
+#                     await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep yourself!")
+#                     return
+#                 if mention.bot:
+#                     await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep a bot!")
+#                     return
+#                 rep = await addRepNew(mention.id)
+#                 leaderboard = await getLeaderboardNew()
+#                 members = list(leaderboard.keys())[:3]
+#                 if leaderboard[members[-1]] == list(leaderboard.values())[
+#                     len(members)]:  # If 3rd and 4th position have same rep
+#                     members.append(
+#                         list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
+#                 role = discord.utils.get(message.author.guild.roles, name="Reputed")
+#                 if rep == 100 or rep == 500:
+#                     role = discord.utils.get(message.author.guild.roles, name=f"{rep}+ Rep Club")
+#                     await mention.add_roles(role)
+#                     await message.channel.send(f"Gave +1 Rep to {mention.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
+#                 else:
+#                     await message.channel.send(f"Gave +1 Rep to {mention} ({rep})")
+#                 if [member.id for member in role.members] != members: # If Reputed has changed
+#                     for m in role.members:
+#                         await m.remove_roles(role)
+#                     for member in members:
+#                         member = message.guild.get_member(member)
+#                         await member.add_roles(role)
+#             try:
+#                 backup_channel = client.get_channel(869753809428160602)
+#                 line = str(leaderboard).replace(" ", "")
+#                 msgs = [line[i:i + 2000] for i in range(0, len(line), 2000)]
+#                 for msg in msgs:
+#                     await backup_channel.send(msg)
+#             except:
+#                 pass
 
         # Reminding users to get session roles: (not in use anymore)
         # if not message.author.bot:
@@ -1750,63 +1750,63 @@ Reason: Sending invite link to another server"""
         #     except:
         #         pass
 
-        if message.content.lower().startswith('change rep'):  # Change someone's rep
-            mod = message.author.mention
-            mod_roles = [role.name for role in message.author.roles]
-            if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
-                await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
-                return
-            try:
-                user = message.mentions[0]
-            except:
-                try:
-                    user = message.guild.get_member(int(message.content.split()[2]))
-                except:
-                    user = message.guild.get_member_named(message.content.split()[2])
-            new_rep = int(message.content.split()[3])
-            await changeRepNew(user.id, new_rep)
-            leaderboard = await getLeaderboardNew()
-            members = list(leaderboard.keys())[:3]
-            if leaderboard[members[-1]] == list(leaderboard.values())[
-                len(members)]:  # If 3rd and 4th position have same rep
-                members.append(list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
-            role = discord.utils.get(message.author.guild.roles, name="Reputed")
-            for m in role.members:
-                await m.remove_roles(role)
-            for member in members:
-                member = message.guild.get_member(member)
-                await member.add_roles(role)
-            await message.channel.send("Done!")
+#         if message.content.lower().startswith('change rep'):  # Change someone's rep
+#             mod = message.author.mention
+#             mod_roles = [role.name for role in message.author.roles]
+#             if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+#                 await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+#                 return
+#             try:
+#                 user = message.mentions[0]
+#             except:
+#                 try:
+#                     user = message.guild.get_member(int(message.content.split()[2]))
+#                 except:
+#                     user = message.guild.get_member_named(message.content.split()[2])
+#             new_rep = int(message.content.split()[3])
+#             await changeRepNew(user.id, new_rep)
+#             leaderboard = await getLeaderboardNew()
+#             members = list(leaderboard.keys())[:3]
+#             if leaderboard[members[-1]] == list(leaderboard.values())[
+#                 len(members)]:  # If 3rd and 4th position have same rep
+#                 members.append(list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
+#             role = discord.utils.get(message.author.guild.roles, name="Reputed")
+#             for m in role.members:
+#                 await m.remove_roles(role)
+#             for member in members:
+#                 member = message.guild.get_member(member)
+#                 await member.add_roles(role)
+#             await message.channel.send("Done!")
 
-        if message.content.lower().startswith('dec rep') or message.content.lower().startswith(
-                'decrease rep'):  # decrease someone's rep
-            mod = message.author.mention
-            mod_roles = [role.name for role in message.author.roles]
-            if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
-                await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
-                return
-            try:
-                user = message.mentions[0]
-            except:
-                try:
-                    user = message.guild.get_member(int(message.content.split()[2]))
-                except:
-                    user = message.guild.get_member_named(message.content.split()[2])
-            cur_rep = await getRepNew(user.id)
-            new_rep = int(cur_rep) - int(message.content.split()[3])
-            await changeRepNew(user.id, new_rep)
-            await message.channel.send(f"Done! Changed rep to {new_rep}.")
-            leaderboard = await getLeaderboardNew()
-            members = list(leaderboard.keys())[:3]
-            if leaderboard[members[-1]] == list(leaderboard.values())[
-                len(members)]:  # If 3rd and 4th position have same rep
-                members.append(list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
-            role = discord.utils.get(message.author.guild.roles, name="Reputed")
-            for m in role.members:
-                await m.remove_roles(role)
-            for member in members:
-                member = message.guild.get_member(member)
-                await member.add_roles(role)
+#         if message.content.lower().startswith('dec rep') or message.content.lower().startswith(
+#                 'decrease rep'):  # decrease someone's rep
+#             mod = message.author.mention
+#             mod_roles = [role.name for role in message.author.roles]
+#             if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+#                 await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+#                 return
+#             try:
+#                 user = message.mentions[0]
+#             except:
+#                 try:
+#                     user = message.guild.get_member(int(message.content.split()[2]))
+#                 except:
+#                     user = message.guild.get_member_named(message.content.split()[2])
+#             cur_rep = await getRepNew(user.id)
+#             new_rep = int(cur_rep) - int(message.content.split()[3])
+#             await changeRepNew(user.id, new_rep)
+#             await message.channel.send(f"Done! Changed rep to {new_rep}.")
+#             leaderboard = await getLeaderboardNew()
+#             members = list(leaderboard.keys())[:3]
+#             if leaderboard[members[-1]] == list(leaderboard.values())[
+#                 len(members)]:  # If 3rd and 4th position have same rep
+#                 members.append(list(leaderboard.keys())[len(members)])  # Add 4th position to list of reputed members
+#             role = discord.utils.get(message.author.guild.roles, name="Reputed")
+#             for m in role.members:
+#                 await m.remove_roles(role)
+#             for member in members:
+#                 member = message.guild.get_member(member)
+#                 await member.add_roles(role)
             
 
         if message.channel.id == 758562162616303658:  # New suggestion
