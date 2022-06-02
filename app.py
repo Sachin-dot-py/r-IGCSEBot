@@ -13,7 +13,8 @@ LINK = os.environ.get("MONGO_LINK")
 GUILD_ID = 576460042774118420
 
 intents = discord.Intents().all()
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix=".", intents=intents)
+keywords = {}
 
 
 @bot.event
@@ -28,6 +29,119 @@ async def on_voice_state_update(member, before, after):
         if before.channel:  # When user leaves a voice channel
             if "study session" in before.channel.name.lower() and before.channel.members == []:  # If the study session is over
                 await before.channel.edit(name="General")  # Reset channel name
+
+
+@bot.event
+async def on_raw_reaction_add(reaction):
+    # Suggestions voting
+    channel = bot.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+    if str(reaction.emoji) == "🟢" and reaction.user_id != bot.user.id and msg.channel.id == gpdb.get_pref(
+            "suggestions_channel", reaction.guild_id):  # Suggestion accepted by mod in #suggestions-voting
+        author = msg.channel.guild.get_member(reaction.user_id)
+        if await isModerator(author):
+            description = msg.embeds[0].description
+            embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
+            for field in msg.embeds[0].fields:
+                if field.name == "Accepted ✅":
+                    return
+                if field.name != "Rejected ❌":
+                    try:
+                        embed.add_field(name=field.name, value=field.value, inline=False)
+                    except:
+                        pass
+            embed.add_field(name="Accepted ✅", value=f"This suggestion has been accepted by the moderators. ({author})",
+                            inline=False)
+            await msg.edit(embed=embed)
+            await msg.pin()
+        return
+
+    if str(
+            reaction.emoji) == "🔴" and reaction.user_id != bot.user.id and msg.channel.id == gpdb.get_pref(
+        "suggestions_channel", reaction.guild_id):  # Suggestion rejected by mod in #suggestions-voting
+        author = msg.channel.guild.get_member(reaction.user_id)
+        if await isModerator(author):
+            description = msg.embeds[0].description
+            embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
+            for field in msg.embeds[0].fields:
+                if field.name == "Rejected ❌":
+                    return
+                if field.name != "Accepted ✅":
+                    try:
+                        embed.add_field(name=field.name, value=field.value, inline=False)
+                    except:
+                        pass
+            embed.add_field(name="Rejected ❌", value=f"This suggestion has been rejected by the moderators. ({author})",
+                            inline=False)
+            await msg.edit(embed=embed)
+        return
+
+    # Suggestion voting system
+    vote = 0
+    for reaction in msg.reactions:
+        if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
+            async for user in reaction.users():
+                if user == bot.user:
+                    vote += 1
+                    break
+
+    if vote == 2:
+        for reaction in msg.reactions:
+            if str(reaction.emoji) == "✅":
+                yes = reaction.count - 1
+            if str(reaction.emoji) == "❌":
+                no = reaction.count - 1
+        try:
+            yes_p = round((yes / (yes + no)) * 100) // 10
+            no_p = 10 - yes_p
+        except:
+            yes_p = 10
+            no_p = 0
+        description = f"Total Votes: {yes + no}\n\n{yes_p * 10}% {yes_p * '🟩'}{no_p * '🟥'} {no_p * 10}%\n"
+        description += "\n".join(msg.embeds[0].description.split("\n")[3:])
+        embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
+        for field in msg.embeds[0].fields:
+            try:
+                embed.add_field(name=field.name, value=field.value, inline=False)
+            except:
+                pass
+        await msg.edit(embed=embed)
+
+
+@bot.event
+async def on_raw_reaction_remove(reaction):
+    channel = bot.get_channel(reaction.channel_id)
+    msg = await channel.fetch_message(reaction.message_id)
+
+    vote = 0  # Suggestions voting system - remove vote
+    for reaction in msg.reactions:
+        if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
+            async for user in reaction.users():
+                if user == bot.user:
+                    vote += 1
+                    break
+
+    if vote == 2:
+        for reaction in msg.reactions:
+            if str(reaction.emoji) == "✅":
+                yes = reaction.count - 1
+            if str(reaction.emoji) == "❌":
+                no = reaction.count - 1
+        try:
+            yes_p = round((yes / (yes + no)) * 100) // 10
+            no_p = 10 - yes_p
+        except:
+            yes_p = 10
+            no_p = 0
+        description = f"Total Votes: {yes + no}\n\n{yes_p * 10}% {yes_p * '🟩'}{no_p * '🟥'} {no_p * 10}%\n"
+        description += "\n".join(msg.embeds[0].description.split("\n")[3:])
+        embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
+        for field in msg.embeds[0].fields:
+            try:
+                embed.add_field(name=field.name, value=field.value, inline=False)
+            except:
+                pass
+        await msg.edit(embed=embed)
 
 
 @bot.event
@@ -50,21 +164,23 @@ async def on_guild_join(guild):
 async def on_member_join(member):
     if member.guild.id == 576460042774118420:  # r/igcse welcome message
         embed1 = discord.Embed.from_dict(eval(
-            """{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should type in `'helper'`. A timer of **15 minutes** will start before the respective subject helper will be pinged. You will be reminded **3 minutes** before the time elapses to cancel the ping if your doubt has been entertained. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
-        embed2 = discord.Embed.from_dict(eval(
-            "{'color': 3066993, 'type': 'rich', 'description': 'We also require all new users to pick up session roles. These make sure that you will have access to the appropriate general chat channels and for our helpers to give you more specific advice.\n\nReact to the corresponding reactions in <#932550807755304990> to verify and gain access to the rest of the server.\n\nAfterwards, react to the corresponding roles in <#932570912660791346> or <#932546951055032330> to gain access to your corresponding subject channels.', 'title': 'Verification system (PLEASE READ)'}"))
+            r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should type in `'helper'`. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
+        # embed2 = discord.Embed.from_dict(eval(
+        #     r"{'color': 3066993, 'type': 'rich', 'description': 'We also require all new users to pick up session roles. These make sure that you will have access to the appropriate general chat channels and for our helpers to give you more specific advice.\n\nReact to the corresponding reactions in <#932550807755304990> to verify and gain access to the rest of the server.\n\nAfterwards, react to the corresponding roles in <#932570912660791346> or <#932546951055032330> to gain access to your corresponding subject channels.', 'title': 'Verification system (PLEASE READ)'}"))
         channel = await member.create_dm()
         try:
             await channel.send(embed=embed1)
-            await channel.send(embed=embed2)
+            # await channel.send(embed=embed2)
         except:
             channel = member.guild.get_channel(920138547858645072)
             await channel.send(content=member.mention, embed=embed1)
-            await channel.send(content=member.mention, embed=embed2)
+            # await channel.send(content=member.mention, embed=embed2)
 
 
 @bot.event
 async def on_message(message):
+    if message.author.bot: return
+
     if gpdb.get_pref('rep_enabled', message.guild.id):
         await repMessages(message)  # If message is replying to another message
     if message.channel.name == 'counting':  # To facilitate #counting
@@ -83,6 +199,12 @@ async def on_message(message):
                 await msg.unpin()
                 await msg.reply(f"This message has been unpinned by {message.author.mention}.")
                 await message.delete()
+
+    global keywords
+    if not keywords.get(message.guild.id, None):  # on first message from guild
+        keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
+    if message.content.lower() in keywords[message.guild.id].keys():
+        await message.channel.send(keywords[message.guild.id][message.content.lower()])
 
 
 # Utility Functions
@@ -210,6 +332,99 @@ async def roles(ctx):
     await ctx.send(view=DropdownViewRR())
 
 
+# Suggestions
+@bot.slash_command(description="Make a new suggestion for the server")
+async def suggest(interaction: discord.Interaction,
+                  suggestion: str = discord.SlashOption(name="suggestion",
+                                                        description="Create a new suggestion for the server.",
+                                                        required=True),
+                  ):
+    channel_id = gpdb.get_pref("suggestions_channel", interaction.guild.id)
+    if not channel_id:
+        await interaction.send(
+            "The suggestions channel for this server is not set. Please ask a moderator/admin to set it using /set_preferences to use this command.",
+            ephemeral=True)
+    else:
+        await interaction.response.defer()
+        channel = bot.get_channel(channel_id)
+        embedVar = discord.Embed(title=f"Suggestion by {interaction.user}",
+                                 description=f"Total Votes: 0\n\n{'🟩' * 10}\n\nSuggestion: {suggestion}",
+                                 colour=discord.Colour.green())
+        msg = await channel.send(embed=embedVar)
+        await msg.add_reaction('✅')
+        await msg.add_reaction("🟢")
+        await msg.add_reaction("🔴")
+        await msg.add_reaction('❌')
+        await msg.create_thread(name=f"Suggestion by {interaction.user} Discussion")
+        await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)
+
+
+# Helper
+
+class CancelPingBtn(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=15 * 60)
+        self.value = None
+
+    @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
+    async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
+        self.cancel_user = interaction_b.user
+        button.disabled = True
+        self.stop()
+
+
+
+@bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
+async def helper(interaction: discord.Interaction):
+    await interaction.response.defer()
+    try:
+        helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
+    except:
+        await interaction.send("There are no helper roles specified for this channel.", ephemeral=True)
+        return
+    roles = [role.name.lower() for role in interaction.user.roles]
+    if "server booster" in roles:
+        await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
+        return
+    view = CancelPingBtn()
+    await interaction.send(
+        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please use `/cancel_ping`",
+        view=view)
+    timeout = await view.wait()
+    if timeout:
+        await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
+    else:
+        await interaction.edit_original_message(content=f"Ping cancelled by {view.cancel_user}")
+
+
+@bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
+             guild_ids=[GUILD_ID])
+async def refreshhelpers(ctx):
+    if ctx.message.content.lower() == "refresh helpers":  # Refresh number of helpers info in description of channel
+        changed = []
+        for chnl, role in helper_roles.items():
+            try:
+                helper_role = discord.utils.get(ctx.message.guild.roles, id=role)
+                no_of_users = len(helper_role.members)
+                channel = bot.get_channel(chnl)
+                new_topic = None
+                for line in channel.topic.split("\n"):
+                    if "No. of helpers" in line:
+                        new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
+                        break
+                else:
+                    new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
+                if channel.topic != new_topic:
+                    await channel.edit(topic=new_topic)
+                    changed.append(channel.mention)
+            except:
+                continue
+        if changed:
+            await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
+        else:
+            await ctx.message.reply("No changes were made.")
+
+
 # Reputation
 
 
@@ -278,7 +493,7 @@ async def isWelcome(text):
             if alternative in text.lower():
                 return True
         for alternative in alternatives_2:
-            if alternative == text.lower().split():
+            if alternative == text.lower().split() or alternative == text.lower():
                 return True
     return False
 
@@ -312,7 +527,7 @@ async def repMessages(message):
                 await message.channel.send(f"Gave +1 Rep to {user} ({rep})")
         leaderboard = repDB.rep_leaderboard(message.guild.id)
         members = [list(item.values())[0] for item in leaderboard[:3]]  # Creating list of Reputed member ids
-        role = discord.utils.get(user.guild.roles, name="Reputed")
+        role = discord.utils.get(message.guild.roles, name="Reputed")
         if [member.id for member in role.members] != members:  # If Reputed has changed
             for m in role.members:
                 await m.remove_roles(role)
@@ -337,7 +552,9 @@ async def change_rep(interaction: discord.Interaction,
     await interaction.response.defer()
     if await isModerator(interaction.user):
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
-    await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
+        await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
+    else:
+        await interaction.send(f"You are not authorized to use this command.", ephemeral=True)
 
 
 @bot.slash_command(description="View the current rep leaderboard")
@@ -374,16 +591,77 @@ async def leaderboard(interaction: discord.Interaction,
     message = await interaction.send(embed=pages[page - 1])
 
 
+# Keywords
+
+class KeywordsDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.keywords = self.db.keywords
+
+    # def bulk_insert_keywords(self, rep_dict: dict, guild_id: int):
+    #     # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
+    #     insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
+    #     result = self.reputation.insert_many(insertion)
+    #     return result
+
+    def get_keywords(self, guild_id: int):
+        result = self.keywords.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0})
+        return {i['keyword'].lower(): i['autoreply'] for i in result}
+
+    def add_keyword(self, keyword: str, autoreply: str, guild_id: int):
+        result = self.keywords.insert_one({"keyword": keyword, "autoreply": autoreply, "guild_id": guild_id})
+        return result
+
+    def remove_keyword(self, keyword: str, guild_id: int):
+        result = self.keywords.delete_one({"keyword": keyword, "guild_id": guild_id})
+        return result
+
+
+kwdb = KeywordsDB(LINK)
+
+
+@bot.command(name="addkeyword", description="Add keywords (for mods)")
+async def addkeyword(ctx, keyword: str, autoresponse: str):
+    """ Put keyword and autoresponse in quotation marks and put a space between them"""
+    if not await isModerator(ctx.author):
+        await ctx.reply("You do not have the permissions to perform this action.")
+    kwdb.add_keyword(keyword, autoresponse, ctx.guild.id)
+    global keywords
+    keywords[ctx.guild.id] = kwdb.get_keywords(ctx.guild.id)
+    await ctx.reply(f"Created keyword {keyword} for autoresponse {autoresponse}")
+
+
+@bot.command(name="deletekeyword", description="Delete keywords (for mods)")
+async def deletekeyword(ctx, keyword: str):
+    """ Put keyword in quotation marks"""
+    if not await isModerator(ctx.author):
+        await ctx.reply("You do not have the permissions to perform this action.")
+    kwdb.remove_keyword(keyword, ctx.guild.id)
+    global keywords
+    keywords[ctx.guild.id] = kwdb.get_keywords(ctx.guild.id)
+    await ctx.reply(f"Deleted keyword {keyword}")
+
+
+@bot.command(name="listkeywords", description="List keywords (for mods)")
+async def listkeywords(ctx):
+    """ Put keyword in quotation marks"""
+    if not await isModerator(ctx.author):
+        await ctx.reply("You do not have the permissions to perform this action.")
+    await ctx.reply(f"Active keywords: {kwdb.get_keywords(ctx.guild.id).keys()}")
+
+
 # Misc Functions
 
 @bot.command(description="Clear messages in a channel")
 async def clear(ctx, num_to_clear: int):
     if not await isModerator(ctx.author):
-        await ctx.send("You do not have the permissions to perform this action.")
+        await ctx.reply("You do not have the permissions to perform this action.")
     try:
         await ctx.channel.purge(limit=num_to_clear + 1)
     except:
         await ctx.reply("Oops! I can only delete messages sent in the last 14 days")
+
 
 async def counting(message):
     if message.author.bot:
@@ -427,13 +705,14 @@ async def send_message(interaction: discord.Interaction,
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
+    await interaction.response.defer()
     if message_id_to_reply_to:
         message_to_reply_to = channel_to_send_to.fetch_message(message_id_to_reply_to)
         await message_to_reply_to.reply(message_text)
-        await interaction.send("Done!", ephemeral=True, delete_after=2)
+        await interaction.send("Done!", ephemeral=True)
     else:
         await channel_to_send_to.send(message_text)
-        await interaction.send("Done!", ephemeral=True, delete_after=2)
+        await interaction.send("Done!", ephemeral=True)
 
 
 @bot.slash_command(description="Pong!")
@@ -578,7 +857,7 @@ class GuildPreferencesDB:
 
     def set_pref(self, pref: str, pref_value, guild_id: int):
         """ 'pref' can be 'modlog_channel' or 'rep_enabled'. """
-        if self.get_pref(pref, guild_id):
+        if self.pref.find_one({"guild_id": guild_id}):
             result = self.pref.update_one({"guild_id": guild_id}, {"$set": {pref: pref_value}})
         else:
             result = self.pref.insert_one({"guild_id": guild_id, pref: pref_value})
@@ -602,7 +881,15 @@ async def set_preferences(interaction: discord.Interaction,
                                                                                          required=False),
                           rep_enabled: bool = discord.SlashOption(name="rep_enabled",
                                                                   description="Enable the reputation system?",
-                                                                  required=False)):
+                                                                  required=False),
+                          suggestions_channel: discord.abc.GuildChannel = discord.SlashOption(
+                              name="suggestions_channel",
+                              description="Channel for new server suggestions to be displayed and voted upon.",
+                              required=False),
+                          warnlog_channel: discord.abc.GuildChannel = discord.SlashOption(
+                              name="warnlog_channel",
+                              description="Channel for warns to be logged.",
+                              required=False)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action", ephemeral=True)
         return
@@ -611,13 +898,46 @@ async def set_preferences(interaction: discord.Interaction,
         gpdb.set_pref('modlog_channel', modlog_channel.id, interaction.guild.id)
     if rep_enabled:
         gpdb.set_pref('rep_enabled', rep_enabled, interaction.guild.id)
+    if suggestions_channel:
+        gpdb.set_pref("suggestions_channel", suggestions_channel.id, interaction.guild.id)
+    if warnlog_channel:
+        gpdb.set_pref("warnlog_channel", warnlog_channel.id, interaction.guild.id)
     await interaction.send("Done.")
+
+
+@bot.slash_command(description="Warn a user (for mods)")
+async def warn(interaction: discord.Interaction,
+               user: discord.Member = discord.SlashOption(name="user", description="User to warn",
+                                                          required=True),
+               reason: str = discord.SlashOption(name="reason", description="Reason for warn", required=True)):
+    action_type = "Warn"
+    mod = interaction.user
+    if not await isModerator(mod):
+        await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
+        return
+    warnlog_channel = gpdb.get_pref("warnlog_channel", interaction.guild.id)
+    if warnlog_channel:
+        ban_msg_channel = bot.get_channel(warnlog_channel)
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
+        ban_msg = f"""Case #{case_no} | [{action_type}]
+Username: {user.name}#{user.discriminator} ({user.id})
+Moderator: {mod} 
+Reason: {reason}"""
+        await interaction.send(f"{user.name}#{user.discriminator} has been warned.")
+        await ban_msg_channel.send(ban_msg)
+    channel = await user.create_dm()
+    await channel.send(
+        f"You have been warned in r/IGCSE by moderator {mod} for \"{reason}\".\n\nPlease be mindful in your further interaction in the server to avoid further action being taken against you, such as a timeout or a ban.")
 
 
 @bot.slash_command(description="Timeout a user (for mods)")
 async def timeout(interaction: discord.Interaction,
-                  user: discord.User = discord.SlashOption(name="user", description="User to timeout",
-                                                           required=True),
+                  user: discord.Member = discord.SlashOption(name="user", description="User to timeout",
+                                                             required=True),
                   time_: str = discord.SlashOption(name="duration",
                                                    description="Duration of timeout (e.g. 1d5h) up to 28 days (use 'permanent')",
                                                    required=True),
@@ -650,8 +970,11 @@ async def timeout(interaction: discord.Interaction,
     human_readable_time = f"{seconds // 86400}d {(seconds % 86400) // 3600}h {(seconds % 3600) // 60}m {seconds % 60}s"
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
-        last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-        case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
 Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod} 
@@ -665,8 +988,8 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
 
 @bot.slash_command(description="Untimeout a user (for mods)")
 async def untimeout(interaction: discord.Interaction,
-                    user: discord.User = discord.SlashOption(name="user", description="User to untimeout",
-                                                             required=True)):
+                    user: discord.Member = discord.SlashOption(name="user", description="User to untimeout",
+                                                               required=True)):
     action_type = "Remove Timeout"
     mod = interaction.user.mention
     if not await isModerator(interaction.user):
@@ -675,8 +998,11 @@ async def untimeout(interaction: discord.Interaction,
     await user.edit(timeout=None)
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
-        last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-        case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
 Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod}"""
@@ -705,8 +1031,11 @@ async def ban(interaction: discord.Interaction,
         pass
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
-        last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-        case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
 Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod} 
@@ -734,8 +1063,11 @@ async def unban(interaction: discord.Interaction,
 
             ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
             if ban_msg_channel:
-                last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-                case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+                try:
+                    last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+                    case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+                except:
+                    case_no = 1
                 ban_msg = f"""Case #{case_no} | [{action_type}]
 Username: {ban.user.name}#{ban.user.discriminator} ({ban.user.id})
 Moderator: {mod}"""
@@ -760,8 +1092,11 @@ async def kick(interaction: discord.Interaction,
         pass
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
-        last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-        case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
 Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod} 
@@ -817,6 +1152,7 @@ async def study_session(interaction: discord.Interaction):
         await interaction.send(
             "Please use this command in the subject channel of the subject you're starting a study session for.",
             ephemeral=True)
+        return
     study_sesh_channel = bot.get_channel(941276796937179157)
     msg_history = await study_sesh_channel.history(limit=3).flatten()
     for msg in msg_history:
