@@ -493,7 +493,7 @@ async def isWelcome(text):
             if alternative in text.lower():
                 return True
         for alternative in alternatives_2:
-            if alternative == text.lower().split() or alternative == text.lower():
+            if alternative in text.lower().split() or alternative == text.lower():
                 return True
     return False
 
