@@ -388,7 +388,7 @@ async def helper(interaction: discord.Interaction):
         return
     view = CancelPingBtn()
     await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please use `/cancel_ping`",
+        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
         view=view)
     timeout = await view.wait()
     if timeout:
