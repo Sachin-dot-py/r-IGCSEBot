@@ -345,7 +345,7 @@ async def suggest(interaction: discord.Interaction,
             "The suggestions channel for this server is not set. Please ask a moderator/admin to set it using /set_preferences to use this command.",
             ephemeral=True)
     else:
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         channel = bot.get_channel(channel_id)
         embedVar = discord.Embed(title=f"Suggestion by {interaction.user}",
                                  description=f"Total Votes: 0\n\n{'🟩' * 10}\n\nSuggestion: {suggestion}",
@@ -376,19 +376,19 @@ class CancelPingBtn(discord.ui.View):
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
 async def helper(interaction: discord.Interaction):
-    await interaction.response.defer()
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
         await interaction.send("There are no helper roles specified for this channel.", ephemeral=True)
         return
+    await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
     if "server booster" in roles:
         await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
         return
     view = CancelPingBtn()
     await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
+        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please use `/cancel_ping`",
         view=view)
     timeout = await view.wait()
     if timeout:
@@ -493,7 +493,7 @@ async def isWelcome(text):
             if alternative in text.lower():
                 return True
         for alternative in alternatives_2:
-            if alternative in text.lower().split() or alternative == text.lower():
+            if alternative == text.lower().split() or alternative == text.lower():
                 return True
     return False
 
@@ -548,9 +548,9 @@ async def rep(interaction: discord.Interaction,
 async def change_rep(interaction: discord.Interaction,
                      user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
                                                               required=True),
-                     new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True)):
-    await interaction.response.defer()
+                     new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=1, max_value=9999)):
     if await isModerator(interaction.user):
+        await interaction.response.defer()
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
     else:
@@ -560,7 +560,7 @@ async def change_rep(interaction: discord.Interaction,
 @bot.slash_command(description="View the current rep leaderboard")
 async def leaderboard(interaction: discord.Interaction,
                       page: int = discord.SlashOption(name="page", description="Page number to to display",
-                                                      required=False),
+                                                      required=False, min_value=1, max_value=99999),
                       user_to_find: discord.User = discord.SlashOption(name="user",
                                                                        description="User to find on the leaderboard",
                                                                        required=False)
@@ -701,11 +701,11 @@ async def send_message(interaction: discord.Interaction,
                                                                                           required=True),
                        message_id_to_reply_to: int = discord.SlashOption(name="message_id_to_reply_to",
                                                                          description="Message to reply to (optional)",
-                                                                         required=False)):
+                                                                         required=False, min_value=1, max_value=99999999999999999999999)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     if message_id_to_reply_to:
         message_to_reply_to = channel_to_send_to.fetch_message(message_id_to_reply_to)
         await message_to_reply_to.reply(message_text)
@@ -822,7 +822,7 @@ async def wiki(interaction: discord.Interaction):
 @bot.slash_command(description="Search for IGCSE past papers with subject code/question text")
 async def search(interaction: discord.Interaction,
                  query: str = discord.SlashOption(name="query", description="Search query", required=True)):
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     try:
         response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
         if len(response['list']) == 0:
@@ -1048,7 +1048,7 @@ Reason: {reason}"""
 @bot.slash_command(description="Ban a user from the server (for mods)")
 async def unban(interaction: discord.Interaction,
                 user: int = discord.SlashOption(name="user_id", description="Id of the user to unban",
-                                                required=True)):
+                                                required=True, min_value=1, max_value=99999999999999999999999)):
     action_type = "Unban"
     mod = interaction.user.mention
     if not await isModerator(interaction.user):
