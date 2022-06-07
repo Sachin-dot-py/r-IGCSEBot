@@ -33,9 +33,29 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_raw_reaction_add(reaction):
-    # Suggestions voting
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
+
+    # Emote voting
+    if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
+        author = msg.channel.guild.get_member(reaction.user_id)
+        if author.bot or not await isModerator(author): return
+
+        upvotes = 0
+        downvotes = 0
+        for r in msg.reactions:
+            if r.emoji == "👍":
+                upvotes += r.count
+            elif r.emoji == "👎":
+                downvotes += r.count
+        name = msg.content[msg.content.find(':') + 1: msg.content.find(':', msg.content.find(':') + 1)]
+        if upvotes / downvotes >= 3:
+            emoji = await msg.guild.create_custom_emoji(name=name, image=requests.get(msg.attachments[0].url).content)
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote {str(emoji)} has passed.")
+        else:
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote `:{name}:`has failed.")
+
+    # Suggestions voting
     if str(reaction.emoji) == "🟢" and reaction.user_id != bot.user.id and msg.channel.id == gpdb.get_pref(
             "suggestions_channel", reaction.guild_id):  # Suggestion accepted by mod in #suggestions-voting
         author = msg.channel.guild.get_member(reaction.user_id)
@@ -106,24 +126,6 @@ async def on_raw_reaction_add(reaction):
             except:
                 pass
         await msg.edit(embed=embed)
-
-    # Emote voting
-    if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
-        if not isModerator(msg.channel.guild.get_member(reaction.user_id)): return
-
-        upvotes = 0
-        downvotes = 0
-        for r in msg.reactions:
-            if r.emoji == "👍":
-                upvotes += r.count
-            elif r.emoji == "👎":
-                downvotes += r.count
-        name = msg.content[msg.content.find(':') + 1: msg.content.find(':', msg.content.find(':') + 1)]
-        if upvotes / downvotes >= 3:
-            emoji = await msg.guild.create_custom_emoji(name=name, image=requests.get(msg.attachments[0].url).content)
-            await msg.reply(f"The submission by {msg.mentions[0]} for the emote {str(emoji)} has passed.")
-        else:
-            await msg.reply(f"The submission by {msg.mentions[0]} for the emote `:{name}:`has failed.")
 
 
 @bot.event
@@ -205,14 +207,14 @@ async def on_message(message):
         await counting(message)
     if message.guild.id == 576460042774118420:
         if message.content.lower() == "pin":  # Pin a message
-            if isHelper(message.author) or isModerator(message.author):
+            if await isHelper(message.author) or await isModerator(message.author):
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.pin()
                 await msg.reply(f"This message has been pinned by {message.author.mention}.")
                 await message.delete()
 
         if message.content.lower() == "unpin":  # Unpin a message
-            if isHelper(message.author) or isModerator(message.author):
+            if await isHelper(message.author) or await isModerator(message.author):
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.unpin()
                 await msg.reply(f"This message has been unpinned by {message.author.mention}.")
@@ -743,11 +745,14 @@ async def submit_emote(interaction: discord.Interaction,
     name: str = discord.SlashOption(name="name", description="Name for emote", required=True),
     img : discord.Attachment = discord.SlashOption(name="image", description="Image to create emote from", required=True)):
     if "image" in img.content_type:
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         channel_id = gpdb.get_pref('emote_channel', interaction.guild.id)
 
         if channel_id:
             channel = interaction.guild.get_channel(channel_id)
+            if " " in name:
+                await interaction.send("Spaces are not allowed in emoji names!", ephemeral=True)
+                return
             if not (name[0] == ":" and name[-1] == ":"):
                 name = f":{name}:"
             msg = await channel.send(
