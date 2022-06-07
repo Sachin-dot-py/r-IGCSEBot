@@ -107,6 +107,24 @@ async def on_raw_reaction_add(reaction):
                 pass
         await msg.edit(embed=embed)
 
+    # Emote voting
+    if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
+        if not isModerator(msg.channel.guild.get_member(reaction.user_id)): return
+
+        upvotes = 0
+        downvotes = 0
+        for r in msg.reactions:
+            if r.emoji == "👍":
+                upvotes += r.count
+            elif r.emoji == "👎":
+                downvotes += r.count
+        name = msg.content[msg.content.find(':') + 1: msg.content.find(':', msg.content.find(':') + 1)]
+        if upvotes / downvotes >= 3:
+            emoji = await msg.guild.create_custom_emoji(name=name, image=requests.get(msg.attachments[0].url).content)
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote {str(emoji)} has passed.")
+        else:
+            await msg.reply(f"The submission by {msg.mentions[0]} for the emote `:{name}:`has failed.")
+
 
 @bot.event
 async def on_raw_reaction_remove(reaction):
@@ -720,6 +738,30 @@ async def send_message(interaction: discord.Interaction,
         await channel_to_send_to.send(message_text)
         await interaction.send("Done!", ephemeral=True)
 
+@bot.slash_command(description="Suggest an emote for the server!")
+async def submit_emote(interaction: discord.Interaction,
+    name: str = discord.SlashOption(name="name", description="Name for emote", required=True),
+    img : discord.Attachment = discord.SlashOption(name="image", description="Image to create emote from", required=True)):
+    if "image" in img.content_type:
+        await interaction.response.defer()
+        channel_id = gpdb.get_pref('emote_channel', interaction.guild.id)
+
+        if channel_id:
+            channel = interaction.guild.get_channel(channel_id)
+            if not (name[0] == ":" and name[-1] == ":"):
+                name = f":{name}:"
+            msg = await channel.send(
+                f"New emote suggestion by {interaction.user.mention} `{name}`",
+                file=await img.to_file())
+            await msg.add_reaction("👍")
+            await msg.add_reaction("🔒")
+            await msg.add_reaction("👎")
+            await interaction.send("Done!", ephemeral=True)
+        else:
+            await interaction.send("Emote voting is not set up on this server. Please ask a moderator/admin to set it up using `/set_preferences`!", ephemeral=True)
+    else:
+        await interaction.send("Invalid input!", ephemeral=True)
+
 
 @bot.slash_command(description="Pong!")
 async def ping(interaction: discord.Interaction):
@@ -895,6 +937,10 @@ async def set_preferences(interaction: discord.Interaction,
                           warnlog_channel: discord.abc.GuildChannel = discord.SlashOption(
                               name="warnlog_channel",
                               description="Channel for warns to be logged.",
+                              required=False),
+                          emote_channel: discord.abc.GuildChannel = discord.SlashOption(
+                              name="emote_channel",
+                              description="Channel for emote voting to take place.",
                               required=False)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action", ephemeral=True)
@@ -908,6 +954,8 @@ async def set_preferences(interaction: discord.Interaction,
         gpdb.set_pref("suggestions_channel", suggestions_channel.id, interaction.guild.id)
     if warnlog_channel:
         gpdb.set_pref("warnlog_channel", warnlog_channel.id, interaction.guild.id)
+    if emote_channel:
+        gpdb.set_pref("emote_channel", emote_channel.id, interaction.guild.id)
     await interaction.send("Done.")
 
 
