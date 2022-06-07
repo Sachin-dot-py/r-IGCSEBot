@@ -388,7 +388,7 @@ async def helper(interaction: discord.Interaction):
         return
     view = CancelPingBtn()
     await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please use `/cancel_ping`",
+        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
         view=view)
     timeout = await view.wait()
     if timeout:
@@ -493,7 +493,7 @@ async def isWelcome(text):
             if alternative in text.lower():
                 return True
         for alternative in alternatives_2:
-            if alternative == text.lower().split() or alternative == text.lower():
+            if alternative in text.lower().split() or alternative == text.lower():
                 return True
     return False
 
@@ -699,15 +699,15 @@ async def send_message(interaction: discord.Interaction,
                        channel_to_send_to: discord.abc.GuildChannel = discord.SlashOption(name="channel_to_send_to",
                                                                                           description="Channel to send the message to",
                                                                                           required=True),
-                       message_id_to_reply_to: int = discord.SlashOption(name="message_id_to_reply_to",
+                       message_id_to_reply_to: str = discord.SlashOption(name="message_id_to_reply_to",
                                                                          description="Message to reply to (optional)",
-                                                                         required=False, min_value=1, max_value=99999999999999999999999)):
+                                                                         required=False)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
     await interaction.response.defer(ephemeral=True)
     if message_id_to_reply_to:
-        message_to_reply_to = channel_to_send_to.fetch_message(message_id_to_reply_to)
+        message_to_reply_to = channel_to_send_to.fetch_message(int(message_id_to_reply_to))
         await message_to_reply_to.reply(message_text)
         await interaction.send("Done!", ephemeral=True)
     else:
@@ -1045,10 +1045,10 @@ Reason: {reason}"""
     await interaction.send(f"{user.name}#{user.discriminator} has been banned.")
 
 
-@bot.slash_command(description="Ban a user from the server (for mods)")
+@bot.slash_command(description="Unban a user from the server (for mods)")
 async def unban(interaction: discord.Interaction,
-                user: int = discord.SlashOption(name="user_id", description="Id of the user to unban",
-                                                required=True, min_value=1, max_value=99999999999999999999999)):
+                user: str = discord.SlashOption(name="user_id", description="Id of the user to unban",
+                                                required=True)):
     action_type = "Unban"
     mod = interaction.user.mention
     if not await isModerator(interaction.user):
@@ -1057,7 +1057,7 @@ async def unban(interaction: discord.Interaction,
 
     bans = await interaction.guild.bans()
     for ban in bans:
-        if ban.user.id == user:
+        if ban.user.id == int(user):
             await interaction.guild.unban(ban.user)
             await interaction.channel.send(f"{ban.user.name}#{ban.user.discriminator} has been unbanned.")
 
