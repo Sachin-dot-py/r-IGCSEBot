@@ -628,6 +628,7 @@ async def addkeyword(ctx, keyword: str, autoresponse: str):
     """ Put keyword and autoresponse in quotation marks and put a space between them"""
     if not await isModerator(ctx.author):
         await ctx.reply("You do not have the permissions to perform this action.")
+        return
     kwdb.add_keyword(keyword, autoresponse, ctx.guild.id)
     global keywords
     keywords[ctx.guild.id] = kwdb.get_keywords(ctx.guild.id)
@@ -639,6 +640,7 @@ async def deletekeyword(ctx, keyword: str):
     """ Put keyword in quotation marks"""
     if not await isModerator(ctx.author):
         await ctx.reply("You do not have the permissions to perform this action.")
+        return
     kwdb.remove_keyword(keyword, ctx.guild.id)
     global keywords
     keywords[ctx.guild.id] = kwdb.get_keywords(ctx.guild.id)
@@ -650,7 +652,8 @@ async def listkeywords(ctx):
     """ Put keyword in quotation marks"""
     if not await isModerator(ctx.author):
         await ctx.reply("You do not have the permissions to perform this action.")
-    await ctx.reply(f"Active keywords: {kwdb.get_keywords(ctx.guild.id).keys()}")
+        return
+    await ctx.reply(f"Active keywords: {list(kwdb.get_keywords(ctx.guild.id).keys())}")
 
 
 # Misc Functions
@@ -659,6 +662,7 @@ async def listkeywords(ctx):
 async def clear(ctx, num_to_clear: int):
     if not await isModerator(ctx.author):
         await ctx.reply("You do not have the permissions to perform this action.")
+        return
     try:
         await ctx.channel.purge(limit=num_to_clear + 1)
     except:
