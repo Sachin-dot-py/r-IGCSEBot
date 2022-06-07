@@ -707,7 +707,7 @@ async def send_message(interaction: discord.Interaction,
         return
     await interaction.response.defer(ephemeral=True)
     if message_id_to_reply_to:
-        message_to_reply_to = channel_to_send_to.fetch_message(int(message_id_to_reply_to))
+        message_to_reply_to = await channel_to_send_to.fetch_message(int(message_id_to_reply_to))
         await message_to_reply_to.reply(message_text)
         await interaction.send("Done!", ephemeral=True)
     else:
@@ -1054,7 +1054,7 @@ async def unban(interaction: discord.Interaction,
     if not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
-
+    await interaction.response.defer()
     bans = await interaction.guild.bans()
     for ban in bans:
         if ban.user.id == int(user):
