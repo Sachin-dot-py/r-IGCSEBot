@@ -206,6 +206,8 @@ async def on_message(message):
     if message.content.lower() in keywords[message.guild.id].keys():
         await message.channel.send(keywords[message.guild.id][message.content.lower()])
 
+    await bot.process_commands(message)
+
 
 # Utility Functions
 
@@ -610,11 +612,11 @@ class KeywordsDB:
         return {i['keyword'].lower(): i['autoreply'] for i in result}
 
     def add_keyword(self, keyword: str, autoreply: str, guild_id: int):
-        result = self.keywords.insert_one({"keyword": keyword, "autoreply": autoreply, "guild_id": guild_id})
+        result = self.keywords.insert_one({"keyword": keyword.lower(), "autoreply": autoreply, "guild_id": guild_id})
         return result
 
     def remove_keyword(self, keyword: str, guild_id: int):
-        result = self.keywords.delete_one({"keyword": keyword, "guild_id": guild_id})
+        result = self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
         return result
 
 
