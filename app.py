@@ -186,7 +186,7 @@ async def on_guild_join(guild):
 async def on_member_join(member):
     if member.guild.id == 576460042774118420:  # r/igcse welcome message
         embed1 = discord.Embed.from_dict(eval(
-            r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should type in `'helper'`. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
+            r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should use the command `/helper` in the respective subject channel. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
         # embed2 = discord.Embed.from_dict(eval(
         #     r"{'color': 3066993, 'type': 'rich', 'description': 'We also require all new users to pick up session roles. These make sure that you will have access to the appropriate general chat channels and for our helpers to give you more specific advice.\n\nReact to the corresponding reactions in <#932550807755304990> to verify and gain access to the rest of the server.\n\nAfterwards, react to the corresponding roles in <#932570912660791346> or <#932546951055032330> to gain access to your corresponding subject channels.', 'title': 'Verification system (PLEASE READ)'}"))
         channel = await member.create_dm()
@@ -202,6 +202,18 @@ async def on_member_join(member):
 @bot.event
 async def on_message(message):
     if message.author.bot: return
+
+    if message.attachments and message.guild.id == 973939676245278761: # Temporary for leaks
+        attachment = message.attachments[0].filename
+        checks = ("v2", "22", "paper 2", "leak")
+        if any(check in attachment for check in checks):
+            channel = bot.get_channel(973939676245278761)
+            await channel.send(content=f"{message.author} : {message.content}", file=await message.attachments[0].to_file())
+            await message.delete()
+
+    if any(check in message.content for check in checks) and message.guild.id == 973939676245278761:
+        channel = bot.get_channel(973939676245278761)
+        await channel.send(content=f"{message.author} : {message.content} in {message.channel.mention}")
 
     if not message.guild: # Modmail
         guild = bot.get_guild(576460042774118420)
@@ -665,7 +677,9 @@ class KeywordsDB:
         result = self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
         return result
 
+
 kwdb = KeywordsDB(LINK)
+
 
 @bot.command(name="addkeyword", description="Add keywords (for mods)")
 async def addkeyword(ctx, keyword: str, autoresponse: str):
@@ -796,6 +810,7 @@ async def submit_emote(interaction: discord.Interaction,
     else:
         await interaction.send("Invalid input!", ephemeral=True)
 
+
 @bot.slash_command(description="Pong!")
 async def ping(interaction: discord.Interaction):
     await interaction.send("Pong!")
@@ -809,8 +824,9 @@ async def joke(interaction: discord.Interaction):
     joke = jsonobj['joke']
     await interaction.send(joke)
 
-    
+
 # Wiki Page
+
 
 class Groups(discord.ui.Select):
     def __init__(self):
@@ -832,10 +848,11 @@ class Groups(discord.ui.Select):
                 discord.ui.Button(label=subject, style=discord.ButtonStyle.url, url=subreddits[group][subject]))
         await interaction.response.edit_message(view=view)
 
+
 class DropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.add_item(Groups())     
+        self.add_item(Groups())
 
 
 @bot.slash_command(description="View the r/igcse wiki page", guild_ids=[GUILD_ID])
