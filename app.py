@@ -208,6 +208,7 @@ async def on_message(message):
         checks = ("v2", "22", "paper 2", "leak")
         if any(check in message.content for check in checks):
             message.delete()
+            message.channel.send("<@&578170681670369290> user " + message.author.tag + " has sent a potential leak")
 
     if not message.guild: # Modmail
         guild = bot.get_guild(576460042774118420)
