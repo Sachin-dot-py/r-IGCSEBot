@@ -5,6 +5,7 @@ import nextcord as discord
 from nextcord.ext import commands
 import requests
 import os
+from data import reactionroles_data, helper_roles, subreddits, study_roles
 
 # Set up Discord API Token and MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
@@ -37,7 +38,8 @@ async def on_raw_reaction_add(reaction):
     msg = await channel.fetch_message(reaction.message_id)
 
     # Emote voting
-    if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
+    if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(
+            reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
         author = msg.channel.guild.get_member(reaction.user_id)
         if author.bot or not await isModerator(author): return
 
@@ -250,44 +252,6 @@ async def isHelper(member: discord.Member):
 
 # Reaction Roles
 
-helper_roles = {
-    576463745073807372: 696688133844238367,
-    576463729802346516: 696415409720786994,
-    576463717844254731: 696415478331211806,
-    576461721900679177: 697031993820446720,
-    576463988506886166: 697032184451563530,
-    579288532942848000: 854000279933812737,
-    579292149678342177: 697032265624060005,
-    576464244455899136: 863699698234032168,
-    576463493646123025: 697031812102225961,
-    576463562084581378: 697031148685230191,
-    576463593562701845: 697090437520949288,
-    579386214218465281: 888382475645120575,
-    576463609325158441: 776986644757610517,
-    576463682054389791: 697031853369983006,
-    576461701332074517: 697030773814853633,
-    576463472544710679: 697030911023120455,
-    871702123505655849: 871702647223255050,
-    576463638983082005: 697031447021748234,
-    868056343871901696: 697031555457220673,
-    576463799582851093: 697031087985262612,
-    576463769526599681: 697030991205892156,
-    576463668808646697: 697407528685797417,
-    576464116336689163: 697031043089170463,
-    576463907485646858: 697031773435068466,
-    871589653315190845: 848529485351223325,
-    576463811327033380: 697031605100740698,
-    576463820575211560: 697031649233338408,
-    576463893858222110: 697031735086546954,
-    576463832168398852: 697031692115771513,
-    871590306338971678: 871588409032990770,
-    886883608504197130: 886884656845312020,
-    576464270041022467: 863691773628907560,
-    697072778553065542: 578170681670369290,
-    929349933432193085: 929422215940825088,
-    947859228649992213: 949941010430033950,  # Test channel/role
-}
-
 
 class DropdownRR(discord.ui.Select):
     def __init__(self, category, options):
@@ -322,36 +286,40 @@ class DropdownRR(discord.ui.Select):
 
 
 class DropdownViewRR(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-        data = {
-            "Sciences": [
-                ["💡", "Physics", 685837416443281493],
-                ["🧪", "Chemistry", 685837450895032336],
-                ["🍀", "Biology", 685837475939221770],
-                ["🔍", "Coordinated and Combined Sciences", 667769546475700235],
-                ["🌲", "Environmental Management", 688357525984509984],
-                ["🏃‍♂️", "Physical Education", 685837363003523097],
-            ],
-            "Mathematics": [
-                ["🔢", "Mathematics", 688354722251276308],
-                ["✳️", "Additional/Further Mathematics", 688355303808303170],
-                ["♾️", "International Mathematics", 871702273640787988],
-            ],
-            # Add other subjects here
-        }
-        for category, options in data.items():
+    def __init__(self, roles_type):
+        super().__init__(timeout=None)
+
+        for category, options in reactionroles_data[roles_type].items():
             self.add_item(DropdownRR(category, options))
 
+class RolePickerCategories(discord.ui.Select):
+    def __init__(self):
+        options = ["Subject Roles", "Session Roles", "Study Ping Roles", "Server Roles"]
+        super().__init__(
+            placeholder="Choose a roles category...",
+            min_values=1,
+            max_values=1,
+            options=[discord.SelectOption(label=option) for option in options],
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        roles_type = self.values[0]
+        view = DropdownViewRR(roles_type)
+        await interaction.response.edit_message(content=f"Choose your {roles_type}", view=view)
+
+class RolePickerCategoriesView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(RolePickerCategories())
 
 @bot.slash_command(description="Pick up your roles", guild_ids=[GUILD_ID])
 async def roles(interaction: discord.Interaction):
-    await interaction.send(view=DropdownViewRR(), ephemeral=True)
+    await interaction.send(view=RolePickerCategoriesView(), ephemeral=True)
 
 
 @bot.command(description="Dropdown for picking up reaction roles", guild_ids=[GUILD_ID])
 async def roles(ctx):
-    await ctx.send(view=DropdownViewRR())
+    await ctx.send(view=RolePickerCategoriesView())
 
 
 # Suggestions
@@ -393,7 +361,6 @@ class CancelPingBtn(discord.ui.View):
         self.cancel_user = interaction_b.user
         button.disabled = True
         self.stop()
-
 
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
@@ -496,7 +463,7 @@ repDB = ReputationDB(LINK)
 
 
 async def isThanks(text):
-    alternatives = ['thanks', 'thank you', 'thx', 'tysm', 'thank u', 'thnks', 'tanks', "thanku"]
+    alternatives = ['thanks', 'thank you', 'thx', 'tysm', 'thank u', 'thnks', 'tanks', "thanku", "tyvm"]
     if "ty" in text.lower().split():
         return True
     else:
@@ -570,7 +537,8 @@ async def rep(interaction: discord.Interaction,
 async def change_rep(interaction: discord.Interaction,
                      user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
                                                               required=True),
-                     new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=1, max_value=9999)):
+                     new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True,
+                                                        min_value=1, max_value=9999)):
     if await isModerator(interaction.user):
         await interaction.response.defer()
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
@@ -740,10 +708,13 @@ async def send_message(interaction: discord.Interaction,
         await channel_to_send_to.send(message_text)
         await interaction.send("Done!", ephemeral=True)
 
+
 @bot.slash_command(description="Suggest an emote for the server!")
 async def submit_emote(interaction: discord.Interaction,
-    name: str = discord.SlashOption(name="name", description="Name for emote", required=True),
-    img : discord.Attachment = discord.SlashOption(name="image", description="Image to create emote from", required=True)):
+                       name: str = discord.SlashOption(name="name", description="Name for emote", required=True),
+                       img: discord.Attachment = discord.SlashOption(name="image",
+                                                                     description="Image to create emote from",
+                                                                     required=True)):
     if "image" in img.content_type:
         await interaction.response.defer(ephemeral=True)
         channel_id = gpdb.get_pref('emote_channel', interaction.guild.id)
@@ -763,7 +734,9 @@ async def submit_emote(interaction: discord.Interaction,
             await msg.add_reaction("👎")
             await interaction.send("Done!", ephemeral=True)
         else:
-            await interaction.send("Emote voting is not set up on this server. Please ask a moderator/admin to set it up using `/set_preferences`!", ephemeral=True)
+            await interaction.send(
+                "Emote voting is not set up on this server. Please ask a moderator/admin to set it up using `/set_preferences`!",
+                ephemeral=True)
     else:
         await interaction.send("Invalid input!", ephemeral=True)
 
@@ -783,59 +756,6 @@ async def joke(interaction: discord.Interaction):
 
 
 # Wiki Page
-
-subreddits = {"Languages": {
-
-    "First Language English": "https://www.reddit.com/r/igcse/wiki/group1-languages/first-language-english",
-    "Hindi as a Second Language": "https://www.reddit.com/r/igcse/wiki/group1-languages/hindi",
-    "French": "https://www.reddit.com/r/igcse/wiki/group1-languages/french",
-    "English Literature": "https://www.reddit.com/r/igcse/wiki/group1-languages/english-literature",
-    "Mandarin, ESL, Malay, Spanish, German": "https://www.reddit.com/r/igcse/wiki/group1-languages",
-    "Other Languages": "https://www.reddit.com/r/igcse/wiki/group1-languages"
-
-},
-
-    "Humanities": {
-
-        "Economics": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/economics",
-        "Environmental Management": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
-        "Geography": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/geography",
-        "Global Perspectives, Pakistan Studies and Sociology": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci",
-        "History": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/history",
-        "Islamiyat": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/islamiyat"
-
-    },
-
-    "Sciences": {
-
-        "Physics": "https://www.reddit.com/r/igcse/wiki/group3-sciences/physics",
-        "Chemistry": "https://www.reddit.com/r/igcse/wiki/group3-sciences/chemistry",
-        "Biology": "https://www.reddit.com/r/igcse/wiki/group3-sciences/biology",
-        "Combined/Co-ordinated Sciences": "https://www.reddit.com/r/igcse/wiki/group3-sciences/combined-co-sci",
-        "Environmental Management": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
-        "Physical Education": "https://www.reddit.com/r/igcse/wiki/group3-sciences"
-
-    },
-
-    "Mathematics": {
-
-        "Maths:": "https://www.reddit.com/r/igcse/wiki/group4-maths/mathematics",
-        "Additional Maths:": "https://www.reddit.com/r/igcse/wiki/group4-maths/additional-maths",
-        "A-Level Maths": "https://www.reddit.com/r/igcse/wiki/group4-maths"
-
-    },
-
-    "Creative and Professional": {
-
-        "Accounting": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/accounting",
-        "Art and Design, Travel and Tourism and Food and Nutrition": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative",
-        "Business Studies": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/business-studies",
-        "Computer Science": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/computer-science",
-        "ICT": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/ict"
-
-    }
-
-}
 
 
 class Groups(discord.ui.Select):
@@ -861,7 +781,7 @@ class Groups(discord.ui.Select):
 
 class DropdownView(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=None)
         self.add_item(Groups())
 
 
@@ -1167,40 +1087,7 @@ Reason: {reason}"""
 
 # Study Sessions
 
-study_roles = {
-    576463745073807372: 941505928988078141,
-    576463729802346516: 943360807352287364,
-    576463717844254731: 942792081808699472,
-    576461721900679177: 941506098928689172,
-    579288532942848000: 943360586731905024,
-    579292149678342177: 945567738452135956,
-    576464244455899136: 941504697980825621,
-    576463493646123025: 945568090895294564,
-    576463562084581378: 941224721100460082,
-    576463593562701845: 941219105808187402,
-    579386214218465281: 945569646436843530,
-    576463609325158441: 945562595912474654,
-    576463682054389791: 945569438571307019,
-    576461701332074517: 941224259018166322,
-    576463472544710679: 945562270832922644,
-    871702123505655849: 941224492125011978,
-    576463638983082005: 941218859250225152,
-    868056343871901696: 941504895700320266,
-    929349933432193085: 941218932570869770,
-    576463799582851093: 944761951064567819,
-    576463769526599681: 942795887946633268,
-    576463668808646697: 945561426305630240,
-    576464116336689163: 942794982333513738,
-    576463907485646858: 945568732393140224,
-    871589653315190845: 942791804464541726,
-    576463811327033380: 942791457104855041,
-    576463820575211560: 945565232032542802,
-    576463893858222110: 945565876764155934,
-    576463832168398852: 945568301860413501,
-    871590306338971678: 945568902396661770,
-    886883608504197130: 945567198603280424,
-    576464270041022467: 945569054335303710,
-}
+
 
 
 @bot.slash_command(description="Start a study session", guild_ids=[GUILD_ID])
