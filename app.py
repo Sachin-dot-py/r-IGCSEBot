@@ -665,9 +665,7 @@ class KeywordsDB:
         result = self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
         return result
 
-
 kwdb = KeywordsDB(LINK)
-
 
 @bot.command(name="addkeyword", description="Add keywords (for mods)")
 async def addkeyword(ctx, keyword: str, autoresponse: str):
@@ -798,7 +796,6 @@ async def submit_emote(interaction: discord.Interaction,
     else:
         await interaction.send("Invalid input!", ephemeral=True)
 
-
 @bot.slash_command(description="Pong!")
 async def ping(interaction: discord.Interaction):
     await interaction.send("Pong!")
@@ -812,9 +809,8 @@ async def joke(interaction: discord.Interaction):
     joke = jsonobj['joke']
     await interaction.send(joke)
 
-
+    
 # Wiki Page
-
 
 class Groups(discord.ui.Select):
     def __init__(self):
@@ -836,11 +832,10 @@ class Groups(discord.ui.Select):
                 discord.ui.Button(label=subject, style=discord.ButtonStyle.url, url=subreddits[group][subject]))
         await interaction.response.edit_message(view=view)
 
-
 class DropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.add_item(Groups())
+        self.add_item(Groups())     
 
 
 @bot.slash_command(description="View the r/igcse wiki page", guild_ids=[GUILD_ID])
