@@ -212,7 +212,7 @@ async def on_message(message):
             await message.delete()
 
     if any(check in message.content for check in checks) and message.guild.id == 576460042774118420:
-        channel = bot.get_channel(973939676245278761)
+        channel = bot.get_channel(932548192329957376)
         await channel.send(content=f"{message.author} : {message.content} in {message.channel.mention}")
 
     if not message.guild: # Modmail
@@ -960,21 +960,21 @@ async def history(interaction: discord.Interaction,
     if not await isModerator(interaction.user):
         await interaction.send("You are not permitted to use this command.", ephemeral=True)
     await interaction.response.defer()
-    modlog = gpdb.get_pref("modlog_channel")
-    warnlog = gpdb.get_pref("warnlog_channel")
+    modlog = gpdb.get_pref("modlog_channel", interaction.guild.id)
+    warnlog = gpdb.get_pref("warnlog_channel", interaction.guild.id)
     if modlog and warnlog:
         history = []
         modlog = bot.get_channel(modlog)
         warnlog = bot.get_channel(warnlog)
-        warn_history = await warnlog.history(limit=1000).flatten()
-        modlog_history = await modlog.history(limit=1000).flatten()
+        warn_history = await warnlog.history(limit=750).flatten()
+        modlog_history = await modlog.history(limit=500).flatten()
         for msg in warn_history:
-            if user.id in msg.content:
+            if str(user.id) in msg.content:
                 history.append(msg.clean_content)
         for msg in modlog_history:
-            if user.id in msg.content:
+            if str(user.id) in msg.content:
                 history.append(msg.clean_content)
-        text = '\n'.join(history)
+        text = ('\n'.join(history))[:1900]
         await interaction.send(f"{user}'s Moderation History:\n```{text}```", ephemeral=False)
     else:
         await interaction.send("Please set up your moglog and warnlog through /set_preferences first!")
