@@ -207,7 +207,7 @@ async def on_message(message):
     if message.attachments and message.guild.id == 576460042774118420: # Temporary for leaks
         attachment = message.attachments[0].filename
         if any(check in attachment for check in checks):
-            channel = bot.get_channel(973939676245278761)
+            channel = bot.get_channel(932548192329957376)
             await channel.send(content=f"{message.author} : {message.content}", file=await message.attachments[0].to_file())
             await message.delete()
 
@@ -952,6 +952,32 @@ async def set_preferences(interaction: discord.Interaction,
     if emote_channel:
         gpdb.set_pref("emote_channel", emote_channel.id, interaction.guild.id)
     await interaction.send("Done.")
+
+
+@bot.slash_command(description="Check a user's warns/timeouts/ban history")
+async def history(interaction: discord.Interaction,
+              user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
+    if not await isModerator(interaction.user):
+        await interaction.send("You are not permitted to use this command.", ephemeral=True)
+    await interaction.response.defer()
+    modlog = gpdb.get_pref("modlog_channel")
+    warnlog = gpdb.get_pref("warnlog_channel")
+    if modlog and warnlog:
+        history = []
+        modlog = bot.get_channel(modlog)
+        warnlog = bot.get_channel(warnlog)
+        warn_history = await warnlog.history(limit=1000).flatten()
+        modlog_history = await modlog.history(limit=1000).flatten()
+        for msg in warn_history:
+            if user.id in msg.content:
+                history.append(msg.clean_content)
+        for msg in modlog_history:
+            if user.id in msg.content:
+                history.append(msg.clean_content)
+        text = '\n'.join(history)
+        await interaction.send(f"{user}'s Moderation History:\n```{text}```", ephemeral=False)
+    else:
+        await interaction.send("Please set up your moglog and warnlog through /set_preferences first!")
 
 
 @bot.slash_command(description="Warn a user (for mods)")
