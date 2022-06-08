@@ -954,7 +954,7 @@ async def set_preferences(interaction: discord.Interaction,
     await interaction.send("Done.")
 
 
-@bot.slash_command(description="Check a user's warns/timeouts/ban history")
+@bot.slash_command(description="Check a user's previous offenses (warns/timeouts/bans)")
 async def history(interaction: discord.Interaction,
               user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
     if not await isModerator(interaction.user):
@@ -974,8 +974,11 @@ async def history(interaction: discord.Interaction,
         for msg in modlog_history:
             if str(user.id) in msg.content:
                 history.append(msg.clean_content)
-        text = ('\n'.join(history))[:1900]
-        await interaction.send(f"{user}'s Moderation History:\n```{text}```", ephemeral=False)
+        if len(history) == 0:
+            await interaction.send(f"{user} does not have any previous offenses.", ephemeral=False)
+        else:
+            text = ('\n\n'.join(history))[:1900]
+            await interaction.send(f"{user}'s Moderation History:\n```{text}```", ephemeral=False)
     else:
         await interaction.send("Please set up your moglog and warnlog through /set_preferences first!")
 
