@@ -202,10 +202,10 @@ async def on_member_join(member):
 @bot.event
 async def on_message(message):
     if message.author.bot: return
+    checks = ("v2", "paper 2", "leak")
 
     if message.attachments and message.guild.id == 576460042774118420: # Temporary for leaks
         attachment = message.attachments[0].filename
-        checks = ("v2", "22", "paper 2", "leak")
         if any(check in attachment for check in checks):
             channel = bot.get_channel(973939676245278761)
             await channel.send(content=f"{message.author} : {message.content}", file=await message.attachments[0].to_file())
