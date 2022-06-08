@@ -203,7 +203,7 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author.bot: return
 
-    if message.attachments and message.guild.id == 973939676245278761: # Temporary for leaks
+    if message.attachments and message.guild.id == 576460042774118420: # Temporary for leaks
         attachment = message.attachments[0].filename
         checks = ("v2", "22", "paper 2", "leak")
         if any(check in attachment for check in checks):
@@ -211,7 +211,7 @@ async def on_message(message):
             await channel.send(content=f"{message.author} : {message.content}", file=await message.attachments[0].to_file())
             await message.delete()
 
-    if any(check in message.content for check in checks) and message.guild.id == 973939676245278761:
+    if any(check in message.content for check in checks) and message.guild.id == 576460042774118420:
         channel = bot.get_channel(973939676245278761)
         await channel.send(content=f"{message.author} : {message.content} in {message.channel.mention}")
 
