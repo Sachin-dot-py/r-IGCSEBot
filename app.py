@@ -203,6 +203,64 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author.bot: return
 
+    if not message.guild: # Modmail
+        guild = bot.get_guild(576460042774118420)
+        category = discord.utils.get(guild.categories, name='COMMS')
+        channel = discord.utils.get(category.channels, topic=str(message.author.id))
+        if not channel:
+            channel = await guild.create_text_channel(str(message.author).replace("#", "-"),
+                                                        category=category,
+                                                        topic=str(message.author.id))
+        embedVar = discord.Embed(title=f"Message Received", description=message.clean_content,
+                                            colour=discord.Colour.green())
+        embedVar.add_field(name="Author", value=message.author, inline=True)
+        await channel.send(embed=embedVar)
+        for attachment in message.attachments:
+            await channel.send(file=await attachment.to_file())
+        await message.reply("Your message has been forwarded to the r/IGCSE moderators! Any reply by the mods will be conveyed to you by DM.")
+        return
+
+    if message.channel.id == 895961641219407923:  # Creating modmail channels in #create-dm
+        member = message.guild.get_member(int(message.content))
+        category = discord.utils.get(message.guild.categories, name='COMMS')
+        channel = discord.utils.get(category.channels, topic=str(member.id))
+        if not channel:
+            channel = await message.guild.create_text_channel(str(member).replace("#", "-"),
+                                                              category=category, topic=str(member.id))
+        await message.reply(f"DM Channel has been created at {channel.mention}")
+
+    if message.guild.id == 576460042774118420 and message.channel.category:  # Sending modmails
+        if message.channel.category.name.lower() == "comms" and not message.author.bot:
+            if int(message.channel.topic) == message.author.id:
+                return
+            else:
+                member = message.guild.get_member(int(message.channel.topic))
+                channel = await member.create_dm()
+                if message.content == ".close":
+                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                                         description="This DM Channel has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
+                    await channel.send(embed=embedVar)
+                    await message.channel.delete()
+                    return
+                embedVar = discord.Embed(title=f"Message from r/IGCSE Moderators",
+                                         description=message.clean_content, colour=discord.Colour.green())
+                embedVar.add_field(name="Author", value=message.author, inline=True)
+
+                try:
+                    await channel.send(embed=embedVar)
+                    for attachment in message.attachments:
+                        await channel.send(file=await attachment.to_file())
+                    await message.channel.send(embed=embedVar)
+                except:
+                    perms = message.channel.overwrites_for(member)
+                    perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
+                    await message.channel.set_permissions(member, overwrite=perms)
+                    await message.channel.send(f"{member.mention}")
+                    return
+
+                await message.delete()
+
     if gpdb.get_pref('rep_enabled', message.guild.id):
         await repMessages(message)  # If message is replying to another message
     if message.channel.name == 'counting':  # To facilitate #counting
