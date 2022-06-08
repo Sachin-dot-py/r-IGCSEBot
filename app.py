@@ -202,6 +202,12 @@ async def on_member_join(member):
 @bot.event
 async def on_message(message):
     if message.author.bot: return
+    
+    if message.attachments:
+        attachment = message.attachments[0].filename
+        checks = ("v2", "22", "paper 2", "leak")
+        if any(check in message.content for check in checks):
+            message.delete()
 
     if not message.guild: # Modmail
         guild = bot.get_guild(576460042774118420)
