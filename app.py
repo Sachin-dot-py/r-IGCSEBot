@@ -1,5 +1,6 @@
 import datetime
 import time
+import typing
 import pymongo
 import nextcord as discord
 from nextcord.ext import commands
@@ -778,6 +779,33 @@ async def send_message(interaction: discord.Interaction,
         await channel_to_send_to.send(message_text)
         await interaction.send("Done!", ephemeral=True)
 
+@bot.command(description="Send messages using the bot (for mods)")
+async def send_message(ctx,
+                       message_text: str,
+                       channel_to_send_to: typing.Optional[discord.abc.GuildChannel],
+                       message_to_reply_to: typing.Optional[discord.Message]):
+    if not await isModerator(ctx.author):
+        await ctx.send("You are not authorized to perform this action.")
+        return
+    if message_to_reply_to:
+        await message_to_reply_to.reply(message_text)
+        await ctx.send("Done!")
+    else:
+        await channel_to_send_to.send(message_text)
+        await ctx.send("Done!")
+
+@bot.command(description="Edit messages using the bot (for mods)")
+async def edit_message(ctx,
+                       new_message_text: str,
+                       message_to_edit: discord.Message):
+    if not await isModerator(ctx.author):
+        await ctx.send("You are not authorized to perform this action.")
+        return
+    if message_to_edit:
+        await message_to_edit.edit(content=new_message_text)
+        await ctx.send("Done!")
+    else:
+        await ctx.send("Please add the link to the message to edit at the end of your command!")
 
 @bot.slash_command(description="Suggest an emote for the server!")
 async def submit_emote(interaction: discord.Interaction,
@@ -990,7 +1018,7 @@ async def warn(interaction: discord.Interaction,
                reason: str = discord.SlashOption(name="reason", description="Reason for warn", required=True)):
     action_type = "Warn"
     mod = interaction.user
-    if not await isModerator(mod):
+    if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     warnlog_channel = gpdb.get_pref("warnlog_channel", interaction.guild.id)
@@ -1022,7 +1050,7 @@ async def timeout(interaction: discord.Interaction,
                   reason: str = discord.SlashOption(name="reason", description="Reason for timeout", required=True)):
     action_type = "Timeout"
     mod = interaction.user.mention
-    if not await isModerator(interaction.user):
+    if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1070,7 +1098,7 @@ async def untimeout(interaction: discord.Interaction,
                                                                required=True)):
     action_type = "Remove Timeout"
     mod = interaction.user.mention
-    if not await isModerator(interaction.user):
+    if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await user.edit(timeout=None)
@@ -1090,12 +1118,12 @@ Moderator: {mod}"""
 
 @bot.slash_command(description="Ban a user from the server (for mods)")
 async def ban(interaction: discord.Interaction,
-              user: discord.User = discord.SlashOption(name="user", description="User to ban",
+              user: discord.Member = discord.SlashOption(name="user", description="User to ban",
                                                        required=True),
               reason: str = discord.SlashOption(name="reason", description="Reason for ban", required=True)):
     action_type = "Ban"
     mod = interaction.user.mention
-    if not await isModerator(interaction.user):
+    if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     try:
@@ -1133,11 +1161,11 @@ async def unban(interaction: discord.Interaction,
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
-    bans = await interaction.guild.bans()
-    for ban in bans:
+
+    async for ban in interaction.guild.bans():
         if ban.user.id == int(user):
             await interaction.guild.unban(ban.user)
-            await interaction.channel.send(f"{ban.user.name}#{ban.user.discriminator} has been unbanned.")
+            await interaction.send(f"{ban.user.name}#{ban.user.discriminator} has been unbanned.")
 
             ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
             if ban_msg_channel:
@@ -1155,12 +1183,12 @@ Moderator: {mod}"""
 
 @bot.slash_command(description="Kick a user from the server (for mods)")
 async def kick(interaction: discord.Interaction,
-               user: discord.User = discord.SlashOption(name="user", description="User to kick",
+               user: discord.Member = discord.SlashOption(name="user", description="User to kick",
                                                         required=True),
                reason: str = discord.SlashOption(name="reason", description="Reason for kick", required=True)):
     action_type = "Kick"
     mod = interaction.user.mention
-    if not await isModerator(interaction.user):
+    if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     try:
