@@ -1039,6 +1039,38 @@ Reason: {reason}"""
     await channel.send(
         f"You have been warned in r/IGCSE by moderator {mod} for \"{reason}\".\n\nPlease be mindful in your further interaction in the server to avoid further action being taken against you, such as a timeout or a ban.")
 
+@bot.slash_command(description="Make an anonymous confession.")
+async def confess(interaction: discord.Interaction,
+                  confession: str =
+                    discord.SlashOption(name="confession",
+                                        description="Write your confession and it will be sent anonymously", required=True)):
+    if interaction.guild.id != 576460042774118420:
+        await interaction.send("This command is not available on this server.")
+        return
+    
+    mods_channel = interaction.guild.get_channel(973939676245278761)
+    confession_channel = interaction.guild.get_channel(984718514579464224)
+
+    view = discord.ui.View(timeout=None)
+    approveBTN = discord.ui.Button(label="Approve", style=discord.ButtonStyle.blurple)
+    rejectBTN = discord.ui.Button(label="Reject", style=discord.ButtonStyle.red)
+
+    async def ApproveCallBack(interaction):
+        await interaction.send(f"Approved by {interaction.user}", ephemeral=False)
+        await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
+#         await anon_approve_mgs.delete()
+    approveBTN.callback = ApproveCallBack
+
+    async def RejectCallBack(interaction):
+        await interaction.send(f"Rejected by {interaction.user}", ephemeral=False)
+#         await anon_approve_mgs.delete()
+    rejectBTN.callback = RejectCallBack
+
+    view.add_item(approveBTN)
+    view.add_item(rejectBTN)
+    embed = discord.Embed(colour=5111808, description=confession)
+    anon_approve_mgs = await mods_channel.send(embed=embed, view=view)
+    await interaction.send("Confession is sent to mods, wait for their approval", ephemeral=True)
 
 @bot.slash_command(description="Timeout a user (for mods)")
 async def timeout(interaction: discord.Interaction,
