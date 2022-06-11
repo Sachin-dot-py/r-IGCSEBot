@@ -248,13 +248,21 @@ async def on_message(message):
                 return
             else:
                 member = message.guild.get_member(int(message.channel.topic))
+                if message.content == ".sclose":
+                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                                         description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
+                    await message.channel.delete()
+                    await bot.get_channel(895961641219407923).send(embed=embedVar)
+                    return
                 channel = await member.create_dm()
                 if message.content == ".close":
                     embedVar = discord.Embed(title=f"DM Channel Closed",
-                                         description="This DM Channel has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                                         description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
                     embedVar.add_field(name="Moderator", value=message.author, inline=True)
                     await channel.send(embed=embedVar)
                     await message.channel.delete()
+                    await bot.get_channel(895961641219407923).send(embed=embedVar)
                     return
                 embedVar = discord.Embed(title=f"Message from r/IGCSE Moderators",
                                          description=message.clean_content, colour=discord.Colour.green())
@@ -1048,8 +1056,8 @@ async def confess(interaction: discord.Interaction,
         await interaction.send("This command is not available on this server.")
         return
     
-    mods_channel = interaction.guild.get_channel(973939676245278761)
-    confession_channel = interaction.guild.get_channel(984718514579464224)
+    mods_channel = interaction.guild.get_channel(984718514579464224)
+    confession_channel = interaction.guild.get_channel(965177290814267462)
 
     view = discord.ui.View(timeout=None)
     approveBTN = discord.ui.Button(label="Approve", style=discord.ButtonStyle.blurple)
