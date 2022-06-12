@@ -188,33 +188,13 @@ async def on_member_join(member):
     if member.guild.id == 576460042774118420:  # r/igcse welcome message
         embed1 = discord.Embed.from_dict(eval(
             r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should use the command `/helper` in the respective subject channel. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
-        # embed2 = discord.Embed.from_dict(eval(
-        #     r"{'color': 3066993, 'type': 'rich', 'description': 'We also require all new users to pick up session roles. These make sure that you will have access to the appropriate general chat channels and for our helpers to give you more specific advice.\n\nReact to the corresponding reactions in <#932550807755304990> to verify and gain access to the rest of the server.\n\nAfterwards, react to the corresponding roles in <#932570912660791346> or <#932546951055032330> to gain access to your corresponding subject channels.', 'title': 'Verification system (PLEASE READ)'}"))
         channel = await member.create_dm()
-        try:
-            await channel.send(embed=embed1)
-            # await channel.send(embed=embed2)
-        except:
-            channel = member.guild.get_channel(920138547858645072)
-            await channel.send(content=member.mention, embed=embed1)
-            # await channel.send(content=member.mention, embed=embed2)
+        await channel.send(embed=embed1)
 
 
 @bot.event
 async def on_message(message):
     if message.author.bot: return
-    checks = ("v2", "paper 2", "leak")
-
-    if message.attachments and message.guild.id == 576460042774118420: # Temporary for leaks
-        attachment = message.attachments[0].filename
-        if any(check in attachment for check in checks):
-            channel = bot.get_channel(932548192329957376)
-            await channel.send(content=f"{message.author} : {message.content}", file=await message.attachments[0].to_file())
-            await message.delete()
-
-    if any(check in message.content for check in checks) and message.guild.id == 576460042774118420:
-        channel = bot.get_channel(932548192329957376)
-        await channel.send(content=f"{message.author} : {message.content} in {message.channel.mention}")
 
     if not message.guild: # Modmail
         guild = bot.get_guild(576460042774118420)
@@ -338,7 +318,7 @@ class DropdownRR(discord.ui.Select):
         selectOptions = [
             discord.SelectOption(emoji=option[0], label=option[1], value=option[2]) for option in options
         ]
-        super().__init__(placeholder=f'Select your {category} subjects', min_values=0, max_values=len(selectOptions),
+        super().__init__(placeholder=f'Select your {category}', min_values=0, max_values=len(selectOptions),
                          options=selectOptions)
 
     async def callback(self, interaction: discord.Interaction):
@@ -391,6 +371,18 @@ class RolePickerCategoriesView(discord.ui.View):
         super().__init__(timeout=None)
         self.add_item(RolePickerCategories())
 
+    @discord.ui.button(label="Remove all Roles", style=discord.ButtonStyle.red)
+    async def remove_roles_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+        removed_role_names = []
+        for category in reactionroles_data.values():
+            for options in category.values():
+                for option in options:
+                    role = interaction.guild.get_role(int(option[2]))
+                    if role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        removed_role_names.append(role.name)
+        await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
+
 @bot.slash_command(description="Pick up your roles", guild_ids=[GUILD_ID])
 async def roles(interaction: discord.Interaction):
     await interaction.send(view=RolePickerCategoriesView(), ephemeral=True)
@@ -437,9 +429,12 @@ class CancelPingBtn(discord.ui.View):
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
-        self.cancel_user = interaction_b.user
-        button.disabled = True
-        self.stop()
+        await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", view=None)
+
+    async def on_timeout(self): # 15 minutes has passed so execute the ping.
+        # await self.message.edit(view=None) # Remove Cancel Ping button
+        await self.message.channel.send(f"{self.helper_role.mention}\n(Requested by {self.user.mention})")  # Execute ping
+        await self.message.delete()  # Delete original message
 
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
@@ -455,14 +450,12 @@ async def helper(interaction: discord.Interaction):
         await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
         return
     view = CancelPingBtn()
-    await interaction.send(
+    message = await interaction.send(
         f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
         view=view)
-    timeout = await view.wait()
-    if timeout:
-        await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
-    else:
-        await interaction.edit_original_message(content=f"Ping cancelled by {view.cancel_user}")
+    view.message = message
+    view.helper_role = helper_role
+    view.user = interaction.user
 
 
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
@@ -1029,6 +1022,7 @@ async def warn(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    await interaction.response.defer()
     warnlog_channel = gpdb.get_pref("warnlog_channel", interaction.guild.id)
     if warnlog_channel:
         ban_msg_channel = bot.get_channel(warnlog_channel)
@@ -1141,6 +1135,7 @@ async def untimeout(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    await interaction.response.defer()
     await user.edit(timeout=None)
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
@@ -1166,6 +1161,7 @@ async def ban(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    await interaction.response.defer()
     try:
         if interaction.guild.id == 576460042774118420:  # r/igcse
             await user.send(
@@ -1201,7 +1197,6 @@ async def unban(interaction: discord.Interaction,
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
-
     async for ban in interaction.guild.bans():
         if ban.user.id == int(user):
             await interaction.guild.unban(ban.user)
@@ -1231,6 +1226,7 @@ async def kick(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    await interaction.response.defer()
     try:
         await user.send(
             f"Hi there from {interaction.guild.name}. You have been kicked from the server due to '{reason}'.")
@@ -1266,6 +1262,7 @@ async def study_session(interaction: discord.Interaction):
             "Please use this command in the subject channel of the subject you're starting a study session for.",
             ephemeral=True)
         return
+    await interaction.response.defer()
     study_sesh_channel = bot.get_channel(941276796937179157)
     msg_history = await study_sesh_channel.history(limit=3).flatten()
     for msg in msg_history:
