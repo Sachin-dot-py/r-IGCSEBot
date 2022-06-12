@@ -359,6 +359,7 @@ class RolePickerCategories(discord.ui.Select):
             min_values=1,
             max_values=1,
             options=[discord.SelectOption(label=option) for option in options],
+            row=0
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -371,8 +372,9 @@ class RolePickerCategoriesView(discord.ui.View):
         super().__init__(timeout=None)
         self.add_item(RolePickerCategories())
 
-    @discord.ui.button(label="Remove all Roles", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Remove all Roles", style=discord.ButtonStyle.red, row=1)
     async def remove_roles_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         removed_role_names = []
         for category in reactionroles_data.values():
             for options in category.values():
@@ -381,7 +383,10 @@ class RolePickerCategoriesView(discord.ui.View):
                     if role in interaction.user.roles:
                         await interaction.user.remove_roles(role)
                         removed_role_names.append(role.name)
-        await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
+        if len(removed_role_names) > 0:
+            await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
+        else:
+            await interaction.send("No roles to remove! Please pick up roles first.", ephemeral=True)
 
 @bot.slash_command(description="Pick up your roles", guild_ids=[GUILD_ID])
 async def roles(interaction: discord.Interaction):
