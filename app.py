@@ -410,18 +410,18 @@ async def roles(ctx):
 
 @bot.slash_command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
 async def colorroles(interaction: discord.Interaction):
-    if await isModerator(interaction.user) or await hasRole(interaction.user, "100+ Rep Club"):
+    if await isModerator(interaction.user) or await isServerBooster(interaction.user) or await hasRole(interaction.user, "100+ Rep Club"):
         await interaction.send(view=DropdownViewRR('Color Roles'), ephemeral=True)
     else:
         await interaction.send("This command is only available for Server Boosters and 100+ Rep Club members", ephemeral=True)
 
 
-@bot.command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
-async def colorroles(ctx):
-    if await isModerator(ctx.author) or await hasRole(ctx.author, "100+ Rep Club"):
-        await ctx.send(view=DropdownViewRR('Color Roles'))
-    else:
-        await ctx.send("This command is only available for Server Boosters and 100+ Rep Club members")
+# @bot.command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
+# async def colorroles(ctx):
+#     if await isModerator(ctx.author) or await isServerBooster(interaction.user) or await hasRole(ctx.author, "100+ Rep Club"):
+#         await ctx.send(view=DropdownViewRR('Color Roles'))
+#     else:
+#         await ctx.send("This command is only available for Server Boosters and 100+ Rep Club members")
 
 
 # Suggestions
