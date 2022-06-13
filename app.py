@@ -322,6 +322,7 @@ class DropdownRR(discord.ui.Select):
                          options=selectOptions)
 
     async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         added_role_names = []
         removed_role_names = []
         for option in self._options:
@@ -1160,7 +1161,8 @@ Moderator: {mod}"""
 async def ban(interaction: discord.Interaction,
               user: discord.Member = discord.SlashOption(name="user", description="User to ban",
                                                        required=True),
-              reason: str = discord.SlashOption(name="reason", description="Reason for ban", required=True)):
+              reason: str = discord.SlashOption(name="reason", description="Reason for ban", required=True),
+              delete_message_days: int = discord.SlashOption(name="delete_messages", choices={"Don't Delete Messages" : 0, "Delete Today's Messages" : 1, "Delete 3 Days of Messages" : 3, 'Delete 1 Week of Messages' : 7}, default=0, description="Duration of messages from the user to delete (defaults to zero)", required=False)):
     action_type = "Ban"
     mod = interaction.user.mention
     if await isModerator(user) or not await isModerator(interaction.user):
@@ -1188,7 +1190,7 @@ Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod} 
 Reason: {reason}"""
         await ban_msg_channel.send(ban_msg)
-    await interaction.guild.ban(user, delete_message_days=1)
+    await interaction.guild.ban(user, delete_message_days=delete_message_days)
     await interaction.send(f"{user.name}#{user.discriminator} has been banned.")
 
 
