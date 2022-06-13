@@ -300,13 +300,18 @@ async def isModerator(member: discord.Member):
         return True
     return False
 
-
-async def isHelper(member: discord.Member):
+async def hasRole(member: discord.Member, role_name):
     roles = [role.name.lower() for role in member.roles]
     for role in roles:
-        if "helper" in role:
+        if role_name.lower() in role:
             return True
     return False
+
+async def isServerBooster(member: discord.Member):
+    return hasRole(member, "Server Booster")
+
+async def isHelper(member: discord.Member):
+    return hasRole(member, "IGCSE Helper")
 
 
 # Reaction Roles
@@ -318,7 +323,11 @@ class DropdownRR(discord.ui.Select):
         selectOptions = [
             discord.SelectOption(emoji=option[0], label=option[1], value=option[2]) for option in options
         ]
-        super().__init__(placeholder=f'Select your {category}', min_values=0, max_values=len(selectOptions),
+        if category == "Colors":
+            super().__init__(placeholder='Select your Color', min_values=0, max_values=1,
+                         options=selectOptions)
+        else:
+            super().__init__(placeholder=f'Select your {category}', min_values=0, max_values=len(selectOptions),
                          options=selectOptions)
 
     async def callback(self, interaction: discord.Interaction):
@@ -397,6 +406,22 @@ async def roles(interaction: discord.Interaction):
 @bot.command(description="Dropdown for picking up reaction roles", guild_ids=[GUILD_ID])
 async def roles(ctx):
     await ctx.send(view=RolePickerCategoriesView())
+
+
+@bot.slash_command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
+async def colorroles(interaction: discord.Interaction):
+    if await isModerator(interaction.user) or await hasRole(interaction.user, "100+ Rep Club"):
+        await interaction.send(view=DropdownViewRR('Color Roles'), ephemeral=True)
+    else:
+        await interaction.send("This command is only available for Server Boosters and 100+ Rep Club members", ephemeral=True)
+
+
+@bot.command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
+async def colorroles(ctx):
+    if await isModerator(ctx.author) or await hasRole(ctx.author, "100+ Rep Club"):
+        await ctx.send(view=DropdownViewRR('Color Roles'))
+    else:
+        await ctx.send("This command is only available for Server Boosters and 100+ Rep Club members")
 
 
 # Suggestions
