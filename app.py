@@ -23,6 +23,13 @@ keywords = {}
 async def on_ready():
     print(f'We have logged in as {bot.user}')
     await bot.change_presence(activity=discord.Game(name="Flynn#5627"))
+    embed = discord.Embed(title="Guilds Info", colour=0x3498db, description="Statistics about the servers this bot is in.")
+    for guild in bot.guilds:
+        value = f"Owner: {guild.owner}\nMembers: {guild.member_count}\nBoosts: {guild.premium_subscription_count}"
+        embed.add_field(name=guild.name, value=value, inline=False)
+    flynn = await bot.fetch_user(604335693757677588)
+    channel = await flynn.create_dm()
+    await channel.send(embed=embed)
 
 
 @bot.event
