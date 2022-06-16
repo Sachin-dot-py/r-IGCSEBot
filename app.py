@@ -45,11 +45,12 @@ async def on_raw_reaction_add(reaction):
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
+    author = msg.channel.guild.get_member(reaction.user_id)
+    if author.bot or not await isModerator(author): return
+
     # Emote voting
     if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(
             reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
-        author = msg.channel.guild.get_member(reaction.user_id)
-        if author.bot or not await isModerator(author): return
 
         upvotes = 0
         downvotes = 0
@@ -456,6 +457,19 @@ async def suggest(interaction: discord.Interaction,
         await msg.add_reaction('❌')
         await msg.create_thread(name=f"Suggestion by {interaction.user} Discussion")
         await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)
+
+@bot.slash_command(description="Create a new in-channel poll")
+async def poll(interaction: discord.Interaction,
+               poll: str = discord.SlashOption(name="poll",
+                description="The poll to be created",
+                required=True)):
+    embedVar = discord.Embed(title=poll,
+                             description=f"Total Votes: 0\n\n{'🟩' * 10}\n\n(from: {interaction.user})",
+                             colour=discord.Colour.purple())
+    msg1 = await interaction.send(embed=embedVar)  # Returns PartialInteractionMessage
+    msg1 = await msg1.fetch()  # Fetching the full InteractionMessage
+    await msg1.add_reaction('✅')
+    await msg1.add_reaction('❌')
 
 
 # Helper
