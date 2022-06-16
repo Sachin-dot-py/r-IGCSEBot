@@ -654,6 +654,8 @@ async def rep(interaction: discord.Interaction,
               user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True)):
     await interaction.response.defer()
     rep = repDB.get_rep(user.id, interaction.guild.id)
+    if rep is None:
+        rep = 0
     await interaction.send(f"{user} has {rep} rep.", ephemeral=False)
 
 
