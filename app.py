@@ -651,8 +651,10 @@ async def repMessages(message):
 
 @bot.slash_command(description="View someone's current rep")
 async def rep(interaction: discord.Interaction,
-              user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True)):
+              user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=False)):
     await interaction.response.defer()
+    if user is None:
+        user = interaction.user
     rep = repDB.get_rep(user.id, interaction.guild.id)
     if rep is None:
         rep = 0
