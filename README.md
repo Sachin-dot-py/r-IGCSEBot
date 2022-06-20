@@ -1,6 +1,6 @@
 # r/IGCSE Bot
 
-r/IGCSE Bot is a bot made primarly for the r/IGCSE Discord server. This bot provides a rep system & leaderboard, server suggestions voting, keyword auto-replies, moderation actions automatically updating your #modlog channel, reaction roles, and more!
+r/IGCSE Bot is a bot made primarly for the [r/IGCSE Discord server](https://discord.gg/igcse). This bot provides a rep system & leaderboard, server suggestions voting, keyword auto-replies, moderation actions automatically updating your logging channel, reaction roles, and more!
 
 # Installation
 1. Make sure you have Python 3.7+ installed and install the dependencies in `requirements.txt` using `pip`.
