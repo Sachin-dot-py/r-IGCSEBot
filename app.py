@@ -481,6 +481,7 @@ class CancelPingBtn(discord.ui.View):
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
+        button.disabled = True
         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", view=None)
 
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
