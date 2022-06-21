@@ -477,17 +477,19 @@ async def poll(interaction: discord.Interaction,
 class CancelPingBtn(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=15 * 60)
-        self.value = None
+        self.value = True
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
         button.disabled = True
+        self.value = False
         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", view=None)
 
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
-        # await self.message.edit(view=None) # Remove Cancel Ping button
-        await self.message.channel.send(f"{self.helper_role.mention}\n(Requested by {self.user.mention})")  # Execute ping
-        await self.message.delete()  # Delete original message
+        await self.message.edit(view=None) # Remove Cancel Ping button
+        if self.value:
+            await self.message.channel.send(f"{self.helper_role.mention}\n(Requested by {self.user.mention})")  # Execute ping
+            await self.message.delete()  # Delete original message
 
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
