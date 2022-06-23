@@ -709,7 +709,43 @@ async def leaderboard(interaction: discord.Interaction,
 
     if not page: page = 1
 
-    message = await interaction.send(embed=pages[page - 1])
+    first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple)
+    nex, last = discord.ui.Button(emoji="➡️", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⏩", style=discord.ButtonStyle.blurple)
+    view = View(timeout=None)
+    def f_callback(interaction):
+        view = View(timeout=None)
+        first.disabled, prev.disabled, nex.disabled, last.disabled = True, True, False, False
+        view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
+        page = 1
+        await interaction.response.edit_message(embed=pages[page - 1], view=view)
+    def p_callback(interaction):
+        page -= 1
+        view = View(timeout=None)
+        if page == 1:
+            first.disabled, prev.disabled, nex.disabled, last.disabled = True, True, False, False
+        else:
+            first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, False, False
+        view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
+        await interaction.response.edit_message(embed=pages[page - 1], view=view)
+    def n_callback(interaction):
+        page += 1
+        view = View(timeout=None)
+        if page == len(pages):
+            first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, True, True
+        else:
+            first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, False, False
+        view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
+        await interaction.response.edit_message(embed=pages[page - 1], view=view)
+    def l_callback(interaction):
+        view = View(timeout=None)
+        first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, True, True
+        view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
+        page = len(pages)
+        await interaction.response.edit_message(embed=pages[page - 1], view=view)
+    first.callback, prev.callback, nex.callback, last.callback = f_callback, p_callback, n_callback, l_callback
+    view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
+
+    message = await interaction.send(embed=pages[page - 1], view=view)
 
 
 # Keywords
