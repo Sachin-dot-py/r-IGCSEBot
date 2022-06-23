@@ -466,8 +466,8 @@ async def poll(interaction: discord.Interaction,
     embedVar = discord.Embed(title=poll,
                              description=f"Total Votes: 0\n\n{'🟩' * 10}\n\n(from: {interaction.user})",
                              colour=discord.Colour.purple())
-    msg1 = await interaction.send(embed=embedVar)  # Returns PartialInteractionMessage
-    msg1 = await msg1.fetch()  # Fetching the full InteractionMessage
+    await interaction.send("Creating Poll.", ephemeral=True)
+    msg1 = await interaction.channel.send(embed=embedVar)
     await msg1.add_reaction('✅')
     await msg1.add_reaction('❌')
 
@@ -1249,7 +1249,7 @@ Reason: {reason}"""
 
 @bot.slash_command(description="Unban a user from the server (for mods)")
 async def unban(interaction: discord.Interaction,
-                user: str = discord.SlashOption(name="user_id", description="Id of the user to unban",
+                user: discord.User = discord.SlashOption(name="user", description="User to unban",
                                                 required=True)):
     action_type = "Unban"
     mod = interaction.user.mention
@@ -1257,23 +1257,20 @@ async def unban(interaction: discord.Interaction,
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
-    async for ban in interaction.guild.bans():
-        if ban.user.id == int(user):
-            await interaction.guild.unban(ban.user)
-            await interaction.send(f"{ban.user.name}#{ban.user.discriminator} has been unbanned.")
+    await interaction.guild.unban(user)
+    await interaction.send(f"{user.name}#{user.discriminator} has been unbanned.")
 
-            ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
-            if ban_msg_channel:
-                try:
-                    last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-                    case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
-                except:
-                    case_no = 1
-                ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {ban.user.name}#{ban.user.discriminator} ({ban.user.id})
+    ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
+    if ban_msg_channel:
+        try:
+            last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+            case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
+        except:
+            case_no = 1
+        ban_msg = f"""Case #{case_no} | [{action_type}]
+Username: {user.name}#{user.discriminator} ({user.id})
 Moderator: {mod}"""
-                await ban_msg_channel.send(ban_msg)
-            return
+        await ban_msg_channel.send(ban_msg)
 
 
 @bot.slash_command(description="Kick a user from the server (for mods)")
