@@ -728,6 +728,9 @@ async def leaderboard(interaction: discord.Interaction,
     view.on_timeout = timeout
 
     async def f_callback(b_interaction):
+        if b_interaction.user != interaction.user:
+            await b_interaction.response.send_message("This is not for you.", ephemeral=True)
+            return
         nonlocal page
         view = discord.ui.View(timeout=None)
         first.disabled, prev.disabled, nex.disabled, last.disabled = True, True, False, False
@@ -736,6 +739,9 @@ async def leaderboard(interaction: discord.Interaction,
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
 
     async def p_callback(b_interaction):
+        if b_interaction.user != interaction.user:
+            await b_interaction.response.send_message("This is not for you.", ephemeral=True)
+            return
         nonlocal page
         page -= 1
         view = discord.ui.View(timeout=None)
@@ -747,6 +753,9 @@ async def leaderboard(interaction: discord.Interaction,
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
 
     async def n_callback(b_interaction):
+        if b_interaction.user != interaction.user:
+            await b_interaction.response.send_message("This is not for you.", ephemeral=True)
+            return
         nonlocal page
         page += 1
         view = discord.ui.View(timeout=None)
@@ -758,6 +767,9 @@ async def leaderboard(interaction: discord.Interaction,
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
 
     async def l_callback(b_interaction):
+        if b_interaction.user != interaction.user:
+            await b_interaction.response.send_message("This is not for you.", ephemeral=True)
+            return
         nonlocal page
         view = discord.ui.View(timeout=None)
         first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, True, True
