@@ -709,9 +709,14 @@ async def leaderboard(interaction: discord.Interaction,
 
     if not page: page = 1
 
-    first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple, disabled=True), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple, disabled=True)
+    first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple)
+    if page == 1:
+        first.disabled, prev.disabled = False, False
+
     nex, last = discord.ui.Button(emoji="➡️", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⏩", style=discord.ButtonStyle.blurple)
     view = discord.ui.View(timeout=120)
+
+
     async def timeout():
         nonlocal message
         disabled = discord.ui.View()
@@ -721,6 +726,7 @@ async def leaderboard(interaction: discord.Interaction,
             disabled.add_item(d)
         await message.edit(view=disabled)
     view.on_timeout = timeout
+
     async def f_callback(b_interaction):
         nonlocal page
         view = discord.ui.View(timeout=None)
@@ -728,6 +734,7 @@ async def leaderboard(interaction: discord.Interaction,
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         page = 1
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
+
     async def p_callback(b_interaction):
         nonlocal page
         page -= 1
@@ -738,6 +745,7 @@ async def leaderboard(interaction: discord.Interaction,
             first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, False, False
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
+
     async def n_callback(b_interaction):
         nonlocal page
         page += 1
@@ -748,6 +756,7 @@ async def leaderboard(interaction: discord.Interaction,
             first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, False, False
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
+
     async def l_callback(b_interaction):
         nonlocal page
         view = discord.ui.View(timeout=None)
@@ -755,6 +764,7 @@ async def leaderboard(interaction: discord.Interaction,
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         page = len(pages)
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
+
     first.callback, prev.callback, nex.callback, last.callback = f_callback, p_callback, n_callback, l_callback
     view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
 
