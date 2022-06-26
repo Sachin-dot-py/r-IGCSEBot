@@ -8,7 +8,7 @@ import requests
 import os
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
-# Set up Discord API Token and MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
+# Set up a Discord API Token and a MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
 LINK = os.environ.get("MONGO_LINK")
@@ -709,9 +709,18 @@ async def leaderboard(interaction: discord.Interaction,
 
     if not page: page = 1
 
-    first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple)
+    first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple, disabled=True), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple, disabled=True)
     nex, last = discord.ui.Button(emoji="➡️", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⏩", style=discord.ButtonStyle.blurple)
-    view = discord.ui.View(timeout=None)
+    view = discord.ui.View(timeout=120)
+    async def timeout():
+        nonlocal message
+        disabled = discord.ui.View()
+        for b in view.children:
+            d = b
+            d.disabled = True
+            disabled.add_item(d)
+        await message.edit(view=disabled)
+    view.on_timeout = timeout
     async def f_callback(b_interaction):
         nonlocal page
         view = discord.ui.View(timeout=None)
