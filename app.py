@@ -713,14 +713,14 @@ async def leaderboard(interaction: discord.Interaction,
     nex, last = discord.ui.Button(emoji="➡️", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⏩", style=discord.ButtonStyle.blurple)
     view = discord.ui.View(timeout=None)
     async def f_callback(b_interaction):
-        global page
+        nonlocal page
         view = discord.ui.View(timeout=None)
         first.disabled, prev.disabled, nex.disabled, last.disabled = True, True, False, False
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         page = 1
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
     async def p_callback(b_interaction):
-        global page
+        nonlocal page
         page -= 1
         view = discord.ui.View(timeout=None)
         if page == 1:
@@ -730,7 +730,7 @@ async def leaderboard(interaction: discord.Interaction,
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
     async def n_callback(b_interaction):
-        global page
+        nonlocal page
         page += 1
         view = discord.ui.View(timeout=None)
         if page == len(pages):
@@ -740,7 +740,7 @@ async def leaderboard(interaction: discord.Interaction,
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
         await b_interaction.response.edit_message(embed=pages[page - 1], view=view)
     async def l_callback(b_interaction):
-        global page
+        nonlocal page
         view = discord.ui.View(timeout=None)
         first.disabled, prev.disabled, nex.disabled, last.disabled = False, False, True, True
         view.add_item(first); view.add_item(prev); view.add_item(nex); view.add_item(last)
