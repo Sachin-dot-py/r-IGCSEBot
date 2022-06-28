@@ -1389,5 +1389,63 @@ async def study_session(interaction: discord.Interaction):
         await voice_channel.channel.edit(
             name=f"{role.name.lower().replace(' study ping', '').title()} Study Session")
 
+        
+# Helper of the month voting system
+
+@bot.slash_command(description="Vote for the helper of the month", guild_ids=[GUILD_ID])
+async def votehotm(interaction: discord.Interaction,
+                    helper: discord.Member =
+                    discord.SlashOption(name="helper",
+                                        description="Choose the helper's number to vote for", required=True)):
+
+    helper_roles = [role.name for role in helper.roles]
+    if helper.bot:
+        await interaction.send(f"You can't vote for a bot.", ephemeral=True)
+    elif "IGCSE Helper" in helper_roles or "AS/AL Helper" in helper_roles:
+        db = client.IGCSEBot
+        helpers = db.hotmhelpers
+        voters = db.hotmvoters
+
+        voter = voters.find_one({"id": interaction.user.id})
+        if voter:
+            if voter['votes_left'] == 0:
+                await interaction.send("You can't vote more than 3 times !!", ephemeral=True)
+                return
+            await interaction.send(f"Done! You have {int(voter['votes_left']) - 1} votes left.", ephemeral=True)
+        else:
+            DB_voter = {"id": interaction.user.id,
+                         "votes_left": 3}
+            voters.insert_one(DB_voter)
+            await interaction.send(f"Done! You have 2 votes left.", ephemeral=True)
+        helpers.update_one({"id": helper.id}, {"$inc": {"votes": 1}}, upsert=True)
+        decrease_votes = {
+            "$inc": {"votes_left": -1}
+        }
+        voters.update_one({'id': interaction.user.id}, decrease_votes)
+
+        messages = [msg for msg in await bot.get_channel(991202262472998962).history().flatten() if
+                    msg.author.id == 861445044790886467 and msg.content == "results"]  # Replace the id in here with the HOTM mod channel's
+        if len(messages) == 0:
+            embed = discord.Embed.from_dict(eval(
+                """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
+            results_message = await bot.get_channel(991202262472998962).send(content=f"results", embed=embed)
+        else:
+            results_message = messages[0]
+
+        embed = discord.Embed.from_dict(eval(
+            """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
+
+        helpers_list = {}
+        for helper in helpers.find():
+            helpers_list[helper['id']] = helper['votes']
+        sorted_helpers = sorted(helpers_list.items(), key=operator.itemgetter(1), reverse=True)
+
+        for helper in sorted_helpers[:9]:
+            user_name = interaction.guild.get_member(helper[0]).name
+            embed.add_field(name=f"**{user_name}**", value=f"Votes: {helper[1]}", inline=False)
+        await results_message.edit(embed=embed)
+    else:
+        await interaction.send(f"{helper} is not a helper.", ephemeral=True)
+
 
 bot.run(TOKEN)
