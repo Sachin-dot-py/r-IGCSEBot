@@ -711,7 +711,7 @@ async def leaderboard(interaction: discord.Interaction,
 
     first, prev = discord.ui.Button(emoji="⏪", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⬅️", style=discord.ButtonStyle.blurple)
     if page == 1:
-        first.disabled, prev.disabled = False, False
+        first.disabled, prev.disabled = True, True
 
     nex, last = discord.ui.Button(emoji="➡️", style=discord.ButtonStyle.blurple), discord.ui.Button(emoji="⏩", style=discord.ButtonStyle.blurple)
     view = discord.ui.View(timeout=120)
