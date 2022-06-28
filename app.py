@@ -1396,12 +1396,11 @@ async def study_session(interaction: discord.Interaction):
 async def votehotm(interaction: discord.Interaction,
                     helper: discord.Member =
                     discord.SlashOption(name="helper",
-                                        description="Choose the helper's number to vote for", required=True)):
-
-    helper_roles = [role.name for role in helper.roles]
+                                        description="Choose the helper to vote for", required=True)):
     if helper.bot:
         await interaction.send(f"You can't vote for a bot.", ephemeral=True)
-    elif "IGCSE Helper" in helper_roles or "AS/AL Helper" in helper_roles:
+    elif await isHelper(helper):
+        client = pymongo.MongoClient(LINK)
         db = client.IGCSEBot
         helpers = db.hotmhelpers
         voters = db.hotmvoters
@@ -1424,7 +1423,7 @@ async def votehotm(interaction: discord.Interaction,
         voters.update_one({'id': interaction.user.id}, decrease_votes)
 
         messages = [msg for msg in await bot.get_channel(991202262472998962).history().flatten() if
-                    msg.author.id == 861445044790886467 and msg.content == "results"]  # Replace the id in here with the HOTM mod channel's
+                    msg.author.id == 861445044790886467 and msg.content == "results"] 
         if len(messages) == 0:
             embed = discord.Embed.from_dict(eval(
                 """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
@@ -1435,14 +1434,10 @@ async def votehotm(interaction: discord.Interaction,
         embed = discord.Embed.from_dict(eval(
             """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
 
-        helpers_list = {}
-        for helper in helpers.find():
-            helpers_list[helper['id']] = helper['votes']
-        sorted_helpers = sorted(helpers_list.items(), key=operator.itemgetter(1), reverse=True)
-
-        for helper in sorted_helpers[:9]:
-            user_name = interaction.guild.get_member(helper[0]).name
-            embed.add_field(name=f"**{user_name}**", value=f"Votes: {helper[1]}", inline=False)
+        sorted_helpers = helpers.find().sort('votes', -1).limit(9)
+        for helper in list(sorted_helpers):
+            user_name = interaction.guild.get_member(helper['id']).name
+            embed.add_field(name=f"**{user_name}**", value=f"Votes: {'votes'}", inline=False)
         await results_message.edit(embed=embed)
     else:
         await interaction.send(f"{helper} is not a helper.", ephemeral=True)
