@@ -1435,15 +1435,15 @@ async def votehotm(interaction: discord.Interaction,
                      "votes_left": 2}
             voters.insert_one(voter)
         else:
+            if voter['votes_left'] == 0:
+                await interaction.send("You can't vote more than 3 times.", ephemeral=True)
+                return
+            
             # Decrease votes by one
             voters.update_one({'id': interaction.user.id}, {"$inc": {"votes_left": -1}})
             voter['votes_left'] = voter['votes_left'] - 1
         
-        if voter['votes_left'] == 0:
-            await interaction.send("You can't vote more than 3 times.", ephemeral=True)
-            return
-            
-        await interaction.send(f"Done! You have {int(voter['votes_left']) - 1} votes left.", ephemeral=True)
+        await interaction.send(f"Done! You have {int(voter['votes_left'])} votes left.", ephemeral=True)
             
         helpers.update_one({"id": helper.id}, {"$inc": {"votes": 1}}, upsert=True)  # Update vote count for helpers    
         
