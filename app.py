@@ -1400,44 +1400,45 @@ async def votehotm(interaction: discord.Interaction,
     if helper.bot:
         await interaction.send(f"You can't vote for a bot.", ephemeral=True)
     elif await isHelper(helper):
+        await interaction.response.defer(ephemeral=True)
         client = pymongo.MongoClient(LINK)
         db = client.IGCSEBot
         helpers = db.hotmhelpers
         voters = db.hotmvoters
 
         voter = voters.find_one({"id": interaction.user.id})
-        if voter:
-            if voter['votes_left'] == 0:
-                await interaction.send("You can't vote more than 3 times !!", ephemeral=True)
-                return
-            await interaction.send(f"Done! You have {int(voter['votes_left']) - 1} votes left.", ephemeral=True)
+        if not voter:
+            # Insert decreased votes_left into database
+            voter = {"id": interaction.user.id,
+                     "votes_left": 2}
+            voters.insert_one(voter)
         else:
-            DB_voter = {"id": interaction.user.id,
-                         "votes_left": 3}
-            voters.insert_one(DB_voter)
-            await interaction.send(f"Done! You have 2 votes left.", ephemeral=True)
-        helpers.update_one({"id": helper.id}, {"$inc": {"votes": 1}}, upsert=True)
-        decrease_votes = {
-            "$inc": {"votes_left": -1}
-        }
-        voters.update_one({'id': interaction.user.id}, decrease_votes)
-
+            # Decrease votes by one
+            voters.update_one({'id': interaction.user.id}, {"$inc": {"votes_left": -1}})
+            voter['votes_left'] = voter['votes_left'] - 1
+        
+        if voter['votes_left'] == 0:
+            await interaction.send("You can't vote more than 3 times.", ephemeral=True)
+            return
+            
+        await interaction.send(f"Done! You have {int(voter['votes_left']) - 1} votes left.", ephemeral=True)
+            
+        helpers.update_one({"id": helper.id}, {"$inc": {"votes": 1}}, upsert=True)  # Update vote count for helpers    
+        
+        # Update results message
         messages = [msg for msg in await bot.get_channel(991202262472998962).history().flatten() if
-                    msg.author.id == 861445044790886467 and msg.content == "results"] 
+                    msg.author.id == 861445044790886467 and msg.content == "HOTM Voting Results"] 
         if len(messages) == 0:
-            embed = discord.Embed.from_dict(eval(
-                """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
-            results_message = await bot.get_channel(991202262472998962).send(content=f"results", embed=embed)
+            results_message = await bot.get_channel(991202262472998962).send(content="HOTM Voting Results")
         else:
             results_message = messages[0]
 
-        embed = discord.Embed.from_dict(eval(
-            """{'color': 5111808, 'type': 'rich','description': "**Results :**"}"""))
+        embed = discord.Embed(colour=5111808, description="**Results:**")
 
-        sorted_helpers = helpers.find().sort('votes', -1).limit(9)
+        sorted_helpers = helpers.find().sort('votes', -1).limit(10)
         for helper in list(sorted_helpers):
             user_name = interaction.guild.get_member(helper['id']).name
-            embed.add_field(name=f"**{user_name}**", value=f"Votes: {'votes'}", inline=False)
+            embed.add_field(name=f"**{user_name}**", value=f"Votes: {helper['votes']}", inline=False)
         await results_message.edit(embed=embed)
     else:
         await interaction.send(f"{helper} is not a helper.", ephemeral=True)
