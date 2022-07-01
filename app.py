@@ -315,9 +315,9 @@ async def hasRole(member: discord.Member, role_name):
             return True
     return False
 
-async def is_banned(user, interaction: discord.Interaction):
+async def is_banned(user, guild):
     try:
-        await interaction.guild.fetch_ban(user)
+        await guild.fetch_ban(user)
         return True
     except discord.NotFound:
         return False
@@ -1224,7 +1224,7 @@ async def timeout(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
-    if await is_banned(user, interaction):
+    if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1275,7 +1275,7 @@ async def untimeout(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
-    if await is_banned(user, interaction):
+    if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1305,7 +1305,7 @@ async def ban(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
-    if await is_banned(user, interaction):
+    if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1370,7 +1370,7 @@ async def kick(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
-    if await is_banned(user, interaction):
+    if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
