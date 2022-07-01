@@ -1156,6 +1156,9 @@ async def warn(interaction: discord.Interaction,
                reason: str = discord.SlashOption(name="reason", description="Reason for warn", required=True)):
     action_type = "Warn"
     mod = interaction.user
+    if await is_banned(user, interaction.guild):
+        await interaction.send("User is banned from the server!", ephemeral=True)
+        return
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
@@ -1221,11 +1224,11 @@ async def timeout(interaction: discord.Interaction,
                   reason: str = discord.SlashOption(name="reason", description="Reason for timeout", required=True)):
     action_type = "Timeout"
     mod = interaction.user.mention
-    if await isModerator(user) or not await isModerator(interaction.user):
-        await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
-        return
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
+        return
+    if await isModerator(user) or not await isModerator(interaction.user):
+        await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
     if time_.lower() == "unspecified" or time_.lower() == "permanent" or time_.lower() == "undecided":
@@ -1272,11 +1275,11 @@ async def untimeout(interaction: discord.Interaction,
                                                                required=True)):
     action_type = "Remove Timeout"
     mod = interaction.user.mention
-    if await isModerator(user) or not await isModerator(interaction.user):
-        await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
-        return
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
+        return
+    if await isModerator(user) or not await isModerator(interaction.user):
+        await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
     await user.edit(timeout=None)
