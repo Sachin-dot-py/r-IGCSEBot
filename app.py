@@ -315,6 +315,13 @@ async def hasRole(member: discord.Member, role_name):
             return True
     return False
 
+async def is_banned(user, interaction: discord.Interaction):
+    try:
+        await interaction.guild.fetch_ban(user)
+        return True
+    except discord.NotFound:
+        return False
+
 async def isServerBooster(member: discord.Member):
     return await hasRole(member, "Server Booster")
 
@@ -1217,6 +1224,9 @@ async def timeout(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    if await is_banned(user, interaction):
+        await interaction.send("User is banned from the server!", ephemeral=True)
+        return
     await interaction.response.defer()
     if time_.lower() == "unspecified" or time_.lower() == "permanent" or time_.lower() == "undecided":
         seconds = 86400 * 28
@@ -1265,6 +1275,9 @@ async def untimeout(interaction: discord.Interaction,
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
+    if await is_banned(user, interaction):
+        await interaction.send("User is banned from the server!", ephemeral=True)
+        return
     await interaction.response.defer()
     await user.edit(timeout=None)
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
@@ -1291,6 +1304,9 @@ async def ban(interaction: discord.Interaction,
     mod = interaction.user.mention
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
+        return
+    if await is_banned(user, interaction):
+        await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
     try:
@@ -1353,6 +1369,9 @@ async def kick(interaction: discord.Interaction,
     mod = interaction.user.mention
     if await isModerator(user) or not await isModerator(interaction.user):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
+        return
+    if await is_banned(user, interaction):
+        await interaction.send("User is banned from the server!", ephemeral=True)
         return
     await interaction.response.defer()
     try:
