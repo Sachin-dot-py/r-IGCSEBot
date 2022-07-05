@@ -483,7 +483,7 @@ async def poll(interaction: discord.Interaction,
 
 class CancelPingBtn(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=15 * 60)
+        super().__init__(timeout=890)
         self.value = True
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
@@ -513,7 +513,7 @@ async def helper(interaction: discord.Interaction):
         return
     view = CancelPingBtn()
     message = await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 15 * 60)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
+        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
         view=view)
     view.message = message
     view.helper_role = helper_role
