@@ -1487,5 +1487,50 @@ async def votehotm(interaction: discord.Interaction,
     else:
         await interaction.send(f"{helper} is not a helper.", ephemeral=True)
 
+# Embeds sending and editing
+
+@bot.slash_command(description="send and edit embeds (for mods)")
+async def embed(interaction: discord.Interaction,
+                channel: discord.abc.GuildChannel = discord.SlashOption(name="channel", description="Default is the channel you use the command in", required=False),
+                content: str = discord.SlashOption(name="content", description="The content of the embed", required=False),
+                title: str = discord.SlashOption(name="title", description="The title of the embed", required=False),
+                description: str = discord.SlashOption(name="description", description="The description of the embed", required=False),
+                colour: str = discord.SlashOption(name="colour", description="The hexadecimal colour code for the embed (Default is green)", required=False),
+                message_id: str=discord.SlashOption(name='message_id', description='The id of the message embed you want to edit', required=False)):
+    if not await isModerator(interaction.user):
+        await interaction.send(f"Sorry, you don't have the permission to perform this action.", ephemeral=True)
+        return
+    if channel:
+        embed_channel = channel
+    else:
+        embed_channel = interaction.channel
+    if message_id:
+        embed_message = await embed_channel.fetch_message(int(message_id))
+        previous_embed = embed_message.embeds[0]
+        embed = discord.Embed(colour=previous_embed.colour, title=previous_embed.title, description=previous_embed.description)
+    else:
+        embed = discord.Embed()
+        if content and not description and not title:
+            await interaction.send('You have to specify a title or a description', ephemeral=True)
+    if colour:
+        try:
+            embed.colour = colour
+        except:
+            await interaction.send('Invalid Hex code', ephemeral=True)
+            return
+    else:
+        embed.colour = discord.Colour.green()
+    if title:
+        embed.title = title.replace('//', '\n')
+    if description:
+        embed.description = description.replace('//', '\n')
+    if message_id:
+        await embed_message.edit(content=content, embed=embed)
+        await interaction.send("Done!", ephemeral=True, delete_after=1)
+        return
+    await embed_channel.send(content=content, embed=embed)
+    await interaction.send("Done!",ephemeral=True, delete_after=1)
+
+
 
 bot.run(TOKEN)
