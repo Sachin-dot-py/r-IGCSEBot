@@ -7,6 +7,7 @@ from nextcord.ext import commands
 import requests
 import os
 from data import reactionroles_data, helper_roles, subreddits, study_roles
+import certifi
 
 # Set up a Discord API Token and a MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
@@ -42,12 +43,13 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_raw_reaction_add(reaction):
-    user = await bot.fetch_user(reaction.user_id)
+    guild = bot.get_guild(GUILD_ID)
+    user = await guild.fetch_member(reaction.user_id)
     if user.bot:
         return
-    is_rr = rrDB.get_rr(str(reaction), reaction.message_id)
+    is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
     if is_rr != None:
-        role = discord.utils.get(reaction.channel.guild.roles, name = is_rr[1][1:])
+        role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
         return
 
@@ -150,12 +152,13 @@ async def on_raw_reaction_add(reaction):
 
 @bot.event
 async def on_raw_reaction_remove(reaction):
-    user = await bot.fetch_user(reaction.user_id)
+    guild = bot.get_guild(GUILD_ID)
+    user = await guild.fetch_member(reaction.user_id)
     if user.bot:
         return
-    is_rr = rrDB.get_rr(str(reaction), reaction.message_id)
+    is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
     if is_rr != None:
-        role = discord.utils.get(reaction.channel.guild.roles, name = is_rr[1][1:])
+        role = guild.get_role(is_rr["role"])
         await user.remove_roles(role)
         return
     
@@ -442,7 +445,7 @@ async def roles(ctx):
 
 class ReactionRolesDB:
     def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link)
+        self.client = pymongo.MongoClient(link, tlsCAFile = certifi.where())
         self.db = self.client.IGCSEBot
         self.reaction_roles = self.db.reaction_roles
     
@@ -460,7 +463,7 @@ rrDB = ReactionRolesDB(LINK)
 
 @bot.command(description="Create reaction roles", guild_ids=[GUILD_ID])
 async def rrmake(ctx):
-    if isModerator(ctx.author):
+    if await isModerator(ctx.author):
         guild = bot.get_guild(GUILD_ID)
         while True:
             await ctx.send("Enter the link of the message to which the reaction roles must be added")
@@ -488,8 +491,8 @@ async def rrmake(ctx):
                 await ctx.send("You have to enter a reaction followed by a role separated by a space")
             else:
                 try:
-                    discord.utils.get(guild.roles, name = role[1:])
-                    rrs.append([reaction, role[1:]])
+                    guild.get_role(int(role[3:-1]))
+                    rrs.append([reaction, int(role[3:-1])])
                     await rr_msg.add_reaction("✅")
                 except discord.errors.NotFound:
                     await ctx.send("Invalid input")
