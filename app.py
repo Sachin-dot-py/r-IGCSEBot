@@ -466,7 +466,7 @@ async def rrmake(ctx):
     if await isModerator(ctx.author):
         guild = bot.get_guild(GUILD_ID)
         while True:
-            await ctx.send("Enter the link of the message to which the reaction roles must be added")
+            await ctx.send("Enter the link/id of the message to which the reaction roles must be added")
             msg_link = await bot.wait_for("message", check = lambda m: m.author == ctx.author and m.channel == ctx.channel)
             link = str(msg_link.content)
             try:
