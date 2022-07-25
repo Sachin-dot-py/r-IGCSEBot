@@ -42,6 +42,16 @@ async def on_voice_state_update(member, before, after):
 
 @bot.event
 async def on_raw_reaction_add(reaction):
+    guild = bot.get_guild(GUILD_ID)
+    user = await guild.fetch_member(reaction.user_id)
+    if user.bot:
+        return
+    is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
+    if is_rr != None:
+        role = guild.get_role(is_rr["role"])
+        await user.add_roles(role)
+        return
+
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
@@ -141,6 +151,16 @@ async def on_raw_reaction_add(reaction):
 
 @bot.event
 async def on_raw_reaction_remove(reaction):
+    guild = bot.get_guild(GUILD_ID)
+    user = await guild.fetch_member(reaction.user_id)
+    if user.bot:
+        return
+    is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
+    if is_rr != None:
+        role = guild.get_role(is_rr["role"])
+        await user.remove_roles(role)
+        return
+    
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
 
@@ -421,6 +441,71 @@ async def roles(interaction: discord.Interaction):
 @bot.command(description="Dropdown for picking up reaction roles", guild_ids=[GUILD_ID])
 async def roles(ctx):
     await ctx.send(view=RolePickerCategoriesView())
+
+class ReactionRolesDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.reaction_roles = self.db.reaction_roles
+    
+    def new_rr(self, data):
+        self.reaction_roles.insert_one({"reaction": data[0], "role": data[1], "message": data[2]})
+
+    def get_rr(self, reaction, msg_id):
+        result = self.reaction_roles.find_one({"reaction": reaction, "message": msg_id})
+        if result is None:
+            return None
+        else:
+            return result
+
+rrDB = ReactionRolesDB(LINK)
+
+@bot.command(description="Create reaction roles", guild_ids=[GUILD_ID])
+async def rrmake(ctx):
+    if await isModerator(ctx.author):
+        guild = bot.get_guild(GUILD_ID)
+        while True:
+            await ctx.send("Enter the link/id of the message to which the reaction roles must be added")
+            msg_link = await bot.wait_for("message", check = lambda m: m.author == ctx.author and m.channel == ctx.channel)
+            link = str(msg_link.content)
+            try:
+                msg_id = int(link.split("/")[-1])
+                try:
+                    reaction_msg = await ctx.fetch_message(msg_id)
+                    break
+                except discord.NotFound:
+                    await ctx.send("Invalid message")
+            except ValueError:
+                await ctx.send("Invalid input")
+        await ctx.send("Now, enter the reactions and their corresponding roles in the following format: `<Emoji> <@Role>`. Type 'stop' when you are done")
+        rrs = []
+        while True:
+            rr_msg = await bot.wait_for("message", check = lambda m: m.author == ctx.author and m.channel == ctx.channel)
+            rr = str(rr_msg.content).lower()
+            if rr == "stop":
+                break
+            try:
+                reaction, role = rr.split()
+            except ValueError:
+                await ctx.send("You have to enter a reaction followed by a role separated by a space")
+            else:
+                try:
+                    int(role[3:-1])
+                except ValueError:
+                    await ctx.send("Invalid input")
+                else:
+                    if guild.get_role(int(role[3:-1])) == None:
+                        await ctx.send("Invalid input")
+                    else:
+                        rrs.append([reaction, int(role[3:-1])])
+                        await rr_msg.add_reaction("✅")
+        for x in rrs:
+            await reaction_msg.add_reaction(x[0])
+            data = x.copy()
+            data.append(msg_id)
+            rrDB.new_rr(data)
+        await ctx.send("Reactions added!")
+                
 
 
 @bot.slash_command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
