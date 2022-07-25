@@ -7,13 +7,12 @@ from nextcord.ext import commands
 import requests
 import os
 from data import reactionroles_data, helper_roles, subreddits, study_roles
-import certifi
 
 # Set up a Discord API Token and a MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
 LINK = os.environ.get("MONGO_LINK")
-GUILD_ID = 984705589957500979
+GUILD_ID = 576460042774118420
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix=".", intents=intents)
@@ -445,7 +444,7 @@ async def roles(ctx):
 
 class ReactionRolesDB:
     def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, tlsCAFile = certifi.where())
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
         self.db = self.client.IGCSEBot
         self.reaction_roles = self.db.reaction_roles
     
