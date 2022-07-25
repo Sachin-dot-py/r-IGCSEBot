@@ -474,8 +474,8 @@ async def rrmake(ctx):
                 try:
                     reaction_msg = await ctx.fetch_message(msg_id)
                     break
-                except discord.errors.NotFound:
-                    await ctx.send("Invalid input")
+                except discord.NotFound:
+                    await ctx.send("Invalid message")
             except ValueError:
                 await ctx.send("Invalid input")
         await ctx.send("Now, enter the reactions and their corresponding roles in the following format: `<Emoji> <@Role>`. Type 'stop' when you are done")
@@ -491,11 +491,15 @@ async def rrmake(ctx):
                 await ctx.send("You have to enter a reaction followed by a role separated by a space")
             else:
                 try:
-                    guild.get_role(int(role[3:-1]))
-                    rrs.append([reaction, int(role[3:-1])])
-                    await rr_msg.add_reaction("✅")
-                except discord.errors.NotFound:
+                    int(role[3:-1])
+                except ValueError:
                     await ctx.send("Invalid input")
+                else:
+                    if guild.get_role(int(role[3:-1])) == None:
+                        await ctx.send("Invalid input")
+                    else:
+                        rrs.append([reaction, int(role[3:-1])])
+                        await rr_msg.add_reaction("✅")
         for x in rrs:
             await reaction_msg.add_reaction(x[0])
             data = x.copy()
