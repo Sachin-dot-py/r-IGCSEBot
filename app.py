@@ -506,6 +506,48 @@ async def rrmake(ctx):
             rrDB.new_rr(data)
         await ctx.send("Reactions added!")
                 
+@bot.slash_command(name = "rrmake", description = "Create reaction roles", guild_ids = [GUILD_ID])
+async def rrmake(interaction: discord.Interaction, link: str = discord.SlashOption(name = "link", description = "The link/id of the message to which the reaction roles will be added", required = True)):
+    if await isModerator(interaction.user):
+        guild = bot.get_guild(GUILD_ID)
+        channel = interaction.channel
+        try:
+            msg_id = int(link.split("/")[-1])
+            try:
+                reaction_msg = await channel.fetch_message(msg_id)
+            except discord.NotFound:
+                await interaction.send("Invalid message", ephemeral = True)
+            else:
+                await interaction.send("Now, enter the reactions and their corresponding roles in the following format: `<Emoji> <@Role>`. Type 'stop' when you are done")
+                rrs = []
+                while True:
+                    rr_msg = await bot.wait_for("message", check = lambda m: m.author == interaction.user and m.channel == channel)
+                    rr = str(rr_msg.content).lower()
+                    if rr == "stop":
+                        break
+                    try:
+                        reaction, role = rr.split()
+                    except ValueError:
+                        await channel.send("You have to enter a reaction followed by a role separated by a space")
+                    else:
+                        try:
+                            int(role[3:-1])
+                        except ValueError:
+                            await channel.send("Invalid input")
+                        else:
+                            if guild.get_role(int(role[3:-1])) == None:
+                                await channel.send("Invalid input")
+                            else:
+                                rrs.append([reaction, int(role[3:-1])])
+                                await rr_msg.add_reaction("✅")
+                for x in rrs:
+                    await reaction_msg.add_reaction(x[0])
+                    data = x.copy()
+                    data.append(msg_id)
+                    rrDB.new_rr(data)
+                await channel.send("Reactions added!")
+        except ValueError:
+            await interaction.send("Invalid input", ephemeral = True)
 
 
 @bot.slash_command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
