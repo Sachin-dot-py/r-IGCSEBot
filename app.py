@@ -505,7 +505,7 @@ async def rrmake(ctx):
             data.append(msg_id)
             rrDB.new_rr(data)
         await ctx.send("Reactions added!")
-
+                
 
 
 @bot.slash_command(description="Choose a display colour for your name", guild_ids=[GUILD_ID])
