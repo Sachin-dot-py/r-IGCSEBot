@@ -1,22 +1,23 @@
 import datetime
+import contextlib
 import time
+import io
 import typing
 import pymongo
-import nextcord as discord
-from nextcord.ext import commands
+import textwrap
 import requests
 import os
+import nextcord as discord
+
+from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
-import dotenv
-import certifi
+from traceback import format_exception
 
 # Set up a Discord API Token and a MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
-dotenv.load_dotenv()
-
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
 LINK = os.environ.get("MONGO_LINK")
-GUILD_ID = 984705589957500979
+GUILD_ID = 576460042774118420
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix=".", intents=intents)
@@ -54,27 +55,6 @@ async def on_raw_reaction_add(reaction):
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
-        if await hasRole(user, "Unverified"):
-            sub_ids = []
-            big_list = reactionroles_data["Subject Roles"].values()
-            for x in big_list:
-                sub_ids.append(x[2])
-            ses_ids = []
-            big_list = reactionroles_data["Session Roles"].values()
-            for x in big_list:
-                ses_ids.append(x[2])
-            all_roles = user.roles
-            sub = False
-            ses = False
-            for role in all_roles:
-                if role.id in sub_ids:
-                    sub = True
-                elif role.id in ses_ids:
-                    ses = True
-                if sub and ses:
-                    await user.remove_roles(guild.get_role(1008330969033478144))
-                    await user.add_roles(guild.get_role(984705590427271217))
-                    break
         return
 
     channel = bot.get_channel(reaction.channel_id)
@@ -237,15 +217,12 @@ async def on_guild_join(guild):
 
 
 @bot.event
-async def on_member_join(member: discord.Member):
-    if member.guild.id == GUILD_ID:  # r/igcse welcome message
+async def on_member_join(member):
+    if member.guild.id == 576460042774118420:  # r/igcse welcome message
         embed1 = discord.Embed.from_dict(eval(
             r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should use the command `/helper` in the respective subject channel. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
         channel = await member.create_dm()
         await channel.send(embed=embed1)
-        guild = bot.get_guild(GUILD_ID)
-        unverified = guild.get_role(1008330969033478144)
-        await member.add_roles(unverified)
 
 
 @bot.event
@@ -411,52 +388,8 @@ class DropdownRR(discord.ui.Select):
             await interaction.send(
                 f"Successfully opted for roles: {', '.join(added_role_names)} and unopted from roles: {', '.join(removed_role_names)}.",
                 ephemeral=True)
-            if await hasRole(interaction.user, "Unverified"):
-                guild = bot.get_guild(GUILD_ID)
-                sub_ids = []
-                big_list = reactionroles_data["Subject Roles"].values()
-                for x in big_list:
-                    sub_ids.append(x[2])
-                ses_ids = []
-                big_list = reactionroles_data["Session Roles"].values()
-                for x in big_list:
-                    ses_ids.append(x[2])
-                all_roles = interaction.user.roles
-                sub = False
-                ses = False
-                for role in all_roles:
-                    if role.id in sub_ids:
-                        sub = True
-                    elif role.id in ses_ids:
-                        ses = True
-                    if sub and ses:
-                        await interaction.user.remove_roles(guild.get_role(1008330969033478144))
-                        await interaction.user.add_roles(guild.get_role(984705590427271217))
-                        break
         elif len(added_role_names) > 0 and len(removed_role_names) == 0:
             await interaction.send(f"Successfully opted for roles: {', '.join(added_role_names)}.", ephemeral=True)
-            if await hasRole(interaction.user, "Unverified"):
-                guild = bot.get_guild(GUILD_ID)
-                sub_ids = []
-                big_list = reactionroles_data["Subject Roles"].values()
-                for x in big_list:
-                    sub_ids.append(x[2])
-                ses_ids = []
-                big_list = reactionroles_data["Session Roles"].values()
-                for x in big_list:
-                    ses_ids.append(x[2])
-                all_roles = interaction.user.roles
-                sub = False
-                ses = False
-                for role in all_roles:
-                    if role.id in sub_ids:
-                        sub = True
-                    elif role.id in ses_ids:
-                        ses = True
-                    if sub and ses:
-                        await interaction.user.remove_roles(guild.get_role(1008330969033478144))
-                        await interaction.user.add_roles(guild.get_role(984705590427271217))
-                        break
         elif len(added_role_names) == 0 and len(removed_role_names) > 0:
             await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
 
@@ -510,13 +443,40 @@ async def roles(interaction: discord.Interaction):
     await interaction.send(view=RolePickerCategoriesView(), ephemeral=True)
 
 
+@bot.command(name="eval")
+async def _eval(ctx, *, code):
+
+    if ctx.author.id != 604335693757677588:
+        return
+
+    def clean_code(content): 
+        if content.startswith("***") and content.endswith("***"):
+            return "\n".join(content.split("\n")[1:])[:-3]
+        else:
+            return content
+
+    code = clean_code(code)
+    local_variables = {"discord": discord, "commands": commands, "bot": bot, "ctx": ctx, "channel": ctx.channel, "author": ctx.author, "guild": ctx.guild, "message": ctx.message}
+
+    stdout = io.String10()
+    try:
+        with contextlib.redirect_stdout(stdout):
+            exec(f"async def functions(): In{textwrap.indent (code, '      ')}", local_variables)
+            obj = await local_variables["functions"]()
+            result = f"{stdout.getvalue()}\n-- {obj}\n"
+    except Exception as error:
+        result = "".join(format_exception(error, error, error.__traceback__))
+    
+    await ctx.send(result)
+
+
 @bot.command(description="Dropdown for picking up reaction roles", guild_ids=[GUILD_ID])
 async def roles(ctx):
     await ctx.send(view=RolePickerCategoriesView())
 
 class ReactionRolesDB:
     def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, tlsCAFile = certifi.where())
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
         self.db = self.client.IGCSEBot
         self.reaction_roles = self.db.reaction_roles
     
