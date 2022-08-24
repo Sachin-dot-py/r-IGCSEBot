@@ -1679,9 +1679,9 @@ async def embed(interaction: discord.Interaction,
     else:
         embed.colour = discord.Colour.green()
     if title:
-        embed.title = title.replace('//', '\n')
+        embed.title = title.replace('\\n', '\n')
     if description:
-        embed.description = description.replace('//', '\n')
+        embed.description = description.replace('\\n', '\n')
     if message_id:
         await embed_message.edit(content=content, embed=embed)
         await interaction.send("Done!", ephemeral=True, delete_after=1)
