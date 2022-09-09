@@ -224,7 +224,7 @@ async def on_member_join(member):
         channel = await member.create_dm()
         await channel.send(embed=embed1)
         welcome = bot.get_channel(930088940654956575)
-        await welcome.send(f"Welcome <@!{member.id}>! Please pick up your roles at <#1010112017178312755> and <#1009302501566205952> to access the server.")
+        await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1009302501566205952> to access the server.")
 
 
 @bot.event
