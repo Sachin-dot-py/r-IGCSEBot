@@ -41,14 +41,14 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, exception):
-    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{traceback.format_exception(exception)}```"
+    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.user.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{''.join(traceback.format_exception(exception, exception, exception.__traceback__))}```"
     embed = discord.Embed(title="An Exception Occured", description=description)
     await logs.send(embed=embed)
 
 
 @bot.event
 async def on_application_command_error(ctx, exception):
-    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{traceback.format_exception(exception)}```"
+    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.user.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{''.join(traceback.format_exception(exception, exception, exception.__traceback__))}```"
     embed = discord.Embed(title="An Exception Occured", description=description)
     await logs.send(embed=embed)
 
