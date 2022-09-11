@@ -23,18 +23,34 @@ intents = discord.Intents().all()
 bot = commands.Bot(command_prefix=".", intents=intents)
 keywords = {}
 
+igcse, logs = None, None
 
 @bot.event
 async def on_ready():
-    print(f'We have logged in as {bot.user}')
+    global igcse, logs
+    print(f"Logged in as {bot.user}#{bot.discriminator}.")
     await bot.change_presence(activity=discord.Game(name="Flynn#5627"))
     embed = discord.Embed(title="Guilds Info", colour=0x3498db, description="Statistics about the servers this bot is in.")
     for guild in bot.guilds:
         value = f"Owner: {guild.owner}\nMembers: {guild.member_count}\nBoosts: {guild.premium_subscription_count}"
         embed.add_field(name=guild.name, value=value, inline=False)
-    flynn = await bot.fetch_user(604335693757677588)
-    channel = await flynn.create_dm()
-    await channel.send(embed=embed)
+    igcse = await bot.fetch_guild(576460042774118420)
+    logs = await igcse.fetch_channel(1017792876584906782)
+    await logs.send(embed=embed)
+
+
+@bot.event
+async def on_command_error(ctx, exception):
+    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{traceback.format_exception(exception)}```"
+    embed = discord.Embed(title="An Exception Occured", description=description)
+    await logs.send(embed=embed)
+
+
+@bot.event
+async def on_application_command_error(ctx, exception):
+    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{traceback.format_exception(exception)}```"
+    embed = discord.Embed(title="An Exception Occured", description=description)
+    await logs.send(embed=embed)
 
 
 @bot.event
