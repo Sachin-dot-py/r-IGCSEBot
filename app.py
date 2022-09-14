@@ -676,7 +676,10 @@ class CancelPingBtn(discord.ui.View):
 
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
-async def helper(interaction: discord.Interaction):
+async def helper(
+                interaction: discord.Interaction,
+                message_id: int = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
+                ):
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
@@ -688,9 +691,10 @@ async def helper(interaction: discord.Interaction):
         await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
         return
     view = CancelPingBtn()
-    message = await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
-        view=view)
+    url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
+    embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.\n[Jump to the message.]({url})")
+    embed.set_author(name=f"{interaction.user.name}#{interaction.user.discriminator}", icon_url=interaction.user.display_avatar.url)
+    message = await interaction.send(embed=embed, view=view)
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
