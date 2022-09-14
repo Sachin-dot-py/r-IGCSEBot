@@ -671,7 +671,10 @@ class CancelPingBtn(discord.ui.View):
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
         await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
-            await self.message.channel.send(f"{self.helper_role.mention}\n(Requested by {self.user.mention})")  # Execute ping
+            url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
+            embed = discord.Embed(description=f"{self.helper_role.mention}\n(Requested by {self.user.mention})\n[Jump to the message.]({url})")
+            embed.set_author(name=f"{interaction.user.name}#{interaction.user.discriminator}", icon_url=interaction.user.display_avatar.url)
+            await self.message.channel.send(embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
 
 
@@ -691,13 +694,13 @@ async def helper(
         await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
         return
     view = CancelPingBtn()
-    url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
-    embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.\n[Jump to the message.]({url})")
+    embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{interaction.user.name}#{interaction.user.discriminator}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
+    view.message_id = message_id
 
 
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
