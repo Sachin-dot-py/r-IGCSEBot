@@ -673,7 +673,7 @@ class CancelPingBtn(discord.ui.View):
         if self.value:
             url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
             embed = discord.Embed(description=f"{self.helper_role.mention}\n[Jump to the message.]({url})")
-            embed.set_author(name=f"{interaction.user.name}#{interaction.user.discriminator}", icon_url=interaction.user.display_avatar.url)
+            embed.set_author(name=f"{self.message.author.name}#{self.message.author.discriminator}", icon_url=self.message.author.display_avatar.url)
             await self.message.channel.send(embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
 
