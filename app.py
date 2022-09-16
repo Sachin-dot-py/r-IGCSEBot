@@ -28,7 +28,7 @@ igcse, logs = None, None
 @bot.event
 async def on_ready():
     global igcse, logs
-    print(f"Logged in as {bot.user}#{bot.discriminator}.")
+    print(f"Logged in as {str(bot.user)}.")
     await bot.change_presence(activity=discord.Game(name="Flynn#5627"))
     embed = discord.Embed(title="Guilds Info", colour=0x3498db, description="Statistics about the servers this bot is in.")
     for guild in bot.guilds:
@@ -671,12 +671,18 @@ class CancelPingBtn(discord.ui.View):
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
         await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
-            await self.message.channel.send(f"{self.helper_role.mention}\n(Requested by {self.user.mention})")  # Execute ping
+            url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
+            embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            embed.set_author(name=f"{str(self.message.author)}", icon_url=self.message.author.display_avatar.url)
+            await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
 
 
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
-async def helper(interaction: discord.Interaction):
+async def helper(
+                interaction: discord.Interaction,
+                message_id: int = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
+                ):
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
@@ -685,15 +691,24 @@ async def helper(interaction: discord.Interaction):
     await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
     if "server booster" in roles:
-        await interaction.send(f"{helper_role.mention}\n(Requested by {interaction.user.mention})")
+        if message_id:
+            url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
+            embed = discord.Embed(description=f"[Jump to the message.]({url})")
+        else:
+            embed = discord.Embed()
+        embed.set_author(name=f"{str(self.message.author)}", icon_url=self.message.author.display_avatar.url)
+        await interaction.send(helper_role.mention, embed=embed)
         return
     view = CancelPingBtn()
-    message = await interaction.send(
-        f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>). If your query has been resolved by then, please click on the `Cancel Ping` button",
-        view=view)
+    embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
+    embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
+    message = await interaction.send(embed=embed, view=view)
+    if not message_id:
+        message_id = message.id
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
+    view.message_id = message_id
 
 
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
@@ -1348,10 +1363,10 @@ async def warn(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod} 
 Reason: {reason}"""
-        await interaction.send(f"{user.name}#{user.discriminator} has been warned.")
+        await interaction.send(f"{str(user)} has been warned.")
         await ban_msg_channel.send(ban_msg)
     channel = await user.create_dm()
     await channel.send(
@@ -1435,14 +1450,14 @@ async def timeout(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod} 
 Reason: {reason}
 Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
         await ban_msg_channel.send(ban_msg)
     await interaction.send(
-        f"{user.name}#{user.discriminator} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
+        f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
 
 
 @bot.slash_command(description="Untimeout a user (for mods)")
@@ -1467,10 +1482,10 @@ async def untimeout(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod}"""
         await ban_msg_channel.send(ban_msg)
-    await interaction.send(f"Timeout has been removed from {user.name}#{user.discriminator}.")
+    await interaction.send(f"Timeout has been removed from {str(user)}.")
 
 
 @bot.slash_command(description="Ban a user from the server (for mods)")
@@ -1505,12 +1520,12 @@ async def ban(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod} 
 Reason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.ban(user, delete_message_days=delete_message_days)
-    await interaction.send(f"{user.name}#{user.discriminator} has been banned.")
+    await interaction.send(f"{str(user)} has been banned.")
 
 
 @bot.slash_command(description="Unban a user from the server (for mods)")
@@ -1524,7 +1539,7 @@ async def unban(interaction: discord.Interaction,
         return
     await interaction.response.defer()
     await interaction.guild.unban(user)
-    await interaction.send(f"{user.name}#{user.discriminator} has been unbanned.")
+    await interaction.send(f"{str(user)} has been unbanned.")
 
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
@@ -1534,7 +1549,7 @@ async def unban(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod}"""
         await ban_msg_channel.send(ban_msg)
 
@@ -1566,12 +1581,12 @@ async def kick(interaction: discord.Interaction,
         except:
             case_no = 1
         ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {user.name}#{user.discriminator} ({user.id})
+Username: {str(user)} ({user.id})
 Moderator: {mod} 
 Reason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.kick(user)
-    await interaction.send(f"{user.name}#{user.discriminator} has been kicked.")
+    await interaction.send(f"{str(user)} has been kicked.")
 
 
 # Study Sessions
