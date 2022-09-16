@@ -665,7 +665,7 @@ class CancelPingBtn(discord.ui.View):
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
         roles = [role.name.lower() for role in interaction_b.user.roles]
-        if (interaction_b.user != self.user) and ("igcse helper" not in roles):
+        if (interaction_b.user != self.user) and (self.helper_role.name.lower() not in roles):
             await interaction_b.send("You do not have permission to do this.", ephemeral=True)
             return
         button.disabled = True
