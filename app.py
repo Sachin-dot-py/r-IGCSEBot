@@ -41,6 +41,8 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, exception):
+    if isinstance(exception, commands.CommandNotFound):
+        return
     description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{''.join(format_exception(exception, exception, exception.__traceback__))}```"
     embed = discord.Embed(title="An Exception Occured", description=description)
     await logs.send(embed=embed)
@@ -696,7 +698,7 @@ async def helper(
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
         else:
             embed = discord.Embed()
-        embed.set_author(name=f"{str(self.message.author)}", icon_url=self.message.author.display_avatar.url)
+        embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
         await interaction.send(helper_role.mention, embed=embed)
         return
     view = CancelPingBtn()
