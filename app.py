@@ -673,8 +673,11 @@ class CancelPingBtn(discord.ui.View):
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
         await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
-            url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
-            embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            if self.message_id:
+                url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
+                embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            else:
+                embed = discord.Embed()
             embed.set_author(name=f"{str(self.message.author)}", icon_url=self.message.author.display_avatar.url)
             await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
@@ -705,8 +708,6 @@ async def helper(
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
-    if not message_id:
-        message_id = message.id
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
