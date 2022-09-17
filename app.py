@@ -677,9 +677,12 @@ class CancelPingBtn(discord.ui.View):
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
         await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
-            url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
-            embed = discord.Embed(description=f"[Jump to the message.]({url})")
-            embed.set_author(name=f"{str(self.message.author)}", icon_url=self.message.author.display_avatar.url)
+            if self.message_id:
+                url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
+                embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            else:
+                embed = discord.Embed()
+            embed.set_author(name=f"{str(self.user)}", icon_url=self.user.display_avatar.url)
             await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
 
@@ -709,8 +712,6 @@ async def helper(
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
-    if not message_id:
-        message_id = message.id
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
@@ -720,29 +721,28 @@ async def helper(
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
              guild_ids=[GUILD_ID])
 async def refreshhelpers(ctx):
-    if ctx.message.content.lower() == "refresh helpers":  # Refresh number of helpers info in description of channel
-        changed = []
-        for chnl, role in helper_roles.items():
-            try:
-                helper_role = discord.utils.get(ctx.message.guild.roles, id=role)
-                no_of_users = len(helper_role.members)
-                channel = bot.get_channel(chnl)
-                new_topic = None
-                for line in channel.topic.split("\n"):
-                    if "No. of helpers" in line:
-                        new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
-                        break
-                else:
-                    new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
-                if channel.topic != new_topic:
-                    await channel.edit(topic=new_topic)
-                    changed.append(channel.mention)
-            except:
-                continue
-        if changed:
-            await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
-        else:
-            await ctx.message.reply("No changes were made.")
+    changed = []
+    for chnl, role in helper_roles.items():
+        try:
+            helper_role = discord.utils.get(ctx.message.guild.roles, id=role)
+            no_of_users = len(helper_role.members)
+            channel = bot.get_channel(chnl)
+            new_topic = None
+            for line in channel.topic.split("\n"):
+                if "No. of helpers" in line:
+                    new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
+                    break
+            else:
+                new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
+            if channel.topic != new_topic:
+                await channel.edit(topic=new_topic)
+                changed.append(channel.mention)
+        except:
+            continue
+    if changed:
+        await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
+    else:
+        await ctx.message.reply("No changes were made.")
 
 
 # Reputation
