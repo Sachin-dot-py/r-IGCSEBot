@@ -689,8 +689,13 @@ class CancelPingBtn(discord.ui.View):
 @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
 async def helper(
                 interaction: discord.Interaction,
-                message_id: int = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
+                message_id: str = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
                 ):
+    try:
+        message_id = int(message_id)
+    except ValueError:
+        await interaction.send("The provided message ID is invalid.", ephemeral=True)
+        return
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
@@ -1726,7 +1731,6 @@ async def embed(interaction: discord.Interaction,
         return
     await embed_channel.send(content=content, embed=embed)
     await interaction.send("Done!",ephemeral=True, delete_after=1)
-
 
 
 bot.run(TOKEN)
