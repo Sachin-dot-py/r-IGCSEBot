@@ -717,29 +717,28 @@ async def helper(
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
              guild_ids=[GUILD_ID])
 async def refreshhelpers(ctx):
-    if ctx.message.content.lower() == "refresh helpers":  # Refresh number of helpers info in description of channel
-        changed = []
-        for chnl, role in helper_roles.items():
-            try:
-                helper_role = discord.utils.get(ctx.message.guild.roles, id=role)
-                no_of_users = len(helper_role.members)
-                channel = bot.get_channel(chnl)
-                new_topic = None
-                for line in channel.topic.split("\n"):
-                    if "No. of helpers" in line:
-                        new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
-                        break
-                else:
-                    new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
-                if channel.topic != new_topic:
-                    await channel.edit(topic=new_topic)
-                    changed.append(channel.mention)
-            except:
-                continue
-        if changed:
-            await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
-        else:
-            await ctx.message.reply("No changes were made.")
+    changed = []
+    for chnl, role in helper_roles.items():
+        try:
+            helper_role = discord.utils.get(ctx.message.guild.roles, id=role)
+            no_of_users = len(helper_role.members)
+            channel = bot.get_channel(chnl)
+            new_topic = None
+            for line in channel.topic.split("\n"):
+                if "No. of helpers" in line:
+                    new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
+                    break
+            else:
+                new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
+            if channel.topic != new_topic:
+                await channel.edit(topic=new_topic)
+                changed.append(channel.mention)
+        except:
+            continue
+    if changed:
+        await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
+    else:
+        await ctx.message.reply("No changes were made.")
 
 
 # Reputation
