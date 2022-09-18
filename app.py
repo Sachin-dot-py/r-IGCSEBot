@@ -691,11 +691,12 @@ async def helper(
                 interaction: discord.Interaction,
                 message_id: str = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
                 ):
-    try:
-        message_id = int(message_id)
-    except ValueError:
-        await interaction.send("The provided message ID is invalid.", ephemeral=True)
-        return
+    if message_id:
+        try:
+            message_id = int(message_id)
+        except ValueError:
+            await interaction.send("The provided message ID is invalid.", ephemeral=True)
+            return
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
