@@ -691,11 +691,12 @@ async def helper(
                 interaction: discord.Interaction,
                 message_id: str = discord.SlashOption(name="message_id", description="The ID of the message containing the question.", required=False)
                 ):
-    try:
-        message_id = int(message_id)
-    except ValueError:
-        await interaction.send("The provided message ID is invalid.", ephemeral=True)
-        return
+    if message_id is not None:
+        try:
+            message_id = int(message_id)
+        except ValueError:
+            await interaction.send("The provided message ID is invalid.", ephemeral=True)
+            return
     try:
         helper_role = discord.utils.get(interaction.guild.roles, id=helper_roles[interaction.channel.id])
     except:
@@ -704,7 +705,7 @@ async def helper(
     await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
     if "server booster" in roles:
-        if message_id:
+        if message_id is not None:
             url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
         else:
