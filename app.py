@@ -666,7 +666,7 @@ class CancelPingBtn(discord.ui.View):
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
-        if (interaction_b.user != self.user) and (not await isHelper(interaction_b.user)):
+        if (interaction_b.user != self.user) and (not await isHelper(interaction_b.user)) and (not await isModerator(interaction_b.user)):
             await interaction_b.send("You do not have permission to do this.", ephemeral=True)
             return
         button.disabled = True
@@ -1507,7 +1507,7 @@ async def ban(interaction: discord.Interaction,
               delete_message_days: int = discord.SlashOption(name="delete_messages", choices={"Don't Delete Messages" : 0, "Delete Today's Messages" : 1, "Delete 3 Days of Messages" : 3, 'Delete 1 Week of Messages' : 7}, default=0, description="Duration of messages from the user to delete (defaults to zero)", required=False)):
     action_type = "Ban"
     mod = interaction.user.mention
-    if await isModerator(user) or not await isModerator(interaction.user):
+    if await isModerator(user) or not await isModerator(interaction.user) or await hasRole(interaction.user, "Temp Mod"):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     if await is_banned(user, interaction.guild):
