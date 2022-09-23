@@ -257,13 +257,13 @@ async def on_message(message):
             channel = await guild.create_text_channel(str(message.author).replace("#", "-"),
                                                         category=category,
                                                         topic=str(message.author.id))
-        embedVar = discord.Embed(title=f"Message Received", description=message.clean_content,
+        embed = discord.Embed(title=f"Message Received", description=message.clean_content,
                                             colour=discord.Colour.green())
-        embedVar.add_field(name="Author", value=message.author, inline=True)
-        await channel.send(embed=embedVar)
+        embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+        await channel.send(embed=embed)
         for attachment in message.attachments:
             await channel.send(file=await attachment.to_file())
-        await message.reply("Your message has been forwarded to the r/IGCSE moderators! Any reply by the mods will be conveyed to you by DM.")
+        await message.reply("Your message has been successfully forwarded to the r/IGCSE moderators!\nAny reply by the mods will be conveyed to you through this DM.")
         return
 
     if message.channel.id == 895961641219407923:  # Creating modmail channels in #create-dm
