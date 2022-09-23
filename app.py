@@ -263,7 +263,7 @@ async def on_message(message):
         await channel.send(embed=embed)
         for attachment in message.attachments:
             await channel.send(file=await attachment.to_file())
-        await message.reply("Your message has been successfully forwarded to the r/IGCSE moderators!\nAny reply by the mods will be conveyed to you through this DM.")
+        await message.reply("Your message has been successfully forwarded to the r/IGCSE moderators!\nAny reply by the moderators will be conveyed to you through this DM.")
         return
 
     if message.channel.id == 895961641219407923:  # Creating modmail channels in #create-dm
@@ -282,30 +282,30 @@ async def on_message(message):
             else:
                 member = message.guild.get_member(int(message.channel.topic))
                 if message.content == ".sclose":
-                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                    embed = discord.Embed(title=f"DM Channel Closed",
                                          description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await message.channel.delete()
-                    await bot.get_channel(895961641219407923).send(embed=embedVar)
+                    await bot.get_channel(895961641219407923).send(embed=embed)
                     return
                 channel = await member.create_dm()
                 if message.content == ".close":
-                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                    embed = discord.Embed(title=f"DM Channel Closed",
                                          description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
-                    await channel.send(embed=embedVar)
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                    await channel.send(embed=embed)
                     await message.channel.delete()
                     await bot.get_channel(895961641219407923).send(embed=embedVar)
                     return
-                embedVar = discord.Embed(title=f"Message from r/IGCSE Moderators",
+                embed = discord.Embed(title=f"Message from r/IGCSE Moderators",
                                          description=message.clean_content, colour=discord.Colour.green())
-                embedVar.add_field(name="Author", value=message.author, inline=True)
+                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
 
                 try:
-                    await channel.send(embed=embedVar)
+                    await channel.send(embed=embed)
                     for attachment in message.attachments:
                         await channel.send(file=await attachment.to_file())
-                    await message.channel.send(embed=embedVar)
+                    await message.channel.send(embed=embed)
                 except:
                     perms = message.channel.overwrites_for(member)
                     perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
