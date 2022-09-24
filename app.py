@@ -1404,14 +1404,14 @@ async def confess(interaction: discord.Interaction,
         embed.set_author(name=f"Approved by {interaction.user}", icon_url=interaction.user.display_avatar.url)
         await interaction.edit(embed=embed)
         embed = discord.Embed(colour=discord.Colour.random(), description=confession)
-        await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
+        await confession_channel.send(content=f'New Anonymous Confession', embed=embed, view=None)
 #         await anon_approve_mgs.delete()
     approveBTN.callback = ApproveCallBack
 
     async def RejectCallBack(interaction):
         embed = discord.Embed(colour=discord.Colour.red(), description=confession)
         embed.set_author(name=f"Rejected by {interaction.user}", icon_url=interaction.user.display_avatar.url)
-        await interaction.edit(embed=embed)
+        await interaction.edit(embed=embed, view=None)
 #         await anon_approve_mgs.delete()
     rejectBTN.callback = RejectCallBack
 
