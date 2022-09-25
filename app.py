@@ -1400,21 +1400,26 @@ async def confess(interaction: discord.Interaction,
     rejectBTN = discord.ui.Button(label="Reject", style=discord.ButtonStyle.red)
 
     async def ApproveCallBack(interaction):
-        await interaction.send(f"Approved by {interaction.user}", ephemeral=False)
-        await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
+        embed = discord.Embed(colour=discord.Colour.green(), description=confession)
+        embed.set_author(name=f"Approved by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+        await interaction.edit(embed=embed)
+        embed = discord.Embed(colour=discord.Colour.random(), description=confession)
+        await confession_channel.send(content=f'New Anonymous Confession', embed=embed, view=None)
 #         await anon_approve_mgs.delete()
     approveBTN.callback = ApproveCallBack
 
     async def RejectCallBack(interaction):
-        await interaction.send(f"Rejected by {interaction.user}", ephemeral=False)
+        embed = discord.Embed(colour=discord.Colour.red(), description=confession)
+        embed.set_author(name=f"Rejected by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+        await interaction.edit(embed=embed, view=None)
 #         await anon_approve_mgs.delete()
     rejectBTN.callback = RejectCallBack
 
     view.add_item(approveBTN)
     view.add_item(rejectBTN)
-    embed = discord.Embed(colour=5111808, description=confession)
+    embed = discord.Embed(colour=discord.Colour.random(), description=confession)
     anon_approve_mgs = await mods_channel.send(embed=embed, view=view)
-    await interaction.send("Confession is sent to mods, wait for their approval", ephemeral=True)
+    await interaction.send("Your confession has been sent to the moderators.\nYou have to wait for their approval.", ephemeral=True)
 
 @bot.slash_command(description="Timeout a user (for mods)")
 async def timeout(interaction: discord.Interaction,
