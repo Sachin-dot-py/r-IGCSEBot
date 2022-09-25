@@ -30,10 +30,10 @@ async def on_ready():
     global igcse, logs
     print(f"Logged in as {str(bot.user)}.")
     await bot.change_presence(activity=discord.Game(name="Flynn#5627"))
-    embed = discord.Embed(title="Guilds Info", colour=0x3498db, description="Statistics about the servers this bot is in.")
+    embed = discord.Embed(title=f"Guilds Info ({len(bot.guilds)})", colour=0x3498db, description="Statistics about the servers this bot is in.")
     for guild in bot.guilds:
         value = f"Owner: {guild.owner}\nMembers: {guild.member_count}\nBoosts: {guild.premium_subscription_count}"
-        embed.add_field(name=guild.name, value=value, inline=False)
+        embed.add_field(name=guild.name, value=value, inline=True)
     igcse = await bot.fetch_guild(576460042774118420)
     logs = await igcse.fetch_channel(1017792876584906782)
     await logs.send(embed=embed)
@@ -1402,9 +1402,9 @@ async def confess(interaction: discord.Interaction,
     async def ApproveCallBack(interaction):
         embed = discord.Embed(colour=discord.Colour.green(), description=confession)
         embed.set_author(name=f"Approved by {interaction.user}", icon_url=interaction.user.display_avatar.url)
-        await interaction.edit(embed=embed)
+        await interaction.edit(embed=embed, view=None)
         embed = discord.Embed(colour=discord.Colour.random(), description=confession)
-        await confession_channel.send(content=f'New Anonymous Confession', embed=embed, view=None)
+        await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
 #         await anon_approve_mgs.delete()
     approveBTN.callback = ApproveCallBack
 
