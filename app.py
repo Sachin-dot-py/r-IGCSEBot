@@ -295,7 +295,7 @@ async def on_message(message):
                     embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await channel.send(embed=embed)
                     await message.channel.delete()
-                    await bot.get_channel(895961641219407923).send(embed=embedVar)
+                    await bot.get_channel(895961641219407923).send(embed=embed)
                     return
                 embed = discord.Embed(title=f"Message from r/IGCSE Moderators",
                                          description=message.clean_content, colour=discord.Colour.green())
@@ -632,10 +632,10 @@ async def suggest(interaction: discord.Interaction,
     else:
         await interaction.response.defer(ephemeral=True)
         channel = bot.get_channel(channel_id)
-        embedVar = discord.Embed(title=f"Suggestion by {interaction.user}",
+        embed = discord.Embed(title=f"Suggestion by {interaction.user}",
                                  description=f"Total Votes: 0\n\n{'🟩' * 10}\n\nSuggestion: {suggestion}",
                                  colour=discord.Colour.green())
-        msg = await channel.send(embed=embedVar)
+        msg = await channel.send(embed=embed)
         await msg.add_reaction('✅')
         await msg.add_reaction("🟢")
         await msg.add_reaction("🔴")
@@ -648,11 +648,11 @@ async def poll(interaction: discord.Interaction,
                poll: str = discord.SlashOption(name="poll",
                 description="The poll to be created",
                 required=True)):
-    embedVar = discord.Embed(title=poll,
+    embed = discord.Embed(title=poll,
                              description=f"Total Votes: 0\n\n{'🟩' * 10}\n\n(from: {interaction.user})",
                              colour=discord.Colour.purple())
     await interaction.send("Creating Poll.", ephemeral=True)
-    msg1 = await interaction.channel.send(embed=embedVar)
+    msg1 = await interaction.channel.send(embed=embed)
     await msg1.add_reaction('✅')
     await msg1.add_reaction('❌')
 
@@ -903,7 +903,7 @@ async def leaderboard(interaction: discord.Interaction,
 
     pages = []
     for n, chunk in enumerate(chunks):
-        embedVar = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
+        embed = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
                                  colour=discord.Colour.green())
         for user, rep in chunk:
             if user_to_find:
@@ -913,8 +913,8 @@ async def leaderboard(interaction: discord.Interaction,
             if rep == 0 or user_name is None:
                 repDB.delete_user(user, interaction.guild.id)
             else:
-                embedVar.add_field(name=user_name, value=str(rep) + "\n", inline=True)
-        pages.append(embedVar)
+                embed.add_field(name=user_name, value=str(rep) + "\n", inline=True)
+        pages.append(embed)
 
     if not page: page = 1
 
