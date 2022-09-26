@@ -30,10 +30,10 @@ async def on_ready():
     global igcse, logs
     print(f"Logged in as {str(bot.user)}.")
     await bot.change_presence(activity=discord.Game(name="Flynn#5627"))
-    embed = discord.Embed(title="Guilds Info", colour=0x3498db, description="Statistics about the servers this bot is in.")
+    embed = discord.Embed(title=f"Guilds Info ({len(bot.guilds)})", colour=0x3498db, description="Statistics about the servers this bot is in.")
     for guild in bot.guilds:
         value = f"Owner: {guild.owner}\nMembers: {guild.member_count}\nBoosts: {guild.premium_subscription_count}"
-        embed.add_field(name=guild.name, value=value, inline=False)
+        embed.add_field(name=guild.name, value=value, inline=True)
     igcse = await bot.fetch_guild(576460042774118420)
     logs = await igcse.fetch_channel(1017792876584906782)
     await logs.send(embed=embed)
@@ -257,13 +257,13 @@ async def on_message(message):
             channel = await guild.create_text_channel(str(message.author).replace("#", "-"),
                                                         category=category,
                                                         topic=str(message.author.id))
-        embedVar = discord.Embed(title=f"Message Received", description=message.clean_content,
+        embed = discord.Embed(title=f"Message Received", description=message.clean_content,
                                             colour=discord.Colour.green())
-        embedVar.add_field(name="Author", value=message.author, inline=True)
-        await channel.send(embed=embedVar)
+        embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+        await channel.send(embed=embed)
         for attachment in message.attachments:
             await channel.send(file=await attachment.to_file())
-        await message.reply("Your message has been forwarded to the r/IGCSE moderators! Any reply by the mods will be conveyed to you by DM.")
+        await message.reply("Your message has been successfully forwarded to the r/IGCSE moderators!\nAny reply by the moderators will be conveyed to you through this DM.")
         return
 
     if message.channel.id == 895961641219407923:  # Creating modmail channels in #create-dm
@@ -282,30 +282,30 @@ async def on_message(message):
             else:
                 member = message.guild.get_member(int(message.channel.topic))
                 if message.content == ".sclose":
-                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                    embed = discord.Embed(title=f"DM Channel Closed",
                                          description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await message.channel.delete()
-                    await bot.get_channel(895961641219407923).send(embed=embedVar)
+                    await bot.get_channel(895961641219407923).send(embed=embed)
                     return
                 channel = await member.create_dm()
                 if message.content == ".close":
-                    embedVar = discord.Embed(title=f"DM Channel Closed",
+                    embed = discord.Embed(title=f"DM Channel Closed",
                                          description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                    embedVar.add_field(name="Moderator", value=message.author, inline=True)
-                    await channel.send(embed=embedVar)
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                    await channel.send(embed=embed)
                     await message.channel.delete()
-                    await bot.get_channel(895961641219407923).send(embed=embedVar)
+                    await bot.get_channel(895961641219407923).send(embed=embed)
                     return
-                embedVar = discord.Embed(title=f"Message from r/IGCSE Moderators",
+                embed = discord.Embed(title=f"Message from r/IGCSE Moderators",
                                          description=message.clean_content, colour=discord.Colour.green())
-                embedVar.add_field(name="Author", value=message.author, inline=True)
+                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
 
                 try:
-                    await channel.send(embed=embedVar)
+                    await channel.send(embed=embed)
                     for attachment in message.attachments:
                         await channel.send(file=await attachment.to_file())
-                    await message.channel.send(embed=embedVar)
+                    await message.channel.send(embed=embed)
                 except:
                     perms = message.channel.overwrites_for(member)
                     perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
@@ -632,10 +632,10 @@ async def suggest(interaction: discord.Interaction,
     else:
         await interaction.response.defer(ephemeral=True)
         channel = bot.get_channel(channel_id)
-        embedVar = discord.Embed(title=f"Suggestion by {interaction.user}",
+        embed = discord.Embed(title=f"Suggestion by {interaction.user}",
                                  description=f"Total Votes: 0\n\n{'🟩' * 10}\n\nSuggestion: {suggestion}",
                                  colour=discord.Colour.green())
-        msg = await channel.send(embed=embedVar)
+        msg = await channel.send(embed=embed)
         await msg.add_reaction('✅')
         await msg.add_reaction("🟢")
         await msg.add_reaction("🔴")
@@ -648,11 +648,11 @@ async def poll(interaction: discord.Interaction,
                poll: str = discord.SlashOption(name="poll",
                 description="The poll to be created",
                 required=True)):
-    embedVar = discord.Embed(title=poll,
+    embed = discord.Embed(title=poll,
                              description=f"Total Votes: 0\n\n{'🟩' * 10}\n\n(from: {interaction.user})",
                              colour=discord.Colour.purple())
     await interaction.send("Creating Poll.", ephemeral=True)
-    msg1 = await interaction.channel.send(embed=embedVar)
+    msg1 = await interaction.channel.send(embed=embed)
     await msg1.add_reaction('✅')
     await msg1.add_reaction('❌')
 
@@ -903,7 +903,7 @@ async def leaderboard(interaction: discord.Interaction,
 
     pages = []
     for n, chunk in enumerate(chunks):
-        embedVar = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
+        embed = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
                                  colour=discord.Colour.green())
         for user, rep in chunk:
             if user_to_find:
@@ -913,8 +913,8 @@ async def leaderboard(interaction: discord.Interaction,
             if rep == 0 or user_name is None:
                 repDB.delete_user(user, interaction.guild.id)
             else:
-                embedVar.add_field(name=user_name, value=str(rep) + "\n", inline=True)
-        pages.append(embedVar)
+                embed.add_field(name=user_name, value=str(rep) + "\n", inline=True)
+        pages.append(embed)
 
     if not page: page = 1
 
@@ -1400,21 +1400,26 @@ async def confess(interaction: discord.Interaction,
     rejectBTN = discord.ui.Button(label="Reject", style=discord.ButtonStyle.red)
 
     async def ApproveCallBack(interaction):
-        await interaction.send(f"Approved by {interaction.user}", ephemeral=False)
+        embed = discord.Embed(colour=discord.Colour.green(), description=confession)
+        embed.set_author(name=f"Approved by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+        await interaction.edit(embed=embed, view=None)
+        embed = discord.Embed(colour=discord.Colour.random(), description=confession)
         await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
 #         await anon_approve_mgs.delete()
     approveBTN.callback = ApproveCallBack
 
     async def RejectCallBack(interaction):
-        await interaction.send(f"Rejected by {interaction.user}", ephemeral=False)
+        embed = discord.Embed(colour=discord.Colour.red(), description=confession)
+        embed.set_author(name=f"Rejected by {interaction.user}", icon_url=interaction.user.display_avatar.url)
+        await interaction.edit(embed=embed, view=None)
 #         await anon_approve_mgs.delete()
     rejectBTN.callback = RejectCallBack
 
     view.add_item(approveBTN)
     view.add_item(rejectBTN)
-    embed = discord.Embed(colour=5111808, description=confession)
+    embed = discord.Embed(colour=discord.Colour.random(), description=confession)
     anon_approve_mgs = await mods_channel.send(embed=embed, view=view)
-    await interaction.send("Confession is sent to mods, wait for their approval", ephemeral=True)
+    await interaction.send("Your confession has been sent to the moderators.\nYou have to wait for their approval.", ephemeral=True)
 
 @bot.slash_command(description="Timeout a user (for mods)")
 async def timeout(interaction: discord.Interaction,
