@@ -74,14 +74,14 @@ async def on_raw_reaction_add(reaction):
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
         if await hasRole(user, "Stage 1 - Unverified"):
-            unverified_stage1 = guild.get_role(await getRoleId("Stage 1 - Unverified"))
+            unverified_stage1 = await getRole("Stage 1 - Unverified")
             await user.remove_roles(unverified_stage1)
-            unverified_stage2 = guild.get_role(await getRoleId("Stage 2 - Unverified"))
+            unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.add_roles(unverified_stage2)
         elif await hasRole(user, "Stage 2 - Unverified"):
-            unverified_stage2 = guild.get_role(await getRoleId("Stage 2 - Unverified"))
+            unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.remove_roles(unverified_stage2)
-            verified = guild.get_role(await getRoleId("Verified"))
+            verified = await getRole("Verified")
             await user.add_roles(verified)
         return
 
@@ -253,7 +253,7 @@ async def on_member_join(member: discord.Member):
         await channel.send(embed=embed1)
         welcome = bot.get_channel(930088940654956575)
         await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1009302501566205952> to access the server.")
-        unverified_stage1 = member.guild.get_role(await getRoleId("Stage 1 - Unverified"))
+        unverified_stage1 = await getRole("Stage 1 - Unverified")
         await member.add_roles(unverified_stage1)
 
 
@@ -372,10 +372,10 @@ async def hasRole(member: discord.Member, role_name):
             return True
     return False
 
-async def getRoleId(role_name: str):
+async def getRole(role_name: str):
     guild = bot.get_guild(GUILD_ID)
     role = discord.utils.get(guild.roles, name = role_name)
-    return role.id
+    return role
 
 async def is_banned(user, guild):
     try:
@@ -677,9 +677,10 @@ async def poll(interaction: discord.Interaction,
 # Helper
 
 class CancelPingBtn(discord.ui.View):
-    def __init__(self):
+    def __init__(self, message_id: None):
         super().__init__(timeout=890)
         self.value = True
+        self.message_id = message_id
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
@@ -729,8 +730,7 @@ async def helper(
             embed = discord.Embed()
         embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
         await interaction.send(helper_role.mention, embed=embed)
-        return
-    view = CancelPingBtn()
+    view = CancelPingBtn(message_id)
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
