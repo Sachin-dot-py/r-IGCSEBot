@@ -74,14 +74,14 @@ async def on_raw_reaction_add(reaction):
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
         if await hasRole(user, "Stage 1 - Unverified"):
-            unverified_stage1 = guild.get_role(await getRoleId("Stage 1 - Unverified"))
+            unverified_stage1 = await getRole("Stage 1 - Unverified")
             await user.remove_roles(unverified_stage1)
-            unverified_stage2 = guild.get_role(await getRoleId("Stage 2 - Unverified"))
+            unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.add_roles(unverified_stage2)
         elif await hasRole(user, "Stage 2 - Unverified"):
-            unverified_stage2 = guild.get_role(await getRoleId("Stage 2 - Unverified"))
+            unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.remove_roles(unverified_stage2)
-            verified = guild.get_role(await getRoleId("Verified"))
+            verified = await getRole("Verified")
             await user.add_roles(verified)
         return
 
@@ -253,7 +253,7 @@ async def on_member_join(member: discord.Member):
         await channel.send(embed=embed1)
         welcome = bot.get_channel(930088940654956575)
         await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1009302501566205952> to access the server.")
-        unverified_stage1 = member.guild.get_role(await getRoleId("Stage 1 - Unverified"))
+        unverified_stage1 = await getRole("Stage 1 - Unverified")
         await member.add_roles(unverified_stage1)
 
 
@@ -372,10 +372,10 @@ async def hasRole(member: discord.Member, role_name):
             return True
     return False
 
-async def getRoleId(role_name: str):
+async def getRole(role_name: str):
     guild = bot.get_guild(GUILD_ID)
     role = discord.utils.get(guild.roles, name = role_name)
-    return role.id
+    return role
 
 async def is_banned(user, guild):
     try:
