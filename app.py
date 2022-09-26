@@ -677,7 +677,7 @@ async def poll(interaction: discord.Interaction,
 # Helper
 
 class CancelPingBtn(discord.ui.View):
-    def __init__(self, message_id: None):
+    def __init__(self, message_id = None):
         super().__init__(timeout=890)
         self.value = True
         self.message_id = message_id
