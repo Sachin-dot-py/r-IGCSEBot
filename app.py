@@ -730,6 +730,7 @@ async def helper(
             embed = discord.Embed()
         embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
         await interaction.send(helper_role.mention, embed=embed)
+        return
     view = CancelPingBtn(message_id)
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
@@ -737,7 +738,6 @@ async def helper(
     view.message = message
     view.helper_role = helper_role
     view.user = interaction.user
-    view.message_id = message_id
 
 
 @bot.command(name="refreshhelpers", description="Refresh the helper count in the description of subject channels",
