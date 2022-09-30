@@ -478,7 +478,7 @@ async def _eval(ctx, *, code):
     code = clean_code(code)
     local_variables = {"discord": discord, "commands": commands, "bot": bot, "ctx": ctx, "channel": ctx.channel, "author": ctx.author, "guild": ctx.guild, "message": ctx.message}
 
-    stdout = io.String10()
+    stdout = io.StringIO()
     try:
         with contextlib.redirect_stdout(stdout):
             exec(f"async def functions(): In{textwrap.indent (code, '      ')}", local_variables)
