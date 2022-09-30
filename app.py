@@ -463,33 +463,6 @@ async def roles(interaction: discord.Interaction):
     await interaction.send(view=RolePickerCategoriesView(), ephemeral=True)
 
 
-@bot.command(name="eval")
-async def _eval(ctx, *, code):
-
-    if ctx.author.id != 604335693757677588:
-        return
-
-    def clean_code(content): 
-        if content.startswith("***") and content.endswith("***"):
-            return "\n".join(content.split("\n")[1:])[:-3]
-        else:
-            return content
-
-    code = clean_code(code)
-    local_variables = {"discord": discord, "commands": commands, "bot": bot, "ctx": ctx, "channel": ctx.channel, "author": ctx.author, "guild": ctx.guild, "message": ctx.message}
-
-    stdout = io.StringIO()
-    try:
-        with contextlib.redirect_stdout(stdout):
-            exec(f"async def functions(): In{textwrap.indent (code, '      ')}", local_variables)
-            obj = await local_variables["functions"]()
-            result = f"{stdout.getvalue()}\n-- {obj}\n"
-    except Exception as error:
-        result = "".join(format_exception(error, error, error.__traceback__))
-    
-    await ctx.send(result)
-
-
 @bot.command(description="Dropdown for picking up reaction roles", guild_ids=[GUILD_ID])
 async def roles(ctx):
     await ctx.send(view=RolePickerCategoriesView())
