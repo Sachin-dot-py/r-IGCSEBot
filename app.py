@@ -73,7 +73,7 @@ async def on_raw_reaction_add(reaction):
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
-        if await hasRole(user, "Stage 1 - Unverified") and reaction.channel.id == 1024872365894672425:
+        if await hasRole(user, "Stage 1 - Unverified") and reaction.message.id == 1025236702379389001:
             unverified_stage1 = await getRole("Stage 1 - Unverified")
             await user.remove_roles(unverified_stage1)
             unverified_stage2 = await getRole("Stage 2 - Unverified")
