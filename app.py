@@ -78,7 +78,7 @@ async def on_raw_reaction_add(reaction):
             await user.remove_roles(unverified_stage1)
             unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.add_roles(unverified_stage2)
-        elif await hasRole(user, "Stage 2 - Unverified") and reaction.channel.id == 1010112017178312755:
+        elif await hasRole(user, "Stage 2 - Unverified") and (reaction.channel.id == 1010112017178312755 or reaction.channel.id == 1014381401455472671):
             unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.remove_roles(unverified_stage2)
             verified = await getRole("Verified")
