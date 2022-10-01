@@ -707,7 +707,7 @@ async def helper(
     if "server booster" in roles:
         if message_id:
             url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
-            embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            embed = discord.Embed(title = "Message link", description=f"[Jump to the message.]({url})")
         else:
             embed = discord.Embed()
         embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
