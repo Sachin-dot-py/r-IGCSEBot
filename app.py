@@ -73,23 +73,26 @@ async def on_raw_reaction_add(reaction):
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
-        no_ig = False
         if await hasRole(user, "NOT IGCSE") and not await hasRole(user, "Verified"):
             verified = await getRole("Verified")
             await user.add_roles(verified)
-            no_ig = True
-        if await hasRole(user, "Stage 1 - Unverified") and (reaction.message.id == 1025236702379389001 or no_ig):
+            if await hasRole(user, "Stage 1 - Unverified"):
+                unverified_stage1 = await getRole("Stage 1 - Unverified")
+                await user.remove_roles(unverified_stage1)
+            if await hasRole(user, "Stage 2 - Unverified"):
+                unverified_stage2 = await getRole("Stage 2 - Unverified")
+                await user.remove_roles(unverified_stage2)
+            return
+        if await hasRole(user, "Stage 1 - Unverified") and reaction.message.id == 1025236702379389001:
             unverified_stage1 = await getRole("Stage 1 - Unverified")
             await user.remove_roles(unverified_stage1)
-            if not no_ig:
-                unverified_stage2 = await getRole("Stage 2 - Unverified")
-                await user.add_roles(unverified_stage2)
-        elif await hasRole(user, "Stage 2 - Unverified") and (reaction.channel.id == 1010112017178312755 or reaction.channel.id == 1014381401455472671 or no_ig):
+            unverified_stage2 = await getRole("Stage 2 - Unverified")
+            await user.add_roles(unverified_stage2)
+        elif await hasRole(user, "Stage 2 - Unverified") and (reaction.channel.id == 1010112017178312755 or reaction.channel.id == 1014381401455472671):
             unverified_stage2 = await getRole("Stage 2 - Unverified")
             await user.remove_roles(unverified_stage2)
-            if not no_ig:
-                verified = await getRole("Verified")
-                await user.add_roles(verified)
+            verified = await getRole("Verified")
+            await user.add_roles(verified)
         return
 
     channel = bot.get_channel(reaction.channel_id)
