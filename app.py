@@ -660,7 +660,7 @@ async def poll(interaction: discord.Interaction,
 # Helper
 
 class CancelPingBtn(discord.ui.View):
-    def __init__(self, message_id = None):
+    def __init__(self):
         super().__init__(timeout=890)
         self.value = True
 
@@ -713,12 +713,12 @@ async def helper(
         embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
         await interaction.send(helper_role.mention, embed=embed)
         return
-    view = CancelPingBtn(message_id)
+    view = CancelPingBtn()
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
     view.message = message
-    view.message_id = message.id
+    view.message_id = message_id
     view.helper_role = helper_role
     view.user = interaction.user
 
