@@ -663,7 +663,6 @@ class CancelPingBtn(discord.ui.View):
     def __init__(self, message_id = None):
         super().__init__(timeout=890)
         self.value = True
-        self.message_id = message_id
 
     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
@@ -679,7 +678,7 @@ class CancelPingBtn(discord.ui.View):
         if self.value:
             if self.message_id:
                 url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
-                embed = discord.Embed(description=f"[Jump to the message.]({url})")
+                embed = discord.Embed(title = "Message link", description=f"[Jump to the message.]({url})")
             else:
                 embed = discord.Embed()
             embed.set_author(name=f"{str(self.user)}", icon_url=self.user.display_avatar.url)
@@ -719,6 +718,7 @@ async def helper(
     embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
     view.message = message
+    view.message_id = message.id
     view.helper_role = helper_role
     view.user = interaction.user
 
