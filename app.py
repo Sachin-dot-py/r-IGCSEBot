@@ -266,7 +266,7 @@ async def on_member_join(member: discord.Member):
         channel = await member.create_dm()
         await channel.send(embed=embed1)
         welcome = bot.get_channel(930088940654956575)
-        await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1009302501566205952> to access the server.")
+        await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1024872365894672425> to access the server.")
         unverified_stage1 = await getRole("Stage 1 - Unverified")
         await member.add_roles(unverified_stage1)
 
@@ -678,6 +678,7 @@ class CancelPingBtn(discord.ui.View):
         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", embed=None, view=None)
 
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
+        await self.message.edit(view=None)
         if self.value:
             if self.message_id:
                 url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
