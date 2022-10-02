@@ -73,9 +73,9 @@ async def on_raw_reaction_add(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-    verified = discord.utils.get(guild.roles, name="Verified")
-    stage1 = discord.utils.get(guild.roles, name="Stage 1 - Unverified")
-    stage2 = discord.utils.get(guild.roles, name="Stage 2 - Unverified")
+    verified = getRole("Verified)
+    stage1 = getRole("Stage 1 - Unverified")
+    stage2 = getRole("Stage 2 - Unverified")
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
@@ -193,9 +193,9 @@ async def on_raw_reaction_remove(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-    verified = discord.utils.get(guild.roles, name="Verified")
-    stage1 = discord.utils.get(guild.roles, name="Stage 1 - Unverified")
-    stage2 = discord.utils.get(guild.roles, name="Stage 2 - Unverified")
+    verified = getRole("Verified)
+    stage1 = getRole("Stage 1 - Unverified")
+    stage2 = getRole("Stage 2 - Unverified")
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.remove_roles(role)
