@@ -81,9 +81,9 @@ async def on_raw_reaction_add(reaction):
         await user.add_roles(role)
         roles = set([r.id for r in u.roles])
         await user.remove_roles(stage1, stage2, verified)
-        if len(roles.intersection(session)) > 0 and len(roles.intersection(subject)) > 0:
+        if len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0:
             await user.add_roles(verified)
-        elif len(roles.intersection(session)) > 0:
+        elif len(roles.intersection(session_roles)) > 0:
             await user.add_roles(stage2)
         else:
             await user.add_roles(stage1)
@@ -201,9 +201,9 @@ async def on_raw_reaction_remove(reaction):
         await user.remove_roles(role)
         roles = set([r.id for r in u.roles])
         await user.remove_roles(stage1, stage2, verified)
-        if len(roles.intersection(session)) > 0 and len(roles.intersection(subject)) > 0:
+        if len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0:
             await user.add_roles(verified)
-        elif len(roles.intersection(session)) > 0:
+        elif len(roles.intersection(session_roles)) > 0:
             await user.add_roles(stage2)
         else:
             await user.add_roles(stage1)
