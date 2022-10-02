@@ -678,7 +678,6 @@ class CancelPingBtn(discord.ui.View):
         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", embed=None, view=None)
 
     async def on_timeout(self): # 15 minutes has passed so execute the ping.
-        await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
             if self.message_id:
                 url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
