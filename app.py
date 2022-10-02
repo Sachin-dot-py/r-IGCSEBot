@@ -79,7 +79,7 @@ async def on_raw_reaction_add(reaction):
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
-        roles = set([r.id for r in u.roles])
+        roles = set([r.id for r in user.roles])
         await user.remove_roles(stage1, stage2, verified)
         if len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0:
             await user.add_roles(verified)
@@ -199,7 +199,7 @@ async def on_raw_reaction_remove(reaction):
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.remove_roles(role)
-        roles = set([r.id for r in u.roles])
+        roles = set([r.id for r in user.roles])
         await user.remove_roles(stage1, stage2, verified)
         if len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0:
             await user.add_roles(verified)
