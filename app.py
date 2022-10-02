@@ -1,17 +1,14 @@
 import datetime
-import contextlib
 import time
-import io
 import typing
 import pymongo
-import textwrap
 import requests
 import os
 import nextcord as discord
+import traceback
 
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
-from traceback import format_exception
 
 # Set up a Discord API Token and a MongoDB Access Link in a .env file and use the command "heroku local" to run the bot locally.
 
@@ -43,14 +40,14 @@ async def on_ready():
 async def on_command_error(ctx, exception):
     if isinstance(exception, commands.CommandNotFound):
         return
-    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{''.join(format_exception(exception, exception, exception.__traceback__))}```"
+    description = f"Channel: {ctx.channel.mention}\nUser: {ctx.author.mention}\nGuild: {ctx.guild.name} ({ctx.guild.id})\n\nError:\n```{''.join(traceback.format_exception(exception, exception, exception.__traceback__))}```"
     embed = discord.Embed(title="An Exception Occured", description=description)
     await logs.send(embed=embed)
 
 
 @bot.event
 async def on_application_command_error(interaction, exception):
-    description = f"Channel: {interaction.channel.mention}\nUser: {interaction.user.mention}\nGuild: {interaction.guild.name} ({interaction.guild.id})\n\nError:\n```{''.join(format_exception(exception, exception, exception.__traceback__))}```"
+    description = f"Channel: {interaction.channel.mention}\nUser: {interaction.user.mention}\nGuild: {interaction.guild.name} ({interaction.guild.id})\n\nError:\n```{''.join(traceback.format_exception(exception, exception, exception.__traceback__))}```"
     embed = discord.Embed(title="An Exception Occured", description=description)
     await logs.send(embed=embed)
 
