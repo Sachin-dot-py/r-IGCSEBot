@@ -63,6 +63,9 @@ async def on_voice_state_update(member, before, after):
                 await before.channel.edit(name="General")  # Reset channel name
 
 
+session_roles = {782273117321166888, 782423045578948618, 782423808271056917, 853135207862370324, 853135509488009216, 853135836597583902, 931662314074169364, 921725505051459664, 921725841677901905, 698285991110246441}
+subject_roles = {688354722251276308, 688355303808303170, 871702273640787988, 685837416443281493, 685837450895032336, 685837475939221770, 667769546475700235, 688357525984509984, 685837363003523097, 685836740774330378, 677411157434171404, 688357284920819717, 668927421512155142, 688359807203278986, 685837255138607182, 688356986798211074, 688362197096988688, 688356500506148884, 685836973004423169, 685837280396705803, 688360519735967766, 688362250951852085, 685837171491471401, 685836834005319721, 868056692942835742, 932660913054580766, 688361654852780048, 871587296330260570, 685836866166980661, 688361164161548361, 688361596149563431, 685836889990627335, 871587728737849344, 886884445657890826, 853588511252545566, 853587095317643264, 853588416774930432, 853586114380300298, 853586292435451904, 853586450141413416, 883190243623333888, 883190176644468758, 881366711645921310, 868323020769493034, 883190289211228170, 868324666102661140, 698291687981580308}
+
 @bot.event
 async def on_raw_reaction_add(reaction):
     guild = bot.get_guild(GUILD_ID)
@@ -70,29 +73,20 @@ async def on_raw_reaction_add(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
+    verified = discord.utils.get(guild.roles, name="Verified")
+    stage1 = discord.utils.get(guild.roles, name="Stage 1 - Unverified")
+    stage2 = discord.utils.get(guild.roles, name="Stage 2 - Unverified")
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
-        if await hasRole(user, "NOT IGCSE") and not await hasRole(user, "Verified"):
-            verified = await getRole("Verified")
-            await user.add_roles(verified)
-            if await hasRole(user, "Stage 1 - Unverified"):
-                unverified_stage1 = await getRole("Stage 1 - Unverified")
-                await user.remove_roles(unverified_stage1)
-            if await hasRole(user, "Stage 2 - Unverified"):
-                unverified_stage2 = await getRole("Stage 2 - Unverified")
-                await user.remove_roles(unverified_stage2)
-            return
-        if await hasRole(user, "Stage 1 - Unverified") and reaction.message.id == 1025236702379389001:
-            unverified_stage1 = await getRole("Stage 1 - Unverified")
-            await user.remove_roles(unverified_stage1)
-            unverified_stage2 = await getRole("Stage 2 - Unverified")
-            await user.add_roles(unverified_stage2)
-        elif await hasRole(user, "Stage 2 - Unverified") and (reaction.channel.id == 1010112017178312755 or reaction.channel.id == 1014381401455472671):
-            unverified_stage2 = await getRole("Stage 2 - Unverified")
-            await user.remove_roles(unverified_stage2)
-            verified = await getRole("Verified")
-            await user.add_roles(verified)
+        roles = set([r.id for r in u.roles])
+        await u.remove_roles(stage1, stage2, verified)
+        if len(roles.intersection(session)) > 0 and len(roles.intersection(subject)) > 0:
+            await u.add_roles(verified)
+        elif len(roles.intersection(session)) > 0:
+            await u.add_roles(stage2)
+        else:
+            await u.add_roles(stage1)
         return
 
     channel = bot.get_channel(reaction.channel_id)
@@ -199,9 +193,20 @@ async def on_raw_reaction_remove(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
+    verified = discord.utils.get(guild.roles, name="Verified")
+    stage1 = discord.utils.get(guild.roles, name="Stage 1 - Unverified")
+    stage2 = discord.utils.get(guild.roles, name="Stage 2 - Unverified")
     if is_rr != None:
         role = guild.get_role(is_rr["role"])
         await user.remove_roles(role)
+        roles = set([r.id for r in u.roles])
+        await u.remove_roles(stage1, stage2, verified)
+        if len(roles.intersection(session)) > 0 and len(roles.intersection(subject)) > 0:
+            await u.add_roles(verified)
+        elif len(roles.intersection(session)) > 0:
+            await u.add_roles(stage2)
+        else:
+            await u.add_roles(stage1)
         return
     
     channel = bot.get_channel(reaction.channel_id)
