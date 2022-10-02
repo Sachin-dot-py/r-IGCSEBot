@@ -73,7 +73,7 @@ async def on_raw_reaction_add(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-    verified = await getRole("Verified)
+    verified = await getRole("Verified")
     stage1 = await getRole("Stage 1 - Unverified")
     stage2 = await getRole("Stage 2 - Unverified")
     if is_rr != None:
