@@ -877,7 +877,7 @@ async def rep(interaction: discord.Interaction,
     await interaction.send(f"{user} has {rep} rep.", ephemeral=False)
 
 
-@bot.slash_command(description="Change someone's current rep (for mods)")
+@bot.slash_command(description="Change someone's current rep (for mods) ")
 async def change_rep(interaction: discord.Interaction,
                      user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
                                                               required=True),
