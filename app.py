@@ -6,7 +6,6 @@ import requests
 import os
 import nextcord as discord
 import traceback
-
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
