@@ -6,7 +6,6 @@ import requests
 import os
 import nextcord as discord
 import traceback
-
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
@@ -1100,7 +1099,7 @@ async def counting(message):
         await message.delete()
 
 
-@bot.slash_command(description="Send messages using the bot (for mods)")
+@bot.slash_command(description="Send messages using the bot (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def send_message(interaction: discord.Interaction,
                        message_text: str = discord.SlashOption(name="message_text",
                                                                description="Message to send",
@@ -1289,7 +1288,7 @@ class GuildPreferencesDB:
 gpdb = GuildPreferencesDB(LINK)
 
 
-@bot.slash_command(description="Set server preferences (for mods)")
+@bot.slash_command(description="Set server preferences (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def set_preferences(interaction: discord.Interaction,
                           modlog_channel: discord.abc.GuildChannel = discord.SlashOption(name="modlog_channel",
                                                                                          description="Channel for log of timeouts, bans, etc.",
@@ -1355,7 +1354,7 @@ async def history(interaction: discord.Interaction,
         await interaction.send("Please set up your moglog and warnlog through /set_preferences first!")
 
 
-@bot.slash_command(description="Warn a user (for mods)")
+@bot.slash_command(description="Warn a user (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def warn(interaction: discord.Interaction,
                user: discord.Member = discord.SlashOption(name="user", description="User to warn",
                                                           required=True),
@@ -1425,7 +1424,7 @@ async def confess(interaction: discord.Interaction,
     anon_approve_mgs = await mods_channel.send(embed=embed, view=view)
     await interaction.send("Your confession has been sent to the moderators.\nYou have to wait for their approval.", ephemeral=True)
 
-@bot.slash_command(description="Timeout a user (for mods)")
+@bot.slash_command(description="Timeout a user (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def timeout(interaction: discord.Interaction,
                   user: discord.Member = discord.SlashOption(name="user", description="User to timeout",
                                                              required=True),
@@ -1480,7 +1479,7 @@ Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
         f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
 
 
-@bot.slash_command(description="Untimeout a user (for mods)")
+@bot.slash_command(description="Untimeout a user (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def untimeout(interaction: discord.Interaction,
                     user: discord.Member = discord.SlashOption(name="user", description="User to untimeout",
                                                                required=True)):
@@ -1508,7 +1507,7 @@ Moderator: {mod}"""
     await interaction.send(f"Timeout has been removed from {str(user)}.")
 
 
-@bot.slash_command(description="Ban a user from the server (for mods)")
+@bot.slash_command(description="Ban a user from the server (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def ban(interaction: discord.Interaction,
               user: discord.Member = discord.SlashOption(name="user", description="User to ban",
                                                        required=True),
@@ -1548,7 +1547,7 @@ Reason: {reason}"""
     await interaction.send(f"{str(user)} has been banned.")
 
 
-@bot.slash_command(description="Unban a user from the server (for mods)")
+@bot.slash_command(description="Unban a user from the server (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def unban(interaction: discord.Interaction,
                 user: discord.User = discord.SlashOption(name="user", description="User to unban",
                                                 required=True)):
@@ -1574,7 +1573,7 @@ Moderator: {mod}"""
         await ban_msg_channel.send(ban_msg)
 
 
-@bot.slash_command(description="Kick a user from the server (for mods)")
+@bot.slash_command(description="Kick a user from the server (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def kick(interaction: discord.Interaction,
                user: discord.Member = discord.SlashOption(name="user", description="User to kick",
                                                         required=True),
@@ -1700,7 +1699,7 @@ async def votehotm(interaction: discord.Interaction,
 
 # Embeds sending and editing
 
-@bot.slash_command(description="send and edit embeds (for mods)")
+@bot.slash_command(description="send and edit embeds (for mods)", default_member_permissions = discord.Permissions(administrator = True))
 async def embed(interaction: discord.Interaction,
                 channel: discord.abc.GuildChannel = discord.SlashOption(name="channel", description="Default is the channel you use the command in", required=False),
                 content: str = discord.SlashOption(name="content", description="The content of the embed", required=False),
