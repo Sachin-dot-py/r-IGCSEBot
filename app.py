@@ -684,7 +684,7 @@ class CancelPingBtn(discord.ui.View):
                 embed = discord.Embed(description=f"[Jump to the message.]({url})")
             else:
                 embed = discord.Embed()
-            embed.set_author(name=f"{str(self.user)}", icon_url=self.user.display_avatar.url)
+            embed.set_author(name=str(self.user), icon_url=self.user.display_avatar.url)
             await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
             await self.message.delete()  # Delete original message
 
@@ -713,12 +713,12 @@ async def helper(
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
         else:
             embed = discord.Embed()
-        embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
+        embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
         await interaction.send(helper_role.mention, embed=embed)
         return
     view = CancelPingBtn()
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
-    embed.set_author(name=f"{str(interaction.user)}", icon_url=interaction.user.display_avatar.url)
+    embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
     view.message = message
     view.message_id = message_id
@@ -881,7 +881,7 @@ async def change_rep(interaction: discord.Interaction,
                      user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
                                                               required=True),
                      new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True,
-                                                        min_value=1, max_value=9999)):
+                                                        min_value=0, max_value=9999)):
     if await isModerator(interaction.user):
         await interaction.response.defer()
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
