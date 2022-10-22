@@ -881,7 +881,7 @@ async def change_rep(interaction: discord.Interaction,
                      user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
                                                               required=True),
                      new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True,
-                                                        min_value=1, max_value=9999)):
+                                                        min_value=0, max_value=9999)):
     if await isModerator(interaction.user):
         await interaction.response.defer()
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
