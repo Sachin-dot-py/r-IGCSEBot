@@ -680,7 +680,7 @@ class CancelPingBtn(discord.ui.View):
         await self.message.edit(view=None) # Remove Cancel Ping button
         if self.value:
             if self.message_id:
-                url = f"https://discord.com/channels/{self.message.guild.id}/{self.message.channel.id}/{self.message_id}"
+                url = f"https://discord.com/channels/{self.guild.id}/{self.channel.id}/{self.message_id}"
                 embed = discord.Embed(description=f"[Jump to the message.]({url})")
             else:
                 embed = discord.Embed()
@@ -721,6 +721,8 @@ async def helper(
     embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
     message = await interaction.send(embed=embed, view=view)
     view.message = message
+    view.channel = interaction.channel
+    view.guild = interaction.guild
     view.message_id = message_id
     view.helper_role = helper_role
     view.user = interaction.user
