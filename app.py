@@ -1699,6 +1699,18 @@ async def votehotm(interaction: discord.Interaction,
     else:
         await interaction.send(f"{helper} is not a helper.", ephemeral=True)
 
+@bot.slash_command(name = "resethotm", description = "Reset the Helper of the Month data", guild_ids = [GUILD_ID], default_member_permissions = discord.Permissions(administrator = True))
+async def resethotm(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral = True)
+    client = pymongo.MongoClient(LINK)
+    db = client.IGCSEBot
+    db.drop_collection("hotmhelpers")
+    db.drop_collection("hotmvoters")
+    msgs = [msg for msg in await bot.get_channel(991202262472998962).history().flatten() if
+                    msg.author.id == 861445044790886467 and msg.content == "HOTM Voting Results"] 
+    await msgs[0].delete()
+    await interaction.send("Helper of the Month data has been reset!")
+
 # Embeds sending and editing
 
 @bot.slash_command(description="send and edit embeds (for mods)")
