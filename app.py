@@ -78,7 +78,7 @@ async def on_raw_reaction_add(reaction):
         user = await guild.fetch_member(reaction.user_id)
         roles = set([r.id for r in user.roles])
         await user.remove_roles(stage1, stage2, verified)
-        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE") or await hasRole(user, "IGCSE Alumni"):
+        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE"):
             await user.add_roles(verified)
         elif len(roles.intersection(session_roles)) > 0:
             await user.add_roles(stage2)
@@ -199,7 +199,7 @@ async def on_raw_reaction_remove(reaction):
         user = await guild.fetch_member(reaction.user_id)
         roles = set([r.id for r in user.roles])
         await user.remove_roles(stage1, stage2, verified)
-        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE") or await hasRole(user, "IGCSE Alumni"):
+        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE"):
             await user.add_roles(verified)
         elif len(roles.intersection(session_roles)) > 0:
             await user.add_roles(stage2)
