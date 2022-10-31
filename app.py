@@ -1701,6 +1701,9 @@ async def votehotm(interaction: discord.Interaction,
 
 @bot.slash_command(name = "resethotm", description = "Reset the Helper of the Month data", guild_ids = [GUILD_ID])
 async def resethotm(interaction: discord.Interaction):
+    if not await isModerator(interaction.user):
+        await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
+        return
     await interaction.response.defer(ephemeral = True)
     client = pymongo.MongoClient(LINK)
     db = client.IGCSEBot
