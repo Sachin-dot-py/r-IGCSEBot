@@ -1725,12 +1725,12 @@ class NewEmbed(discord.ui.Modal):
 
         super().__init__("New embed!", timeout = None)
 
-        self.title = discord.ui.TextInput(
+        self.name = discord.ui.TextInput(
             label="Title of the embed",
             min_length=2,
             max_length=50,
         )
-        self.add_item(self.title)
+        self.add_item(self.name)
 
         self.description = discord.ui.TextInput(
             label = "Description of the embed",
@@ -1741,7 +1741,7 @@ class NewEmbed(discord.ui.Modal):
         self.add_item(self.description)
     
     async def callback(self, interaction: discord.Interaction) -> None:
-        self.embed.title = self.title.value
+        self.embed.title = self.name.value
         self.embed.description = self.description.value
         if self.msg:
             await self.msg.edit(content = self.content, embed = self.embed)
