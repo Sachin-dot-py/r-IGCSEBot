@@ -1716,17 +1716,46 @@ async def resethotm(interaction: discord.Interaction):
 
 # Embeds sending and editing
 
+class NewEmbed(discord.ui.Modal):
+    def __init__(self, embed: discord.Embed, embed_msg: discord.Message = None, content: str = None, channel: discord.TextChannel = None):
+        self.embed = embed
+        self.msg = embed_msg
+        self.content = content
+        self.channel = channel
+
+        super().__init__("New embed!", timeout = None)
+
+        self.name = discord.ui.TextInput(
+            label="Title of the embed",
+            style = discord.TextInputStyle.short,
+            placeholder = "This will be the title of the embed",
+            required = True
+        )
+        self.add_item(self.name)
+
+        self.description = discord.ui.TextInput(
+            label = "Description of the embed",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "This will be the description of the embed",
+            required = True
+        )
+        self.add_item(self.description)
+    
+    async def callback(self, interaction: discord.Interaction) -> None:
+        self.embed.title = self.name.value
+        self.embed.description = self.description.value
+        if self.msg:
+            await self.msg.edit(content = self.content, embed = self.embed)
+        else:
+            await self.channel.send(content = self.content, embed = self.embed)
+        await interaction.send("Done!",ephemeral=True, delete_after=1)
+
 @bot.slash_command(description="send and edit embeds (for mods)")
 async def embed(interaction: discord.Interaction,
                 channel: discord.abc.GuildChannel = discord.SlashOption(name="channel", description="Default is the channel you use the command in", required=False),
                 content: str = discord.SlashOption(name="content", description="The content of the embed", required=False),
-                title: str = discord.SlashOption(name="title", description="The title of the embed", required=False),
-                description: str = discord.SlashOption(name="description", description="The description of the embed", required=False),
                 colour: str = discord.SlashOption(name="colour", description="The hexadecimal colour code for the embed (Default is green)", required=False),
                 message_id: str=discord.SlashOption(name='message_id', description='The id of the message embed you want to edit', required=False)):
-    if not await isModerator(interaction.user):
-        await interaction.send(f"Sorry, you don't have the permission to perform this action.", ephemeral=True)
-        return
     if channel:
         embed_channel = channel
     else:
@@ -1737,8 +1766,7 @@ async def embed(interaction: discord.Interaction,
         embed = discord.Embed(colour=previous_embed.colour, title=previous_embed.title, description=previous_embed.description)
     else:
         embed = discord.Embed()
-        if content and not description and not title:
-            await interaction.send('You have to specify a title or a description', ephemeral=True)
+        embed_message = None
     if colour:
         try:
             embed.colour = colour
@@ -1747,16 +1775,7 @@ async def embed(interaction: discord.Interaction,
             return
     else:
         embed.colour = discord.Colour.green()
-    if title:
-        embed.title = title.replace('\\n', '\n')
-    if description:
-        embed.description = description.replace('\\n', '\n')
-    if message_id:
-        await embed_message.edit(content=content, embed=embed)
-        await interaction.send("Done!", ephemeral=True, delete_after=1)
-        return
-    await embed_channel.send(content=content, embed=embed)
-    await interaction.send("Done!",ephemeral=True, delete_after=1)
-
+    modal = NewEmbed(embed, embed_message, content, embed_channel)
+    await interaction.response.send_modal(modal)
 
 bot.run(TOKEN)
