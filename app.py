@@ -1727,8 +1727,9 @@ class NewEmbed(discord.ui.Modal):
 
         self.name = discord.ui.TextInput(
             label="Title of the embed",
-            min_length=2,
-            max_length=50,
+            style = discord.TextInputStyle.short,
+            placeholder = "This will be the title of the embed",
+            required = True
         )
         self.add_item(self.name)
 
