@@ -1752,10 +1752,13 @@ class NewEmbed(discord.ui.Modal):
 
 @bot.slash_command(description="send and edit embeds (for mods)")
 async def embed(interaction: discord.Interaction,
-                channel: discord.abc.GuildChannel = discord.SlashOption(name="channel", description="Default is the channel you use the command in", required=False),
+                channel: discord.abc.GuildChannel = discord.SlashOption(name="channel", description="Default is the channel you use the command in", channel_types = [discord.ChannelType.text], required=False),
                 content: str = discord.SlashOption(name="content", description="The content of the embed", required=False),
                 colour: str = discord.SlashOption(name="colour", description="The hexadecimal colour code for the embed (Default is green)", required=False),
                 message_id: str=discord.SlashOption(name='message_id', description='The id of the message embed you want to edit', required=False)):
+    if not await isModerator(interaction.user):
+        await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
+        return
     if channel:
         embed_channel = channel
     else:
