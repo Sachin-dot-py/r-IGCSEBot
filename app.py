@@ -72,7 +72,7 @@ async def on_raw_reaction_add(reaction):
     verified = await getRole("Verified")
     stage1 = await getRole("Stage 1 - Unverified")
     stage2 = await getRole("Stage 2 - Unverified")
-    if is_rr != None:
+    if is_rr is not None:
         role = guild.get_role(is_rr["role"])
         await user.add_roles(role)
         user = await guild.fetch_member(reaction.user_id)
@@ -193,7 +193,7 @@ async def on_raw_reaction_remove(reaction):
     verified = await getRole("Verified")
     stage1 = await getRole("Stage 1 - Unverified")
     stage2 = await getRole("Stage 2 - Unverified")
-    if is_rr != None:
+    if is_rr is not None:
         role = guild.get_role(is_rr["role"])
         await user.remove_roles(role)
         user = await guild.fetch_member(reaction.user_id)
@@ -282,7 +282,7 @@ async def on_message(message):
             channel = await guild.create_text_channel(str(message.author).replace("#", "-"),
                                                         category=category,
                                                         topic=str(message.author.id))
-        embed = discord.Embed(title=f"Message Received", description=message.clean_content,
+        embed = discord.Embed(title="Message Received", description=message.clean_content,
                                             colour=discord.Colour.green())
         embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
         await channel.send(embed=embed)
@@ -307,22 +307,22 @@ async def on_message(message):
             else:
                 member = message.guild.get_member(int(message.channel.topic))
                 if message.content == ".sclose":
-                    embed = discord.Embed(title=f"DM Channel Closed",
-                                         description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                    embed = discord.Embed(title="DM Channel Silently Closed",
+                                         description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
                     embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await message.channel.delete()
                     await bot.get_channel(895961641219407923).send(embed=embed)
                     return
                 channel = await member.create_dm()
                 if message.content == ".close":
-                    embed = discord.Embed(title=f"DM Channel Closed",
+                    embed = discord.Embed(title="DM Channel Closed",
                                          description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
                     embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await channel.send(embed=embed)
                     await message.channel.delete()
                     await bot.get_channel(895961641219407923).send(embed=embed)
                     return
-                embed = discord.Embed(title=f"Message from r/IGCSE Moderators",
+                embed = discord.Embed(title="Message from r/IGCSE Moderators",
                                          description=message.clean_content, colour=discord.Colour.green())
                 embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
 
@@ -549,7 +549,7 @@ async def rrmake(ctx):
                 except ValueError:
                     await ctx.send("Invalid input")
                 else:
-                    if guild.get_role(int(role[3:-1])) == None:
+                    if guild.get_role(int(role[3:-1])) is None:
                         await ctx.send("Invalid input")
                     else:
                         rrs.append([reaction, int(role[3:-1])])
@@ -590,7 +590,7 @@ async def rrmake(interaction: discord.Interaction, link: str = discord.SlashOpti
                         except ValueError:
                             await channel.send("Invalid input")
                         else:
-                            if guild.get_role(int(role[3:-1])) == None:
+                            if guild.get_role(int(role[3:-1])) is None:
                                 await channel.send("Invalid input")
                             else:
                                 rrs.append([reaction, int(role[3:-1])])
@@ -889,7 +889,7 @@ async def change_rep(interaction: discord.Interaction,
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
     else:
-        await interaction.send(f"You are not authorized to use this command.", ephemeral=True)
+        await interaction.send("You are not authorized to use this command.", ephemeral=True)
 
 
 @bot.slash_command(description="View the current rep leaderboard")
@@ -1409,7 +1409,7 @@ async def confess(interaction: discord.Interaction,
         embed.set_author(name=f"Approved by {interaction.user}", icon_url=interaction.user.display_avatar.url)
         await interaction.edit(embed=embed, view=None)
         embed = discord.Embed(colour=discord.Colour.random(), description=confession)
-        await confession_channel.send(content=f'New Anonymous Confession', embed=embed)
+        await confession_channel.send(content="New Anonymous Confession", embed=embed)
 #         await anon_approve_mgs.delete()
     approveBTN.callback = ApproveCallBack
 
@@ -1654,7 +1654,7 @@ async def votehotm(interaction: discord.Interaction,
                     discord.SlashOption(name="helper",
                                         description="Choose the helper to vote for", required=True)):
     if helper.bot:
-        await interaction.send(f"You can't vote for a bot.", ephemeral=True)
+        await interaction.send("You can't vote for a bot.", ephemeral=True)
     elif await isHelper(helper):
         await interaction.response.defer(ephemeral=True)
         client = pymongo.MongoClient(LINK)
