@@ -1781,4 +1781,149 @@ async def embed(interaction: discord.Interaction,
     modal = NewEmbed(embed, embed_message, content, embed_channel)
     await interaction.response.send_modal(modal)
 
+@bot.slash_command(name = "poll")
+async def poll():
+    pass
+
+class Poll(discord.ui.Modal):
+    def __init__(self, options: list, channel: discord.TextChannel):
+        self.options = options
+        self.channel = channel
+
+        super().__init__("New poll!", timeout = None)
+
+        self.name = discord.ui.TextInput(
+            label = "Title of the message",
+            style = discord.TextInputStyle.short,
+            placeholder = "This will be the title of the poll",
+            required = True
+        )
+        self.add_item(self.name)
+
+        self.description = discord.ui.TextInput(
+            label = "Content of the message",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "This will be the message in the poll",
+            required = True
+        )
+        self.add_item(self.description)
+
+    async def callback(self, interaction: discord.Interaction):
+        poll_embed = discord.Embed(title = self.name.value, description = self.description.value, colour = discord.Colour.orange())
+        options_field = ""
+        emojis = []
+        for x in range(1, len(self.options)+1):
+            if x == 1:
+                emoji = "1️⃣"
+            elif x == 2:
+                emoji = "2️⃣"
+            elif x == 3:
+                emoji = "3️⃣"
+            elif x == 4:
+                emoji = "4️⃣"
+            elif x == 5:
+                emoji = "5️⃣"
+            elif x == 6:
+                emoji = "6️⃣"
+            elif x == 7:
+                emoji = "7️⃣"
+            elif x == 8:
+                emoji = "8️⃣"
+            elif x == 9:
+                emoji = "9️⃣"
+            else:
+                emoji = "🔟"
+            
+            emojis.append(emoji)
+            options_field += emoji + " " + self.options[x-1] + "\n"
+        
+        poll_embed.add_field(name = "Options", value = options_field)
+
+        poll_msg = await self.channel.send(embed = poll_embed)
+        for emoji in emojis:
+            await poll_msg.add_reaction(emoji)
+        await interaction.send("Poll created!", ephemeral = True)
+
+@poll.subcommand(name = "create", description = "Create a new poll")
+async def create(interaction: discord.Interaction, option_1: str = discord.SlashOption(name = "option-1", description = "Option 1", required = True), option_2: str = discord.SlashOption(name = "option-2", description = "Option 2", required = False), option_3: str = discord.SlashOption(name = "option-3", description = "Option 3", required = False), option_4: str = discord.SlashOption(name = "option-4", description = "Option 4", required = False), option_5: str = discord.SlashOption(name = "option-5", description = "Option 5", required = False), option_6: str = discord.SlashOption(name = "option-6", description = "Option 6", required = False), option_7: str = discord.SlashOption(name = "option-7", description = "Option 7", required = False), option_8: str = discord.SlashOption(name = "option-8", description = "Option 8", required = False), option_9: str = discord.SlashOption(name = "option-9", description = "Option 9", required = False), option_10: str = discord.SlashOption(name = "option-10", description = "Option 10", required = False)):
+    if not await isModerator(interaction.user):
+        await interaction.send("You do not have the required permissions to use this command!", ephemeral = True)
+        return
+    options = [option_1, option_2, option_3, option_4, option_5, option_6, option_7, option_8, option_9, option_10]
+    while True:
+        try:
+            options.remove(None)
+        except ValueError:
+            break
+    modal = Poll(options, interaction.channel)
+    await interaction.response.send_modal(modal)
+
+@poll.subcommand(name = "results", description = "Get the results for a poll")
+async def results(interaction: discord.Interaction, link: str = discord.SlashOption(name = "link", description = "The link of the message with the poll", required = True)):
+    try:
+        msg_id = int(link.split("/")[-1])
+        msg = await interaction.channel.fetch_message(msg_id)
+        if msg.author != bot.user:
+            await interaction.send("This message was not sent by the bot!", ephemeral = True)
+            return
+    except:
+        await interaction.send("Invalid message link!", ephemeral = True)
+        return
+    
+    reactions_list = msg.reactions
+    reactions = {}
+    embed = msg.embeds[0]
+    options = embed.fields[0].value.split("\n")
+    for x in range(1, len(options)+1):
+        if x == 1:
+            emoji = "1️⃣"
+        elif x == 2:
+            emoji = "2️⃣"
+        elif x == 3:
+            emoji = "3️⃣"
+        elif x == 4:
+            emoji = "4️⃣"
+        elif x == 5:
+            emoji = "5️⃣"
+        elif x == 6:
+            emoji = "6️⃣"
+        elif x == 7:
+            emoji = "7️⃣"
+        elif x == 8:
+            emoji = "8️⃣"
+        elif x == 9:
+            emoji = "9️⃣"
+        else:
+            emoji = "🔟"
+        count = discord.utils.get(reactions_list, emoji = emoji)
+        reactions[emoji] = count.count
+    total = sum(list(reactions.values()))
+    results_embed = discord.Embed(title = embed.title, colour = discord.Colour.orange())
+
+    for x in range(1, len(options)+1):
+        if x == 1:
+            emoji = "1️⃣"
+        elif x == 2:
+            emoji = "2️⃣"
+        elif x == 3:
+            emoji = "3️⃣"
+        elif x == 4:
+            emoji = "4️⃣"
+        elif x == 5:
+            emoji = "5️⃣"
+        elif x == 6:
+            emoji = "6️⃣"
+        elif x == 7:
+            emoji = "7️⃣"
+        elif x == 8:
+            emoji = "8️⃣"
+        elif x == 9:
+            emoji = "9️⃣"
+        else:
+            emoji = "🔟"
+        colours = "🟩"*(reactions[emoji]*10//total)+"🟥"*(10-(reactions[emoji]*10//total))
+        results_embed.add_field(name = options[x-1], value = colours+f"{reactions[emoji]*100//total}%", inline = False)
+    
+    await interaction.send(embed = results_embed)
+
 bot.run(TOKEN)
