@@ -1804,7 +1804,7 @@ class Poll(discord.ui.Modal):
             label = "Content of the message",
             style = discord.TextInputStyle.paragraph,
             placeholder = "This will be the message in the poll",
-            required = True
+            required = False
         )
         self.add_item(self.description)
 
