@@ -647,7 +647,7 @@ async def suggest(interaction: discord.Interaction,
         await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)
 
 @bot.slash_command(description="Create a new in-channel poll")
-async def poll(interaction: discord.Interaction,
+async def yesnopoll(interaction: discord.Interaction,
                poll: str = discord.SlashOption(name="poll",
                 description="The poll to be created",
                 required=True)):
