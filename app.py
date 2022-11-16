@@ -1896,7 +1896,7 @@ async def results(interaction: discord.Interaction, link: str = discord.SlashOpt
         else:
             emoji = "🔟"
         count = discord.utils.get(reactions_list, emoji = emoji)
-        reactions[emoji] = count.count
+        reactions[emoji] = count.count-1
     total = sum(list(reactions.values()))
     results_embed = discord.Embed(title = embed.title, colour = discord.Colour.orange())
 
