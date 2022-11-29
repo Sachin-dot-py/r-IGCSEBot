@@ -1782,7 +1782,7 @@ async def embed(interaction: discord.Interaction,
     await interaction.response.send_modal(modal)
 
 @bot.slash_command(name = "poll")
-async def poll():
+async def poll(interaction: discord.Interaction):
     pass
 
 class Poll(discord.ui.Modal):
