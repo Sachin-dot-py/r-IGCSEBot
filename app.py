@@ -6,6 +6,8 @@ import requests
 import os
 import nextcord as discord
 import traceback
+import ast
+
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
@@ -487,6 +489,46 @@ class RolePickerCategoriesView(discord.ui.View):
             await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
         else:
             await interaction.send("No roles to remove! Please pick up roles first.", ephemeral=True)
+
+
+def insert_returns(body):
+
+    if isinstance(body[-1], ast.Expr):
+        body[-1] = ast.Return(body[-1].value)
+        ast.fix_missing_locations(body[-1])
+
+    if isinstance(body[-1], ast.If):
+        insert_returns(body[-1].body)
+        insert_returns(body[-1].orelse)
+
+    if isinstance(body[-1], ast.With):
+        insert_returns(body[-1].body)
+
+
+@bot.slash_command(name="eval", description="Evaluate a pice of code.", guild_ids=[GUILD_ID])
+async def _eval(interaction: discord.Interaction):
+    if not isModerator(interaction.user):
+        await interaction.send("This is not for you.", ephemeral=True)
+        return
+    fn_name = "_eval_expr"
+    cmd = cmd.strip("` ")
+    cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+    body = f"async def {fn_name}():\n{cmd}"
+    parsed = ast.parse(body)
+    body = parsed.body[0].body
+    insert_returns(body)
+
+    env = {
+        "bot": bot,
+        "discord": discord,
+        "interaction": interaction,
+        "__import__": __import__
+    }
+    exec(compile(parsed, filename="<ast>", mode="exec"), env)
+
+    result = (await eval(f"{fn_name}()", env))
+    await interaction.send(result)
+
 
 @bot.slash_command(description="Pick up your roles", guild_ids=[GUILD_ID])
 async def roles(interaction: discord.Interaction):
