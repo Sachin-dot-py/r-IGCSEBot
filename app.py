@@ -519,7 +519,7 @@ class EvalModal(discord.ui.Modal):
     
     async def callback(self, interaction: discord.Interaction):
         fn_name = "_eval_expr"
-        cmd = self.cmd.value.strip("` ")
+        cmd = self.cmd.value.strip()
         cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
         body = f"async def {fn_name}():\n{cmd}"
         parsed = ast.parse(body)
