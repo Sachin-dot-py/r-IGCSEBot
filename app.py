@@ -507,7 +507,7 @@ def insert_returns(body):
 
 @bot.slash_command(name="eval", description="Evaluate a pice of code.", guild_ids=[GUILD_ID])
 async def _eval(interaction: discord.Interaction):
-    if not isModerator(interaction.user):
+    if not await isModerator(interaction.user):
         await interaction.send("This is not for you.", ephemeral=True)
         return
     fn_name = "_eval_expr"
