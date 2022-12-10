@@ -505,29 +505,45 @@ def insert_returns(body):
         insert_returns(body[-1].body)
 
 
+class EvalModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Execute a piece of code!", timeout = None)
+
+        self.cmd = discord.ui.TextInput(
+            label = "Code",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "Enter the code that is to be executed over here",
+            required = True
+        )
+        self.add_item(self.cmd)
+    
+    async def callback(self, interaction: discord.Interaction):
+        fn_name = "_eval_expr"
+        cmd = self.cmd.value.strip()
+        cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+        body = f"async def {fn_name}():\n{cmd}"
+        parsed = ast.parse(body)
+        body = parsed.body[0].body
+        insert_returns(body)
+
+        env = {
+            "bot": bot,
+            "discord": discord,
+            "interaction": interaction,
+            "__import__": __import__
+        }
+        exec(compile(parsed, filename="<ast>", mode="exec"), env)
+
+        result = (await eval(f"{fn_name}()", env))
+        await interaction.send(result)
+
 @bot.slash_command(name="eval", description="Evaluate a pice of code.", guild_ids=[GUILD_ID])
 async def _eval(interaction: discord.Interaction):
     if not await isModerator(interaction.user):
         await interaction.send("This is not for you.", ephemeral=True)
         return
-    fn_name = "_eval_expr"
-    cmd = cmd.strip("` ")
-    cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
-    body = f"async def {fn_name}():\n{cmd}"
-    parsed = ast.parse(body)
-    body = parsed.body[0].body
-    insert_returns(body)
-
-    env = {
-        "bot": bot,
-        "discord": discord,
-        "interaction": interaction,
-        "__import__": __import__
-    }
-    exec(compile(parsed, filename="<ast>", mode="exec"), env)
-
-    result = (await eval(f"{fn_name}()", env))
-    await interaction.send(result)
+    eval_modal = EvalModal()
+    await interaction.response.send_modal(eval_modal)
 
 
 @bot.slash_command(description="Pick up your roles", guild_ids=[GUILD_ID])
