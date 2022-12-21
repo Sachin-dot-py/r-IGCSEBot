@@ -267,9 +267,7 @@ async def on_member_join(member: discord.Member):
         channel = await member.create_dm()
         await channel.send(embed=embed1)
         welcome = bot.get_channel(930088940654956575)
-        await welcome.send(f"Welcome {member.mention}! Please pick up your roles at <#1010112017178312755> and <#1024872365894672425> to access the server.")
-        unverified_stage1 = await getRole("Stage 1 - Unverified")
-        await member.add_roles(unverified_stage1)
+        await welcome.send(f"Welcome {member.mention}! Pick up your subject roles from <id:customize> to get access to subject channels and resources!")
 
 
 @bot.event
