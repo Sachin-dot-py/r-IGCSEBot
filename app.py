@@ -1982,4 +1982,27 @@ async def results(interaction: discord.Interaction, link: str = discord.SlashOpt
     
     await interaction.send(embed = results_embed)
 
+class Feedback(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Feedback!", timeout = None)
+
+        self.feedback = discord.ui.TextInput(
+            label = "Your feedback",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "The message you would like to send as feedback",
+            required = True
+        )
+        self.add_item(self.feedback)
+    
+    async def callback(self, interaction: discord.Interaction):
+        feedback_channel = await bot.fetch_channel(1057505291014524939)
+        feedback_embed = discord.Embed(title = "New feedback", colour = discord.Colour.blue())
+        feedback_embed.add_field(name = "User", value = interaction.user)
+        feedback_embed.add_field(name = "Message", value = self.feedback.value)
+        await feedback_channel.send(embed = feedback_embed)
+
+@bot.slash_command(name = "feedback", description = "Submit some feedback to the mods!")
+async def feedback(interaction: discord.Interaction):
+    await interaction.response.send_modal(Feedback())
+
 bot.run(TOKEN)
