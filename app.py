@@ -2003,6 +2003,6 @@ class Feedback(discord.ui.Modal):
 
 @bot.slash_command(name = "feedback", description = "Submit some feedback to the mods!")
 async def feedback(interaction: discord.Interaction):
-    await interaction.response.send_modal(Feedback())
+    await interaction.response.send_modal(modal = Feedback())
 
 bot.run(TOKEN)
