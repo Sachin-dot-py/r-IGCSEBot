@@ -2000,7 +2000,7 @@ class Feedback(discord.ui.Modal):
         feedback_embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
         feedback_embed.add_field(name = "Message", value = self.feedback.value)
         await feedback_channel.send(embed = feedback_embed)
-        await interaction.send("Feedback sent!")
+        await interaction.send("Feedback sent!", ephemeral = True)
 
 @bot.slash_command(name = "feedback", description = "Submit some feedback to the mods!")
 async def feedback(interaction: discord.Interaction):
