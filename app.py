@@ -1997,7 +1997,7 @@ class Feedback(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         feedback_channel = await bot.fetch_channel(1057505291014524939)
         feedback_embed = discord.Embed(title = "Feedback Received", colour = discord.Colour.blue())
-        feedback_embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+        feedback_embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
         feedback_embed.add_field(name = "Message", value = self.feedback.value)
         await feedback_channel.send(embed = feedback_embed)
 
