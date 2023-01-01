@@ -271,7 +271,7 @@ async def on_member_join(member: discord.Member):
 
 
 @bot.event
-async def on_message(message):
+async def on_message(message: discord.Message):
     if message.author.bot: return
 
     if not message.guild: # Modmail
@@ -363,7 +363,8 @@ async def on_message(message):
     if not keywords.get(message.guild.id, None):  # on first message from guild
         keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
     if message.content.lower() in keywords[message.guild.id].keys():
-        await message.channel.send(keywords[message.guild.id][message.content.lower()])
+        keyword_embed = discord.Embed(description = keywords[message.guild.id][message.content.lower()], colour = discord.Colour.blue())
+        await message.channel.send(embed = keyword_embed)
 
     await bot.process_commands(message)
 
