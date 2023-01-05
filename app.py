@@ -363,11 +363,12 @@ async def on_message(message: discord.Message):
     if not keywords.get(message.guild.id, None):  # on first message from guild
         keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
     if message.content.lower() in keywords[message.guild.id].keys():
-        if not keywords[message.guild.id][message.content.lower()].startswith("https://cdn.discordapp.com/attachments"):
-            keyword_embed = discord.Embed(description = keywords[message.guild.id][message.content.lower()], colour = discord.Colour.blue())
+        autoreply = keywords[message.guild.id][message.content.lower()]
+        if not autoreply.startswith("http"):  # If autoreply is a link/image/media
+            keyword_embed = discord.Embed(description = autoreply, colour = discord.Colour.blue())
             await message.channel.send(embed = keyword_embed)
         else:
-            await message.channel.send(keywords[message.guild.id][message.content.lower()])
+            await message.channel.send(autoreply)
 
     await bot.process_commands(message)
 
