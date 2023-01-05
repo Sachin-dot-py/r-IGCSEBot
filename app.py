@@ -363,8 +363,11 @@ async def on_message(message: discord.Message):
     if not keywords.get(message.guild.id, None):  # on first message from guild
         keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
     if message.content.lower() in keywords[message.guild.id].keys():
-        keyword_embed = discord.Embed(description = keywords[message.guild.id][message.content.lower()], colour = discord.Colour.blue())
-        await message.channel.send(embed = keyword_embed)
+        if not keywords[message.guild.id][message.content.lower()].startswith("https://cdn.discordapp.com/attachments"):
+            keyword_embed = discord.Embed(description = keywords[message.guild.id][message.content.lower()], colour = discord.Colour.blue())
+            await message.channel.send(embed = keyword_embed)
+        else:
+            await message.channel.send(keywords[message.guild.id][message.content.lower()])
 
     await bot.process_commands(message)
 
@@ -861,7 +864,7 @@ repDB = ReputationDB(LINK)
 
 
 async def isThanks(text):
-    alternatives = ['thanks', 'thank you', 'thx', 'tysm', 'thank u', 'thnks', 'tanks', "thanku", "tyvm"]
+    alternatives = ['thanks', 'thank you', 'thx', 'tysm', 'thank u', 'thnks', 'tanks', "thanku", "tyvm", "thankyou"]
     if "ty" in text.lower().split():
         return True
     else:
