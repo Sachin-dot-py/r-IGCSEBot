@@ -195,7 +195,7 @@ subreddits = {"Languages": {
     "History": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/history",
     "Geography": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/geography",
     "Islamiyat": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/islamiyat",
-    "Global Perspectives": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/global-perspectives".
+    "Global Perspectives": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/global-perspectives",
     "Sociology": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/sociology",
     "Pakistan Studies": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/pakistan-studies"
 },
