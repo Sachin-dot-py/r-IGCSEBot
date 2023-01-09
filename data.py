@@ -183,56 +183,47 @@ helper_roles = {
 }
 
 subreddits = {"Languages": {
-
-    "First Language English": "https://www.reddit.com/r/igcse/wiki/group1-languages/first-language-english",
-    "Hindi as a Second Language": "https://www.reddit.com/r/igcse/wiki/group1-languages/hindi",
-    "French": "https://www.reddit.com/r/igcse/wiki/group1-languages/french",
-    "English Literature": "https://www.reddit.com/r/igcse/wiki/group1-languages/english-literature",
-    "Mandarin, ESL, Malay, Spanish, German": "https://www.reddit.com/r/igcse/wiki/group1-languages",
-    "Other Languages": "https://www.reddit.com/r/igcse/wiki/group1-languages"
-
+    "First Language English": "https://sites.google.com/view/igcseresources/languages/first-language-english",
+    "Literature in English": "https://sites.google.com/view/igcseresources/languages/english-literature",
+    "Hindi as a second language": "https://sites.google.com/view/igcseresources/languages/hindi",
+    "French": "https://sites.google.com/view/igcseresources/languages/french",
+    "Other Languages": "https://sites.google.com/view/igcseresources/languages/other-languages"
 },
 
-    "Humanities": {
+"Humanities and Social Sciences": {
+    "Economics": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/economics",
+    "History": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/history",
+    "Geography": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/geography",
+    "Islamiyat": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/islamiyat",
+    "Global Perspectives": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/global-perspectives".
+    "Sociology": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/sociology",
+    "Pakistan Studies": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/pakistan-studies"
+},
 
-        "Economics": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/economics",
-        "Environmental Management": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
-        "Geography": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/geography",
-        "Global Perspectives, Pakistan Studies and Sociology": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci",
-        "History": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/history",
-        "Islamiyat": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/islamiyat"
+"Sciences": {
+    "Biology": "https://sites.google.com/view/igcseresources/sciences/biology",
+    "Chemistry": "https://sites.google.com/view/igcseresources/sciences/chemistry",
+    "Physics": "https://sites.google.com/view/igcseresources/sciences/physics",
+    "Combined/Coordinated Sciences": "https://sites.google.com/view/igcseresources/sciences/combinedcoordinated-sciences",
+    "Environmental Management": "https://sites.google.com/view/igcseresources/sciences/environmental-management",
+    "Physical Education": "https://sites.google.com/view/igcseresources/sciences/physical-education",
+    "Psychology": "https://sites.google.com/view/igcseresources/sciences/psychology"
+},
+"Mathematics": {
+    "Mathematics": "https://sites.google.com/view/igcseresources/mathematics/mathematics",
+    "Additional Mathematics": "https://sites.google.com/view/igcseresources/mathematics/additional-mathematics",
+    "International Mathematics": "https://sites.google.com/view/igcseresources/mathematics/international-mathematics"
+},
 
-    },
-
-    "Sciences": {
-
-        "Physics": "https://www.reddit.com/r/igcse/wiki/group3-sciences/physics",
-        "Chemistry": "https://www.reddit.com/r/igcse/wiki/group3-sciences/chemistry",
-        "Biology": "https://www.reddit.com/r/igcse/wiki/group3-sciences/biology",
-        "Combined/Co-ordinated Sciences": "https://www.reddit.com/r/igcse/wiki/group3-sciences/combined-co-sci",
-        "Environmental Management": "https://www.reddit.com/r/igcse/wiki/group2-humanities-socsci/evm",
-        "Physical Education": "https://www.reddit.com/r/igcse/wiki/group3-sciences"
-
-    },
-
-    "Mathematics": {
-
-        "Maths:": "https://www.reddit.com/r/igcse/wiki/group4-maths/mathematics",
-        "Additional Maths:": "https://www.reddit.com/r/igcse/wiki/group4-maths/additional-maths",
-        "A-Level Maths": "https://www.reddit.com/r/igcse/wiki/group4-maths"
-
-    },
-
-    "Creative and Professional": {
-
-        "Accounting": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/accounting",
-        "Art and Design, Travel and Tourism and Food and Nutrition": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative",
-        "Business Studies": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/business-studies",
-        "Computer Science": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/computer-science",
-        "ICT": "https://www.reddit.com/r/igcse/wiki/group5-professional-creative/ict"
-
-    }
-
+"Creative and Professional": {
+    "ICT": "https://sites.google.com/view/igcseresources/professional-and-creative/ict",
+    "Computer Science": "https://sites.google.com/view/igcseresources/professional-and-creative/computer-science",
+    "Accounting": "https://sites.google.com/view/igcseresources/professional-and-creative/accounting",
+    "Business Studies": "https://sites.google.com/view/igcseresources/professional-and-creative/business-studies",
+    "Art and Design": "https://sites.google.com/view/igcseresources/professional-and-creative/art-and-design",
+    "Travel and Tourism": "https://sites.google.com/view/igcseresources/professional-and-creative/travel-and-tourism",
+    "Food and Nutrition": "https://sites.google.com/view/igcseresources/professional-and-creative/food-and-nutrition"
+}
 }
 
 study_roles = {
