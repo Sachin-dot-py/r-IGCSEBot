@@ -1259,7 +1259,7 @@ async def joke(interaction: discord.Interaction):
     await interaction.send(joke)
 
 
-# Wiki Page
+# Resources Command
 
 
 class Groups(discord.ui.Select):
@@ -1289,8 +1289,8 @@ class DropdownView(discord.ui.View):
         self.add_item(Groups())
 
 
-@bot.slash_command(description="View the r/igcse wiki page", guild_ids=[GUILD_ID])
-async def wiki(interaction: discord.Interaction):
+@bot.slash_command(description="View the r/igcse resources repository", guild_ids=[GUILD_ID])
+async def resources(interaction: discord.Interaction):
     await interaction.send(view=DropdownView())
 
 
