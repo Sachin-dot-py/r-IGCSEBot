@@ -7,8 +7,6 @@ import os
 import nextcord as discord
 import traceback
 import ast
-import dotenv
-dotenv.load_dotenv()
 
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
