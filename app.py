@@ -654,30 +654,6 @@ async def colorroles(interaction: discord.Interaction):
 
 
 # Suggestions
-"""@bot.slash_command(description="Make a new suggestion for the server")
-async def suggest(interaction: discord.Interaction,
-                  suggestion: str = discord.SlashOption(name="suggestion",
-                                                        description="Create a new suggestion for the server.",
-                                                        required=True),
-                  ):
-    channel_id = gpdb.get_pref("suggestions_channel", interaction.guild.id)
-    if not channel_id:
-        await interaction.send(
-            "The suggestions channel for this server is not set. Please ask a moderator/admin to set it using /set_preferences to use this command.",
-            ephemeral=True)
-    else:
-        await interaction.response.defer(ephemeral=True)
-        channel = bot.get_channel(channel_id)
-        embed = discord.Embed(title=f"Suggestion by {interaction.user}",
-                                 description=f"Total Votes: 0\n\n{'🟩' * 10}\n\nSuggestion: {suggestion}",
-                                 colour=discord.Colour.green())
-        msg = await channel.send(embed=embed)
-        await msg.add_reaction('✅')
-        await msg.add_reaction("🟢")
-        await msg.add_reaction("🔴")
-        await msg.add_reaction('❌')
-        await msg.create_thread(name=f"Suggestion by {interaction.user} Discussion")
-        await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)"""
 
 @bot.slash_command(description="Create a new in-channel poll")
 async def yesnopoll(interaction: discord.Interaction,
