@@ -2,3 +2,4 @@
 .idea/
 .DS_Store
 app_v1.py
+__pycache__
