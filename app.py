@@ -7,6 +7,8 @@ import os
 import nextcord as discord
 import traceback
 import ast
+import dotenv
+dotenv.load_dotenv()
 
 from nextcord.ext import commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
@@ -72,21 +74,6 @@ async def on_raw_reaction_add(reaction):
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
     verified = await getRole("Verified")
-    stage1 = await getRole("Stage 1 - Unverified")
-    stage2 = await getRole("Stage 2 - Unverified")
-    if is_rr is not None:
-        role = guild.get_role(is_rr["role"])
-        await user.add_roles(role)
-        user = await guild.fetch_member(reaction.user_id)
-        roles = set([r.id for r in user.roles])
-        await user.remove_roles(stage1, stage2, verified)
-        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE") or await hasRole(user, "IGCSE Alumni"):
-            await user.add_roles(verified)
-        elif len(roles.intersection(session_roles)) > 0:
-            await user.add_roles(stage2)
-        else:
-            await user.add_roles(stage1)
-        return
 
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
@@ -193,21 +180,6 @@ async def on_raw_reaction_remove(reaction):
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
     verified = await getRole("Verified")
-    stage1 = await getRole("Stage 1 - Unverified")
-    stage2 = await getRole("Stage 2 - Unverified")
-    if is_rr is not None:
-        role = guild.get_role(is_rr["role"])
-        await user.remove_roles(role)
-        user = await guild.fetch_member(reaction.user_id)
-        roles = set([r.id for r in user.roles])
-        await user.remove_roles(stage1, stage2, verified)
-        if (len(roles.intersection(session_roles)) > 0 and len(roles.intersection(subject_roles)) > 0) or await hasRole(user, "NOT IGCSE") or await hasRole(user, "IGCSE Alumni"):
-            await user.add_roles(verified)
-        elif len(roles.intersection(session_roles)) > 0:
-            await user.add_roles(stage2)
-        else:
-            await user.add_roles(stage1)
-        return
     
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
@@ -682,7 +654,7 @@ async def colorroles(interaction: discord.Interaction):
 
 
 # Suggestions
-@bot.slash_command(description="Make a new suggestion for the server")
+"""@bot.slash_command(description="Make a new suggestion for the server")
 async def suggest(interaction: discord.Interaction,
                   suggestion: str = discord.SlashOption(name="suggestion",
                                                         description="Create a new suggestion for the server.",
@@ -705,7 +677,7 @@ async def suggest(interaction: discord.Interaction,
         await msg.add_reaction("🔴")
         await msg.add_reaction('❌')
         await msg.create_thread(name=f"Suggestion by {interaction.user} Discussion")
-        await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)
+        await interaction.send(f"This suggestion has been sent in {channel.mention}", ephemeral=True)"""
 
 @bot.slash_command(description="Create a new in-channel poll")
 async def yesnopoll(interaction: discord.Interaction,
@@ -2010,5 +1982,65 @@ class Feedback(discord.ui.Modal):
 @bot.slash_command(name = "feedback", description = "Submit some feedback to the mods!")
 async def feedback(interaction: discord.Interaction):
     await interaction.response.send_modal(modal = Feedback())
+
+class ChatModerator(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Chat Moderator Application", timeout = None)
+
+        self.timezone = discord.ui.TextInput(
+            label = "Timezone",
+            style = discord.TextInputStyle.short,
+            placeholder = "Please specify your timezone in UTC/GMT time",
+            required = True
+        )
+        self.add_item(self.timezone)
+
+        self.activity = discord.ui.TextInput(
+            label = "Discord activity",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "On average, how long do you spend on Discord on a given day",
+            required = True
+        )
+        self.add_item(self.activity)
+
+        self.duration = discord.ui.TextInput(
+            label = "Moderation duration",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "How long do you foresee that you can be active for chat moderation?",
+            required = True
+        )
+        self.add_item(self.duration)
+    
+    async def callback(self, interaction: discord.Interaction):
+        channel = bot.get_channel(1070571771423621191)
+
+        application_embed = discord.Embed(title = "New application", colour = discord.Colour.blue())
+        application_embed.add_field(name = "User", value = interaction.user)
+        application_embed.add_field(name = "Position", value = "Chat Moderator")
+        application_embed.add_field(name = "Timezone", value = self.timezone.value)
+        application_embed.add_field(name = "Discord activity", value = self.activity.value, inline = False)
+        application_embed.add_field(name = "Moderation duration", value = self.duration.value)
+
+        await channel.send(embed = application_embed)
+        await interaction.send("Thank you for applying. If you are selected as a Chat Moderator, we will send you a modmail with more information. Good luck!", ephemeral = True)
+
+class ApplyDropdown(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label = "Chat Moderator", description = "Apply for the chat moderator position", emoji = "💬")
+        ]
+        super().__init__(placeholder = "Select the application type", min_values = 1, max_values = 1, options = options)
+    
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "Chat Moderator":
+            chat_modal = ChatModerator()
+            await interaction.response.send_modal(modal = chat_modal)
+
+@bot.slash_command(name = "apply", description = "Apply for positions in the Discord server")
+async def apply(interaction: discord.Interaction):
+    view = discord.ui.View()
+    view.add_item(ApplyDropdown())
+    await interaction.send(view = view, ephemeral = True)
+
 
 bot.run(TOKEN)
