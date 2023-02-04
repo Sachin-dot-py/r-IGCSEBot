@@ -1968,32 +1968,14 @@ class ChatModerator(discord.ui.Modal):
             required = True
         )
         self.add_item(self.timezone)
-
-        self.activity = discord.ui.TextInput(
-            label = "Discord activity",
-            style = discord.TextInputStyle.paragraph,
-            placeholder = "On average, how long do you spend on Discord on a given day",
-            required = True
-        )
-        self.add_item(self.activity)
-
-        self.duration = discord.ui.TextInput(
-            label = "Moderation duration",
-            style = discord.TextInputStyle.paragraph,
-            placeholder = "How long do you foresee that you can be active for chat moderation?",
-            required = True
-        )
-        self.add_item(self.duration)
     
     async def callback(self, interaction: discord.Interaction):
         channel = bot.get_channel(1070571771423621191)
 
-        application_embed = discord.Embed(title = "New application", colour = discord.Colour.blue())
+        application_embed = discord.Embed(title = "New application received", colour = discord.Colour.blue())
         application_embed.add_field(name = "User", value = interaction.user)
         application_embed.add_field(name = "Position", value = "Chat Moderator")
         application_embed.add_field(name = "Timezone", value = self.timezone.value)
-        application_embed.add_field(name = "Discord activity", value = self.activity.value, inline = False)
-        application_embed.add_field(name = "Moderation duration", value = self.duration.value)
 
         await channel.send(embed = application_embed)
         await interaction.send("Thank you for applying. If you are selected as a Chat Moderator, we will send you a modmail with more information. Good luck!", ephemeral = True)
