@@ -1484,6 +1484,10 @@ Reason: {reason}
 Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
         await ban_msg_channel.send(ban_msg)
+    await user.send(f'''You have been given a timeout on the r/IGCSE server 
+Reason: {reason}
+Duration: {human_readable_time}
+Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)''')
     await interaction.send(
         f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
 
