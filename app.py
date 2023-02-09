@@ -1131,13 +1131,11 @@ class SendMessage(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         if self.message_id.value:
             try:
-                int(self.message_id.value)
+                message = await self.channel.fetch_message(int(self.message_id.value))
+                await message.reply(self.message_content.value)
+                await interaction.send("Message sent!", ephemeral = True)
             except:
-                await interaction.send("Message ID has to be an integer!", ephemeral = True)
-                return
-            message = await self.channel.fetch_message(int(self.message_id.value))
-            await message.reply(self.message_content.value)
-            await interaction.send("Message sent!", ephemeral = True)
+                await interaction.send("Message ID has to be an integer and has to be in the channel chosen!", ephemeral = True)
         else:
             await self.channel.send(self.message_content.value)
             await interaction.send("Message sent!", ephemeral = True)
@@ -1166,6 +1164,42 @@ async def send_message(ctx,
     else:
         await channel_to_send_to.send(message_text)
         await ctx.send("Done!")
+
+class EditMessage(discord.ui.Modal):
+    def __init__(self, channel: discord.abc.GuildChannel):
+        self.channel = channel
+        super().__init__("Edit a message!", timeout = None)
+
+        self.message_id = discord.ui.TextInput(
+            label = "Message ID",
+            style = discord.TextInputStyle.short,
+            placeholder = "ID of the message you want to edit",
+            required = True
+        )
+        self.add_item(self.message_id)
+
+        self.message_content = discord.ui.TextInput(
+            label = "Content",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "The main body of the message you wish to send",
+            required = True
+        )
+        self.add_item(self.message_content)
+    
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            message = await self.channel.fetch_message(int(self.message_id.value))
+            await message.edit(self.message_content.value)
+            await interaction.send("Message edited!", ephemeral = True)
+        except:
+            await interaction.send("Message ID has to be an integer and has to be in the channel chosen!", ephemeral = True)
+
+@bot.slash_command(name = "edit_message", description = "Edit message using the bot (for mods)")
+async def edit_message(interaction: discord.Interaction, channel: discord.abc.GuildChannel(discord.SlashOption(name = "channel", description = "The channel where the message is located", required = True))):
+    if not await isModerator(interaction.user):
+        await interaction.send("You are not authorized to perform this action.", ephemeral = True)
+        return
+    await interaction.response.send_modal(modal = EditMessage(channel))
 
 @bot.command(description="Edit messages using the bot (for mods)")
 async def edit_message(ctx,
