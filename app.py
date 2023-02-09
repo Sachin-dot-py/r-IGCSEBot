@@ -1107,29 +1107,50 @@ async def counting(message):
     except:
         await message.delete()
 
+class SendMessage(discord.ui.Modal):
+    def __init__(self, channel: discord.abc.GuildChannel):
+        self.channel = channel
+        super().__init__("Send a message!", timeout = None)
+
+        self.message_id = discord.ui.TextInput(
+            label = "Message ID",
+            style = discord.TextInputStyle.short,
+            placeholder = "ID of the message you want to reply to",
+            required = False
+        )
+        self.add_item(self.message_id)
+
+        self.message_content = discord.ui.TextInput(
+            label = "Content",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "The main body of the message you wish to send",
+            required = True
+        )
+        self.add_item(self.message_content)
+    
+    async def callback(self, interaction: discord.Interaction):
+        if self.message_id.value:
+            try:
+                int(self.message_id.value)
+            except:
+                await interaction.send("Message ID has to be an integer!", ephemeral = True)
+                return
+            message = await self.channel.fetch_message(int(self.message_id.value))
+            await message.reply(self.message_content.value)
+            await interaction.send("Message sent!", ephemeral = True)
+        else:
+            await self.channel.send(self.message_content.value)
+            await interaction.send("Message sent!", ephemeral = True)
 
 @bot.slash_command(description="Send messages using the bot (for mods)")
 async def send_message(interaction: discord.Interaction,
-                       message_text: str = discord.SlashOption(name="message_text",
-                                                               description="Message to send",
-                                                               required=True),
                        channel_to_send_to: discord.abc.GuildChannel = discord.SlashOption(name="channel_to_send_to",
-                                                                                          description="Channel to send the message to",
-                                                                                          required=True),
-                       message_id_to_reply_to: str = discord.SlashOption(name="message_id_to_reply_to",
-                                                                         description="Message to reply to (optional)",
-                                                                         required=False)):
+                        description="Channel to send the message to",
+                        required=True)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
-    await interaction.response.defer(ephemeral=True)
-    if message_id_to_reply_to:
-        message_to_reply_to = await channel_to_send_to.fetch_message(int(message_id_to_reply_to))
-        await message_to_reply_to.reply(message_text)
-        await interaction.send("Done!", ephemeral=True)
-    else:
-        await channel_to_send_to.send(message_text)
-        await interaction.send("Done!", ephemeral=True)
+    await interaction.response.send_modal(modal = SendMessage(channel_to_send_to))
 
 @bot.command(description="Send messages using the bot (for mods)")
 async def send_message(ctx,
