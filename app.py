@@ -1195,7 +1195,7 @@ class EditMessage(discord.ui.Modal):
             await interaction.send("Message ID has to be an integer and has to be in the channel chosen!", ephemeral = True)
 
 @bot.slash_command(name = "edit_message", description = "Edit message using the bot (for mods)")
-async def edit_message(interaction: discord.Interaction, channel: discord.abc.GuildChannel(discord.SlashOption(name = "channel", description = "The channel where the message is located", required = True))):
+async def edit_message(interaction: discord.Interaction, channel: discord.abc.GuildChannel = discord.SlashOption(name = "channel", description = "The channel where the message is located", required = True)):
     if not await isModerator(interaction.user):
         await interaction.send("You are not authorized to perform this action.", ephemeral = True)
         return
