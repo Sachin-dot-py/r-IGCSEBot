@@ -353,7 +353,7 @@ async def isModerator(member: discord.Member):
         return True
     return False
 
-async def hasRole(member: discord.Member, role_name):
+async def hasRole(member: discord.Member, role_name: str):
     roles = [role.name.lower() for role in member.roles]
     for role in roles:
         if role_name.lower() in role:
@@ -1501,7 +1501,7 @@ async def timeout(interaction: discord.Interaction,
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
-    if await isModerator(user) or not await isModerator(interaction.user):
+    if await isModerator(user) or (not await isModerator(interaction.user) and not await hasRole(interaction.user, "Chat Moderator")):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
