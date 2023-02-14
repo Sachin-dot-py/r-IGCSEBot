@@ -1556,7 +1556,7 @@ async def untimeout(interaction: discord.Interaction,
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
-    if await isModerator(user) or not await isModerator(interaction.user):
+    if await isModerator(user) or (not await isModerator(interaction.user) or not await hasRole(interaction.user, "Chat Moderator")):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
