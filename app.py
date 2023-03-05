@@ -1392,7 +1392,7 @@ async def set_preferences(interaction: discord.Interaction,
 @bot.slash_command(description="Check a user's previous offenses (warns/timeouts/bans)")
 async def history(interaction: discord.Interaction,
               user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
-    if not await isModerator(interaction.user):
+    if not await isModerator(interaction.user) and not await hasRole(interaction.user, "Chat Moderator"):
         await interaction.send("You are not permitted to use this command.", ephemeral=True)
     await interaction.response.defer()
     modlog = gpdb.get_pref("modlog_channel", interaction.guild.id)
