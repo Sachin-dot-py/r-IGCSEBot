@@ -258,7 +258,7 @@ async def on_message(message: discord.Message):
         await channel.send(embed=embed)
         for attachment in message.attachments:
             await channel.send(file=await attachment.to_file())
-        await message.reply("Your message has been successfully forwarded to the r/IGCSE moderators!\nAny reply by the moderators will be conveyed to you through this DM.")
+        await message.add_reaction("✅")
         return
 
     if message.channel.id == 895961641219407923:  # Creating modmail channels in #create-dm
