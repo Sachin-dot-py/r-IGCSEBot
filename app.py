@@ -339,7 +339,47 @@ async def on_message(message: discord.Message):
             await message.channel.send(embed = keyword_embed)
         else:
             await message.channel.send(autoreply)
+    
+    client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    db = client.IGCSEBot
+    stick_messages = db.stick_messages
 
+    if message.content.lower().startswith("stick"):
+        mod = message.author.mention
+        mod_roles = [role.name for role in message.author.roles]
+        if not ("Discord Mod" in mod_roles or "Temp Mod" in mod_roles):
+            await message.channel.send(f"Sorry {mod}, you don't have the permission to perform this action.")
+            return
+        stick_content = message.content[5:]
+        stick_messages.insert_one({"channel": message.channel.id, "message": stick_content})
+        await message.channel.send("Channel sticked !")
+
+    if message.content.lower().startswith("unstick"):
+        if not isModerator(message.author):
+            await message.channel.send(f"Sorry , you don't have the permission to perform this action.")
+            return
+
+        result = stick_messages.find_one({"channel": message.channel.id})
+        if result:
+            stick_messages.delete_one({"channel": message.channel.id})
+            await message.channel.send("Channel unsticked !")
+ 
+    result = stick_messages.find_one({"channel": message.channel.id})
+
+    ### From here on you may add the mechanism itself, Checking how many messages where sent since the last stick and when it is 3 then send stick messasge again
+    
+    #if result:
+    #    if message.channel == channel:
+    #        if len(channels_Sticks.get(channel)) == 2:
+    #            await channels_Sticks[channel][1].delete()
+    #        else:
+    #            channels_Sticks[channel].append("")
+    #            # adding and empty string so that it is later on replaces with the message of stick  
+    #        sticky_message = await channel.send(channels_Sticks.get(channel)[0])
+    #        channels_Sticks[channel][1] = sticky_message
+    #    message.channel.send("Message sticked in this channel !")
+        
+    ### The above code is obv not doing it, but you can work around it
     await bot.process_commands(message)
 
 
