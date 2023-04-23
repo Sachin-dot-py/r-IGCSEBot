@@ -71,7 +71,9 @@ async def on_raw_reaction_add(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-    verified = await getRole("Verified")
+    if is_rr is not None:
+        role = guild.get_role(is_rr["role"])
+        await user.add_roles(role)
 
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
@@ -177,7 +179,9 @@ async def on_raw_reaction_remove(reaction):
     if user.bot:
         return
     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-    verified = await getRole("Verified")
+    if is_rr is not None:
+        role = guild.get_role(is_rr["role"])
+        await user.remove_roles(role)
     
     channel = bot.get_channel(reaction.channel_id)
     msg = await channel.fetch_message(reaction.message_id)
