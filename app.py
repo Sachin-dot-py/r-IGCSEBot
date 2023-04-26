@@ -380,7 +380,9 @@ async def isServerBooster(member: discord.Member):
     return await hasRole(member, "Server Booster")
 
 async def isHelper(member: discord.Member):
-    return await hasRole(member, "IGCSE Helper")
+    if await hasRole(member, "IGCSE Helper") or await hasRole(member, 'AS/AL Helper'):
+        return True
+    return False
 
 
 # Reaction Roles
