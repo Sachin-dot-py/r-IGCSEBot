@@ -346,6 +346,34 @@ async def on_message(message: discord.Message):
 
     await bot.process_commands(message)
 
+@bot.event
+async def on_auto_moderation_action_execution(automod_execution):
+    guild = automod_execution.guild
+
+    if automod_execution.action.type.name == "timeout":
+        rule = await guild.fetch_auto_moderation_rule(automod_execution.rule_id)
+
+        reason = rule.name  # Rule Name
+        user_id = automod_execution.member_id  # Member ID
+        user_name = guild.get_member(user_id)  # Member Name
+        timeout_time_seconds = (automod_execution.metadata.duration_seconds)  # Timeout Time in seconds
+
+        human_readable_time = f"{timeout_time_seconds // 86400}d {(timeout_time_seconds % 86400) // 3600}h {(timeout_time_seconds % 3600) // 60}m {timeout_time_seconds % 60}s"
+        ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
+
+        if ban_msg_channel:
+            try:
+                last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
+                case_no = (int("".join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0]))))+ 1)
+            except:
+                case_no = 1
+            timeout_msg = f"""Case #{case_no} | [{action_type}]
+                              Username: {str(user_name)} ({user_id})
+                              Moderator: Automod
+                              Reason: {reason}
+                              Duration: {human_readable_time}
+                              Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + timeout_time_seconds}:R>)"""
+            await ban_msg_channel.send(timeout_msg)
 
 # Utility Functions
 
@@ -1589,6 +1617,10 @@ async def ban(interaction: discord.Interaction,
               delete_message_days: int = discord.SlashOption(name="delete_messages", choices={"Don't Delete Messages" : 0, "Delete Today's Messages" : 1, "Delete 3 Days of Messages" : 3, 'Delete 1 Week of Messages' : 7}, default=0, description="Duration of messages from the user to delete (defaults to zero)", required=False)):
     action_type = "Ban"
     mod = interaction.user.mention
+
+    if type(user) is not discord.Member:
+        await interaction.send("User is not a member of the server", ephemeral=True)
+        return 
     if await isModerator(user) or not await isModerator(interaction.user) or await hasRole(interaction.user, "Temp Mod"):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
