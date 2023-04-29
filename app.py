@@ -360,7 +360,7 @@ async def on_auto_moderation_action_execution(automod_execution):
         timeout_time_seconds = automod_execution.action.metadata.duration_seconds  # Timeout Time in seconds
 
         human_readable_time = f"{timeout_time_seconds // 86400}d {(timeout_time_seconds % 86400) // 3600}h {(timeout_time_seconds % 3600) // 60}m {timeout_time_seconds % 60}s"
-        ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
+        ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", automod_execution.guild_id))
 
         if ban_msg_channel:
             try:
