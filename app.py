@@ -319,6 +319,8 @@ async def on_message(message: discord.Message):
     if message.channel.name == 'counting':  # To facilitate #counting
         await counting(message)
     if message.guild.id == 576460042774118420:
+        await StickDB.check_stick_msg(message)
+
         if message.content.lower() == "pin":  # Pin a message
             if await isHelper(message.author) or await isModerator(message.author):
                 msg = await message.channel.fetch_message(message.reference.message_id)
@@ -332,6 +334,18 @@ async def on_message(message: discord.Message):
                 await msg.unpin()
                 await msg.reply(f"This message has been unpinned by {message.author.mention}.")
                 await message.delete()
+        
+        if message.content.lower() == "stick": # Stick a message
+            if await isModerator(message.author):
+                reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                await reference_msg.reply(f"This message has been stuck by {message.author.mention}.")
+                await StickDB.stick(reference_msg)
+
+        if message.content.lower() == "unstick": # Unstick a message
+            if await isModerator(message.author):
+                reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                await reference_msg.reply(f"This message has been unstuck by {message.author.mention}.")
+                await StickDB.unstick(reference_msg)
 
     global keywords
     if not keywords.get(message.guild.id, None):  # on first message from guild
@@ -797,6 +811,63 @@ async def refreshhelpers(ctx):
     else:
         await ctx.message.reply("No changes were made.")
 
+# Sticky Messages
+
+class StickyMessage:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.stickies = self.db.stickies
+
+    async def check_stick_msg(self, reference_msg):
+        message_channel = reference_msg.channel
+        if self.stickies != []:
+            for stick_entry in self.stickies:
+                if message_channel.id == stick_entry["channel_id"] and not stick_entry["sticking"]:
+                    stick_entry["sticking"] = True
+                    stick_message = await message_channel.fetch_message(stick_entry["message_id"])
+                    is_present_history = False
+
+                    async for message in message_channel.history(limit=3):
+                        if message.id == stick_entry["message_id"]:
+                            is_present_history = True
+                            stick_entry["sticking"] = False
+
+                    if not is_present_history:
+                        stick_embed = stick_message.embeds
+
+                        await stick_message.delete()
+                        self.stickies.remove(stick_entry)
+
+                        new_embed = await message_channel.send(embeds=stick_embed)
+                        new_entry = {"channel_id": message_channel.id, "message_id": new_embed.id, "sticking": True}
+                        self.stickies.append(new_entry)
+
+                        self.stickies[self.stickies.index(new_entry)]["sticking"] = False
+
+    async def stick(self, reference_msg):
+        embeds = reference_msg.embeds
+        if embeds == []:
+            return
+        await reference_msg.edit(embed=embeds[0].set_footer(text="Stuck"))
+
+        self.stickies.append({"channel_id": reference_msg.channel.id, "message_id": reference_msg.id, "sticking": False})
+        await self.check_stick_msg(reference_msg)
+
+        return
+
+    async def unstick(self, reference_msg):
+        embeds = reference_msg.embeds
+        if embeds == []:
+            return
+        await reference_msg.edit(embed=embeds[0].remove_footer())
+        for stick_entry in self.stickies:
+            if stick_entry["message_id"] == reference_msg.id:
+                self.stickies.remove(stick_entry)
+
+        return
+
+StickDB = StickyMessage(LINK)
 
 # Reputation
 
