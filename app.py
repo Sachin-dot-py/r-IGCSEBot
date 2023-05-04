@@ -823,7 +823,6 @@ class StickyMessage:
 
     async def check_stick_msg(self, reference_msg):
         message_channel = reference_msg.channel
-
         if len(list(self.stickies.find())) > 0:
             for stick_entry in self.stickies.find({"channel_id": message_channel.id}):
                 if not stick_entry["sticking"]:
