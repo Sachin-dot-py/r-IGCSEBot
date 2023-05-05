@@ -336,11 +336,11 @@ async def on_message(message: discord.Message):
                 await message.delete()
         
         if message.content.lower() == "stick": # Stick a message
-            # if await isModerator(message.author):
-            if message.reference is not None:
-                    reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                    if await StickDB.stick(reference_msg):
-                        await message.reply(f"Sticky message added by {message.author.mention}.")
+            if await isModerator(message.author):
+                if message.reference is not None:
+                        reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                        if await StickDB.stick(reference_msg):
+                            await message.reply(f"Sticky message added by {message.author.mention}.")
 
         if message.content.lower() == "unstick": # Unstick a message
             if await isModerator(message.author):
