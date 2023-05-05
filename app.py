@@ -336,18 +336,18 @@ async def on_message(message: discord.Message):
                 await message.delete()
         
         if message.content.lower() == "stick": # Stick a message
-            if await isModerator(message.author):
-                if message.content.lower() == "stick":
-                    if message.reference:
-                        reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                        if reference_msg and await StickDB.stick(reference_msg):
-                            await message.reply(f"A sticky message has been stuck in this channel by {message.author.mention}.")
+            # if await isModerator(message.author):
+            if message.reference is not None:
+                    reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                    if await StickDB.stick(reference_msg):
+                        await message.reply(f"Sticky message added by {message.author.mention}.")
 
         if message.content.lower() == "unstick": # Unstick a message
             if await isModerator(message.author):
-                reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                if await StickDB.unstick(reference_msg):
-                    await message.reply(f"A sticky message has been unstuck in this channel by {message.author.mention}.")
+                if message.reference is not None:
+                    reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                    if await StickDB.unstick(reference_msg):
+                        await message.reply(f"Sticky message removed by {message.author.mention}.")
 
     global keywords
     if not keywords.get(message.guild.id, None):  # on first message from guild
@@ -821,9 +821,12 @@ class StickyMessage:
         self.db = self.client.IGCSEBot
         self.stickies = self.db.stickies
 
+    def get_length_stickies(self, criteria={}):
+        return len(list(self.stickies.find(criteria)))
+
     async def check_stick_msg(self, reference_msg):
         message_channel = reference_msg.channel
-        if len(list(self.stickies.find())) > 0:
+        if self.get_length_stickies() > 0:
             for stick_entry in self.stickies.find({"channel_id": message_channel.id}):
                 if not stick_entry["sticking"]:
                     prev_stick = {"message_id": stick_entry["message_id"]}
@@ -850,7 +853,7 @@ class StickyMessage:
 
     async def stick(self, reference_msg):
         embeds = reference_msg.embeds
-        if embeds == [] or self.stickies.find({"message_id": reference_msg.id}):
+        if embeds == [] or self.get_length_stickies({"message_id": reference_msg.id}) > 0:
             return
         await reference_msg.edit(embed=embeds[0].set_footer(text="Stuck"))
 
