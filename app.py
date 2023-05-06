@@ -2180,7 +2180,7 @@ class Code(discord.ui.Modal):
 
         self.code = discord.ui.TextInput(
             label = "Code",
-            style = discord.TextInputStyle.full,
+            style = discord.TextInputStyle.paragraph,
             placeholder = "The code you would like to parse",
             required = True
         )
@@ -2189,7 +2189,6 @@ class Code(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : self.code.value})
         if response.status_code == 201:
-            # Output the response to an embed
             embed = discord.Embed(title = "Code parsed!", colour = discord.Colour.green())
             embed.add_field(name = "Code", value = self.code.value)
             embed.add_field(name = "Output", value = response.text)
