@@ -2174,5 +2174,34 @@ async def apply(interaction: discord.Interaction):
     view.add_item(ApplyDropdown())
     await interaction.send(view = view, ephemeral = True)
 
+class Code(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Code", timeout = None)
+
+        self.code = discord.ui.TextInput(
+            label = "Code",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "The code you would like to parse",
+            required = True
+        )
+        self.add_item(self.code)
+    
+    async def callback(self, interaction: discord.Interaction):
+        response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : self.code.value})
+        if response.status_code == 201:
+            embed = discord.Embed(title = "Code compiled!", colour = discord.Colour.green())
+            embed.add_field(name = "Code", value = self.code.value)
+            embed.add_field(name = "Output", value = response.text)
+            await interaction.send(embed = embed, ephemeral = False)
+        else:
+            await interaction.send("There was an error parsing the code", ephemeral = True)
+        await interaction.send("Code received!", ephemeral = True)
+    
+
+
+@bot.slash_command(name = "code", description = "Compile a pseudocode code and send it back")
+async def code(interaction: discord.Interaction):
+    await interaction.response.send_modal(modal = Code())
+
 
 bot.run(TOKEN)
