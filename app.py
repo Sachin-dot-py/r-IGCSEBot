@@ -2199,7 +2199,7 @@ class Code(discord.ui.Modal):
     
 
 
-@bot.slash_command(name = "code", description = "Send a code to the console")
+@bot.slash_command(name = "code", description = "Compile a pseudocode code and send it back")
 async def code(interaction: discord.Interaction):
     await interaction.response.send_modal(modal = Code())
 
