@@ -2194,7 +2194,7 @@ class Code(discord.ui.Modal):
             embed = discord.Embed(title = "Code parsed!", colour = discord.Colour.green())
             embed.add_field(name = "Code", value = self.code.value)
             embed.add_field(name = "Output", value = response.text)
-            await interaction.send(embed = embed, ephemeral = True)
+            await interaction.send(embed = embed, ephemeral = False)
         else:
             await interaction.send("There was an error parsing the code", ephemeral = True)
         await interaction.send("Code received!", ephemeral = True)
