@@ -2187,7 +2187,6 @@ class Code(discord.ui.Modal):
         self.add_item(self.code)
     
     async def callback(self, interaction: discord.Interaction):
-        print(self.code.value)
         response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : self.code.value})
         if response.status_code == 201:
             # Output the response to an embed
