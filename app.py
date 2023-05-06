@@ -2187,7 +2187,7 @@ class Code(discord.ui.Modal):
         self.add_item(self.code)
     
     async def callback(self, interaction: discord.Interaction):
-        response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : self.code.value})
+        response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : str(self.code.value)})
         if response.status_code == 201:
             embed = discord.Embed(title = "Code compiled!", colour = discord.Colour.green())
             embed.add_field(name = "Code", value = self.code.value)
@@ -2195,7 +2195,6 @@ class Code(discord.ui.Modal):
             await interaction.send(embed = embed, ephemeral = False)
         else:
             await interaction.send("There was an error parsing the code", ephemeral = True)
-        await interaction.send("Code received!", ephemeral = True)
     
 
 
