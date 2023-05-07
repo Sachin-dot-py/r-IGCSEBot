@@ -2174,6 +2174,7 @@ async def apply(interaction: discord.Interaction):
     view.add_item(ApplyDropdown())
     await interaction.send(view = view, ephemeral = True)
 
+
 def display_data(data):
     output = ""
     for item in data:
