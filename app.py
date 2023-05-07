@@ -2174,6 +2174,15 @@ async def apply(interaction: discord.Interaction):
     view.add_item(ApplyDropdown())
     await interaction.send(view = view, ephemeral = True)
 
+def display_data(data):
+    output = ""
+    for item in data:
+        if isinstance(item, list):
+            output += display_data(item)
+        else:
+            output += item + "\n"
+    return output
+
 class Code(discord.ui.Modal):
     def __init__(self):
         super().__init__("Code", timeout = None)
@@ -2181,20 +2190,24 @@ class Code(discord.ui.Modal):
         self.code = discord.ui.TextInput(
             label = "Code",
             style = discord.TextInputStyle.paragraph,
-            placeholder = "The code you would like to parse",
+            placeholder = "The code you would like to compile/test",
             required = True
         )
         self.add_item(self.code)
     
     async def callback(self, interaction: discord.Interaction):
-        response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data = {"code" : str(self.code.value)})
+        response = requests.post("https://fourth-fresh-boater.glitch.me/apiv1/", data=json.dumps({"code" : str(self.code.value)}))
         if response.status_code == 201:
+            finalOutput = display_data(response.json())
             embed = discord.Embed(title = "Code compiled!", colour = discord.Colour.green())
-            embed.add_field(name = "Code", value = self.code.value)
-            embed.add_field(name = "Output", value = response.text)
+            value = f'''```{self.code.value}```
+            
+            **Output**
+            ```{finalOutput}```'''
+            embed.add_field(name = "Code", value = value)
             await interaction.send(embed = embed, ephemeral = False)
         else:
-            await interaction.send("There was an error parsing the code", ephemeral = True)
+            await interaction.send("There was an error compiling the code", ephemeral = True)
     
 
 
