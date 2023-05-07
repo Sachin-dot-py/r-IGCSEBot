@@ -2201,10 +2201,12 @@ class Code(discord.ui.Modal):
         if response.status_code == 201:
             finalOutput = display_data(response.json())
             embed = discord.Embed(title = "Code compiled!", colour = discord.Colour.green())
-            value = f'''```{self.code.value}```
+            value = f'''```
+{self.code.value}```
             
             **Output**
-            ```{finalOutput}```'''
+            ```
+{finalOutput}```'''
             embed.add_field(name = "Code", value = value)
             await interaction.send(embed = embed, ephemeral = False)
         else:
