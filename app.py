@@ -1167,16 +1167,18 @@ class AddKeywords(discord.ui.Modal):
 
 @bot.slash_command(description="Add keywords (for mods)")
 async def add_keyword(interaction: discord.Interaction):
-    if await isModerator(interaction.user):
-        await interaction.response.send_modal(modal=AddKeywords())
+    if not await isModerator(interaction.user):
+        return await interaction.send("You do not have the permissions to perform this action")
+    await interaction.response.send_modal(modal=AddKeywords())
 
 @bot.slash_command(description="Delete keywords (for mods)")
 async def delete_keyword(interaction: discord.Interaction, keyword: str = discord.SlashOption(name="keyword", description="Keyword to delete", required=True)):
-    if await isModerator(interaction.user):
-        kwdb.remove_keyword(keyword, interaction.guild.id)
-        global keywords
-        keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
-        await interaction.send(f"Deleted keyword `{keyword}`", ephemeral=True, delete_after=2)
+    if not await isModerator(interaction.user):
+        return await interaction.send("You do not have the permissions to perform this action")
+    kwdb.remove_keyword(keyword, interaction.guild.id)
+    global keywords
+    keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
+    await interaction.send(f"Deleted keyword `{keyword}`", ephemeral=True, delete_after=2)
 
 @bot.slash_command(description="Display all keywords")
 async def list_keywords(interaction: discord.Interaction):
