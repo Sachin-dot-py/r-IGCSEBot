@@ -16,7 +16,7 @@ from data import reactionroles_data, helper_roles, subreddits, study_roles
 
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
 LINK = os.environ.get("MONGO_LINK")
-GUILD_ID = 882476325510721556
+GUILD_ID = 576460042774118420
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix=".", intents=intents)
@@ -33,8 +33,8 @@ async def on_ready():
     for guild in bot.guilds:
         value = f"Owner: {guild.owner}\nMembers: {guild.member_count}\nBoosts: {guild.premium_subscription_count}"
         embed.add_field(name=guild.name, value=value, inline=True)
-    igcse = await bot.fetch_guild(882476325510721556)
-    logs = await igcse.fetch_channel(1105813453916086302)
+    igcse = await bot.fetch_guild(576460042774118420)
+    logs = await igcse.fetch_channel(1017792876584906782)
     await logs.send(embed=embed)
 
 
