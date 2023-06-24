@@ -1955,7 +1955,7 @@ async def embed(interaction: discord.Interaction,
         embed_message = None
     if colour:
         try:
-            embed.colour = colour
+            embed.colour = int(colour[1:], 16)
         except:
             await interaction.send('Invalid Hex code', ephemeral=True)
             return
