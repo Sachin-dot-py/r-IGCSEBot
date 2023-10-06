@@ -2314,7 +2314,7 @@ async def togglechannellock(channelid, unlock, *, unlocktime=0):
     """Function for locking/unlocking a discord channel"""
 
     guild = bot.get_guild(GUILD_ID)
-    everyonerole = guild.get_role(1111128710133854289) # TODO - Role ID for @everyone
+    everyonerole = guild.get_role(576460042774118420)
 
     channel = bot.get_channel(channelid)
     overwrite = channel.overwrites_for(everyonerole)
@@ -2364,7 +2364,8 @@ async def lockcommand(interaction: discord.Interaction,
   locktimeinunix = f"<t:{locktime}:F>"
   unlocktimeinunix = f"<t:{unlocktime}:F>"
   await interaction.send(f"<#{channelinput.id}> is scheduled to lock on "
-                         f"{locktimeinunix} and unlock on {unlocktimeinunix}", ephemeral=True)
+                         f"{locktimeinunix} and unlock on {unlocktimeinunix}",
+                          ephemeral=True)
 
   channelid = f"<#{channelinput.id}>"
   logchannel = bot.get_channel(947859228649992213) # TODO #bot-test. change maybe
@@ -2388,10 +2389,9 @@ async def lockcommand(interaction: discord.Interaction,
   embed = discord.Embed(description=f"Locking channel <t:{max(locktime, t)}:R>.")
   await channelinput.send(embed=embed)
 
-#TODO for now it's at 20s but you might want to change this to be more or less
-@tasks.loop(seconds=20)
+@tasks.loop(seconds=60)
 async def checklocks():
-  """Checks the database every 20 seconds to see if anything needs to be locked or unlocked """
+  """Checks the database every 60 seconds to see if anything needs to be locked or unlocked """
 
   client = pymongo.MongoClient(LINK)
   db = client.IGCSEBot
