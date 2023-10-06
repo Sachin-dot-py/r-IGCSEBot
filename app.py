@@ -2335,7 +2335,7 @@ async def lockcommand(interaction: discord.Interaction,
                         unlocktime: str = discord.SlashOption(name="unlock_time", description="At what time do you want the channel to be unlocked?", required=True)):
 
   # perms validation
-  if not await isModerator(interaction.user) or await hasRole(interaction.user, "Bot Developer"):
+  if not await isModerator(interaction.user) and not await hasRole(interaction.user, "Bot Developer"):
         await interaction.send(f"Sorry {interaction.user.mention},"
                                "you don't have the permission to perform this action.",
                                 ephemeral=True)
@@ -2352,7 +2352,7 @@ async def lockcommand(interaction: discord.Interaction,
   # + 1 is for cancelling the truncation
   t = int(time.time()) + 1
   if locktime < 0 or unlocktime < 0:
-    await interaction.send("Lock time must be positive.", ephemeral=True)
+    await interaction.send(F"{'L' if locktime < 0 else 'Unl'}ock time must be positive.", ephemeral=True)
     return
   elif locktime >= unlocktime :
     await interaction.send("Unlock time must be after lock time.", ephemeral=True)
