@@ -2368,7 +2368,7 @@ async def lockcommand(interaction: discord.Interaction,
                           ephemeral=True)
 
   channelid = f"<#{channelinput.id}>"
-  logchannel = bot.get_channel(947859228649992213) # TODO #bot-test. change maybe
+  logchannel = bot.get_channel(947859228649992213)
   await logchannel.send(f'Channel Name: {channelid}\n'
                      f'Lock Time: {locktime} ({locktimeinunix})\n'
                      f'Unlock Time: {unlocktime} ({unlocktimeinunix})\n')
