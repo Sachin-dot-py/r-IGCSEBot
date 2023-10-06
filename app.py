@@ -2314,7 +2314,7 @@ async def togglechannellock(channelid, unlock, *, unlocktime=0):
     """Function for locking/unlocking a discord channel"""
 
     guild = bot.get_guild(GUILD_ID)
-    everyonerole = guild.get_role(576460042774118420)
+    everyonerole = guild.roles.everyone
 
     channel = bot.get_channel(channelid)
     overwrite = channel.overwrites_for(everyonerole)
