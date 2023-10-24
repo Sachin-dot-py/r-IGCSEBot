@@ -13,7 +13,7 @@ import on_voice_state_update
 from gpdb import gpdb
 
 # utility
-from roles import has_role, get_role, is_moderator
+from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
 from bans import is_banned
 
 # @bot.event
