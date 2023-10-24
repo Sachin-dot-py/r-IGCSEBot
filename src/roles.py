@@ -23,3 +23,8 @@ async def is_moderator(member: discord.Member):
 
 async def is_server_booster(member: discord.Member):
     return await has_role(member, "Server Booster")
+
+async def is_helper(member: discord.Member):
+    if await hasRole(member, "IGCSE Helper") or await hasRole(member, 'AS/AL Helper'):
+        return True
+    return False

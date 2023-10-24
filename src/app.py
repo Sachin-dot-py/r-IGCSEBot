@@ -14,6 +14,7 @@ from gpdb import gpdb
 
 # utility
 from roles import has_role, get_role, is_moderator
+from bans import is_banned
 
 # @bot.event
 # async def on_raw_reaction_add(reaction):
@@ -523,7 +524,7 @@ Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + tim
 
 #     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
 #     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
-#         if (interaction_b.user != self.user) and (not await isHelper(interaction_b.user)) and (not await is_moderator(interaction_b.user)):
+#         if (interaction_b.user != self.user) and (not await is_helper(interaction_b.user)) and (not await is_moderator(interaction_b.user)):
 #             await interaction_b.send("You do not have permission to do this.", ephemeral=True)
 #             return
 #         button.disabled = True
@@ -1634,7 +1635,7 @@ Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + tim
 #                                         description="Choose the helper to vote for", required=True)):
 #     if helper.bot:
 #         await interaction.send("You can't vote for a bot.", ephemeral=True)
-#     elif await isHelper(helper):
+#     elif await is_helper(helper):
 #         await interaction.response.defer(ephemeral=True)
 #         client = pymongo.MongoClient(LINK)
 #         db = client.IGCSEBot
