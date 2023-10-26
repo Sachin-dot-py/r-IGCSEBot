@@ -8,192 +8,17 @@ import on_command_error
 import on_application_command_error
 import on_message
 import on_voice_state_update
+import on_raw_reaction_add
+import on_raw_reaction_remove
+import on_thread_join
+import on_guild_join
 
 # mongo
-from gpdb import gpdb
+from db import gpdb, rrdb
 
 # utility
 from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
 from bans import is_banned
-
-# @bot.event
-# async def on_raw_reaction_add(reaction):
-#     guild = bot.get_guild(GUILD_ID)
-#     user = await guild.fetch_member(reaction.user_id)
-#     if user.bot:
-#         return
-#     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-#     if is_rr is not None:
-#         role = guild.get_role(is_rr["role"])
-#         await user.add_roles(role)
-
-#     channel = bot.get_channel(reaction.channel_id)
-#     msg = await channel.fetch_message(reaction.message_id)
-
-#     author = msg.channel.guild.get_member(reaction.user_id)
-#     if author.bot or not await is_moderator(author): return
-
-#     # Emote voting
-#     if msg.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(
-#             reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
-
-#         upvotes = 0
-#         downvotes = 0
-#         for r in msg.reactions:
-#             if r.emoji == "👍":
-#                 upvotes += r.count
-#             elif r.emoji == "👎":
-#                 downvotes += r.count
-#         name = msg.content[msg.content.find(':') + 1: msg.content.find(':', msg.content.find(':') + 1)]
-#         if upvotes / downvotes >= 3:
-#             emoji = await msg.guild.create_custom_emoji(name=name, image=requests.get(msg.attachments[0].url).content)
-#             await msg.reply(f"The submission by {msg.mentions[0]} for the emote {str(emoji)} has passed.")
-#         else:
-#             await msg.reply(f"The submission by {msg.mentions[0]} for the emote `:{name}:`has failed.")
-
-#     # Suggestions voting
-#     if str(reaction.emoji) == "🟢" and reaction.user_id != bot.user.id and msg.channel.id == gpdb.get_pref(
-#             "suggestions_channel", reaction.guild_id):  # Suggestion accepted by mod in #suggestions-voting
-#         author = msg.channel.guild.get_member(reaction.user_id)
-#         if await is_moderator(author):
-#             description = msg.embeds[0].description
-#             embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
-#             for field in msg.embeds[0].fields:
-#                 if field.name == "Accepted ✅":
-#                     return
-#                 if field.name != "Rejected ❌":
-#                     try:
-#                         embed.add_field(name=field.name, value=field.value, inline=False)
-#                     except:
-#                         pass
-#             embed.add_field(name="Accepted ✅", value=f"This suggestion has been accepted by the moderators. ({author})",
-#                             inline=False)
-#             await msg.edit(embed=embed)
-#             await msg.pin()
-#         return
-
-#     if str(
-#             reaction.emoji) == "🔴" and reaction.user_id != bot.user.id and msg.channel.id == gpdb.get_pref(
-#         "suggestions_channel", reaction.guild_id):  # Suggestion rejected by mod in #suggestions-voting
-#         author = msg.channel.guild.get_member(reaction.user_id)
-#         if await is_moderator(author):
-#             description = msg.embeds[0].description
-#             embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
-#             for field in msg.embeds[0].fields:
-#                 if field.name == "Rejected ❌":
-#                     return
-#                 if field.name != "Accepted ✅":
-#                     try:
-#                         embed.add_field(name=field.name, value=field.value, inline=False)
-#                     except:
-#                         pass
-#             embed.add_field(name="Rejected ❌", value=f"This suggestion has been rejected by the moderators. ({author})",
-#                             inline=False)
-#             await msg.edit(embed=embed)
-#         return
-
-#     # Suggestion voting system
-#     vote = 0
-#     for reaction in msg.reactions:
-#         if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
-#             async for user in reaction.users():
-#                 if user == bot.user:
-#                     vote += 1
-#                     break
-
-#     if vote == 2:
-#         for reaction in msg.reactions:
-#             if str(reaction.emoji) == "✅":
-#                 yes = reaction.count - 1
-#             if str(reaction.emoji) == "❌":
-#                 no = reaction.count - 1
-#         try:
-#             yes_p = round((yes / (yes + no)) * 100) // 10
-#             no_p = 10 - yes_p
-#         except:
-#             yes_p = 10
-#             no_p = 0
-#         description = f"Total Votes: {yes + no}\n\n{yes_p * 10}% {yes_p * '🟩'}{no_p * '🟥'} {no_p * 10}%\n"
-#         description += "\n".join(msg.embeds[0].description.split("\n")[3:])
-#         embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
-#         for field in msg.embeds[0].fields:
-#             try:
-#                 embed.add_field(name=field.name, value=field.value, inline=False)
-#             except:
-#                 pass
-#         await msg.edit(embed=embed)
-
-
-# @bot.event
-# async def on_raw_reaction_remove(reaction):
-#     guild = bot.get_guild(GUILD_ID)
-#     user = await guild.fetch_member(reaction.user_id)
-#     if user.bot:
-#         return
-#     is_rr = rrDB.get_rr(str(reaction.emoji), reaction.message_id)
-#     if is_rr is not None:
-#         role = guild.get_role(is_rr["role"])
-#         await user.remove_roles(role)
-    
-#     channel = bot.get_channel(reaction.channel_id)
-#     msg = await channel.fetch_message(reaction.message_id)
-
-#     vote = 0  # Suggestions voting system - remove vote
-#     for reaction in msg.reactions:
-#         if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
-#             async for user in reaction.users():
-#                 if user == bot.user:
-#                     vote += 1
-#                     break
-
-#     if vote == 2:
-#         for reaction in msg.reactions:
-#             if str(reaction.emoji) == "✅":
-#                 yes = reaction.count - 1
-#             if str(reaction.emoji) == "❌":
-#                 no = reaction.count - 1
-#         try:
-#             yes_p = round((yes / (yes + no)) * 100) // 10
-#             no_p = 10 - yes_p
-#         except:
-#             yes_p = 10
-#             no_p = 0
-#         description = f"Total Votes: {yes + no}\n\n{yes_p * 10}% {yes_p * '🟩'}{no_p * '🟥'} {no_p * 10}%\n"
-#         description += "\n".join(msg.embeds[0].description.split("\n")[3:])
-#         embed = discord.Embed(title=msg.embeds[0].title, colour=msg.embeds[0].colour, description=description)
-#         for field in msg.embeds[0].fields:
-#             try:
-#                 embed.add_field(name=field.name, value=field.value, inline=False)
-#             except:
-#                 pass
-#         await msg.edit(embed=embed)
-
-
-# @bot.event
-# async def on_thread_join(thread):
-#     await thread.join()  # Join all threads automatically
-
-
-# @bot.event
-# async def on_guild_join(guild):
-#     global gpdb
-#     gpdb.set_pref('rep_enabled', True, guild.id)
-#     await guild.create_role(name="Reputed", color=0x3498db)  # Create Reputed Role
-#     await guild.create_role(name="100+ Rep Club", color=0xf1c40f)  # Create 100+ Rep Club Role
-#     await guild.create_role(name="500+ Rep Club", color=0x2ecc71)  # Create 500+ Rep Club Role
-#     await guild.system_channel.send(
-#         "Hi! Please set all the server preferences using the slash command /set_preferences for this bot to function properly.")
-
-
-# @bot.event
-# async def on_member_join(member: discord.Member):
-#     if member.guild.id == GUILD_ID:  # r/igcse welcome message
-#         embed1 = discord.Embed.from_dict(eval(
-#             r"""{'color': 3066993, 'type': 'rich', 'description': "Hello and welcome to the official r/IGCSE Discord server, a place where you can ask any doubts about your exams and find help in a topic you're struggling with! We strongly suggest you read the following message to better know how our server works!\n\n***How does the server work?***\n\nThe server mostly entirely consists of the students who are doing their IGCSE and those who have already done their IGCSE exams. This server is a place where you can clarify any of your doubts regarding how exams work as well as any sort of help regarding a subject or a topic in which you struggle.\n\nDo be reminded that academic dishonesty is not allowed in this server and you may face consequences if found to be doing so. Examples of academic dishonesty are listed below (the list is non-exhaustive) - by joining the server you agree to follow the rules of the server.\n\n> Asking people to do your homework for you, sharing any leaked papers before the exam session has ended, etc.), asking for leaked papers or attempted malpractice are not allowed as per *Rule 1*. \n> \n> Posting pirated content such as textbooks or copyrighted material are not allowed in this server as per *Rule 7.*\n\n***How to ask for help?***\n\nWe have subject helpers for every subject to clear any doubts or questions you may have. If you want a subject helper to entertain a doubt, you should use the command `/helper` in the respective subject channel. A timer of **15 minutes** will start before the respective subject helper will be pinged. Remember to cancel your ping once a helper is helping you!\n\n***How to contact the moderators?***\n\nYou can contact us by sending a message through <@861445044790886467> by responding to the bot, where it will be forwarded to the moderators to view. Do be reminded that only general server inquiries should be sent and other enquiries will not be entertained, as there are subject channels for that purpose.", 'title': 'Welcome to r/IGCSE!'}"""))
-#         channel = await member.create_dm()
-#         await channel.send(embed=embed1)
-#         welcome = bot.get_channel(930088940654956575)
-#         await welcome.send(f"Welcome {member.mention}! Pick up your subject roles from <id:customize> to get access to subject channels and resources!")
 
 @bot.event
 async def on_auto_moderation_action_execution(automod_execution):
@@ -376,24 +201,6 @@ Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + tim
 # async def roles(ctx):
 #     await ctx.send(view=RolePickerCategoriesView())
 
-# class ReactionRolesDB:
-#     def __init__(self, link: str):
-#         self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
-#         self.db = self.client.IGCSEBot
-#         self.reaction_roles = self.db.reaction_roles
-    
-#     def new_rr(self, data):
-#         self.reaction_roles.insert_one({"reaction": data[0], "role": data[1], "message": data[2]})
-
-#     def get_rr(self, reaction, msg_id):
-#         result = self.reaction_roles.find_one({"reaction": reaction, "message": msg_id})
-#         if result is None:
-#             return None
-#         else:
-#             return result
-
-# rrDB = ReactionRolesDB(LINK)
-
 # @bot.command(description="Create reaction roles", guild_ids=[GUILD_ID])
 # async def rrmake(ctx):
 #     if await is_moderator(ctx.author):
@@ -437,7 +244,7 @@ Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + tim
 #             await reaction_msg.add_reaction(x[0])
 #             data = x.copy()
 #             data.append(msg_id)
-#             rrDB.new_rr(data)
+#             rrdb.new_rr(data)
 #         await ctx.send("Reactions added!")
                 
 # @bot.slash_command(name = "rrmake", description = "Create reaction roles", guild_ids = [GUILD_ID])
@@ -478,7 +285,7 @@ Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + tim
 #                     await reaction_msg.add_reaction(x[0])
 #                     data = x.copy()
 #                     data.append(msg_id)
-#                     rrDB.new_rr(data)
+#                     rrdb.new_rr(data)
 #                 await channel.send("Reactions added!")
 #         except ValueError:
 #             await interaction.send("Invalid input", ephemeral = True)

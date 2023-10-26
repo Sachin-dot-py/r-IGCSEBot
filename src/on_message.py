@@ -1,6 +1,6 @@
 from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL
 from bot import discord, bot
-from gpdb import gpdb
+from db import gpdb
 
 async def is_welcome(text):
     alternatives = ["you're welcome", "your welcome", "ur welcome", "your welcome", 'no problem']
