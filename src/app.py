@@ -12,6 +12,7 @@ import on_raw_reaction_add
 import on_raw_reaction_remove
 import on_thread_join
 import on_guild_join
+import on_auto_moderation_action_execution
 
 # mongo
 from db import gpdb, rrdb
@@ -19,41 +20,6 @@ from db import gpdb, rrdb
 # utility
 from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
 from bans import is_banned
-
-@bot.event
-async def on_auto_moderation_action_execution(automod_execution):
-    guild = automod_execution.guild
-    action_type = "Timeout"
-
-    if automod_execution.action.type.name == "timeout":
-        rule = await guild.fetch_auto_moderation_rule(automod_execution.rule_id)
-
-        reason = rule.name  # Rule Name
-        user_id = automod_execution.member_id  # Member ID
-        user_name = guild.get_member(user_id)  # Member Name
-        timeout_time_seconds = automod_execution.action.metadata.duration_seconds  # Timeout Time in seconds
-
-        human_readable_time = f"{timeout_time_seconds // 86400}d {(timeout_time_seconds % 86400) // 3600}h {(timeout_time_seconds % 3600) // 60}m {timeout_time_seconds % 60}s"
-        ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", automod_execution.guild_id))
-
-        if ban_msg_channel:
-            try:
-                last_ban_msg = await ban_msg_channel.history(limit=1).flatten()
-                case_no = (int("".join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0]))))+ 1)
-            except:
-                case_no = 1
-            timeout_msg = f"""Case #{case_no} | [{action_type}]
-Username: {str(user_name)} ({user_id})
-Moderator: Automod
-Reason: {reason}
-Duration: {human_readable_time}
-Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + timeout_time_seconds}:R>)"""
-
-            await ban_msg_channel.send(timeout_msg)
-
-
-# # Reaction Roles
-
 
 # class DropdownRR(discord.ui.Select):
 #     def __init__(self, category, options):
