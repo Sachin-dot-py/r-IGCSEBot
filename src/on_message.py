@@ -32,9 +32,7 @@ async def handle_rep(message):
     if message.reference:
         msg = await message.channel.fetch_message(message.reference.message_id)
 
-    if message.reference and msg.author != message.author and not msg.author.bot and not message.author.mentioned_in(
-            msg) and (
-            await is_welcome(message.content)):
+    if message.reference and msg.author != message.author and not msg.author.bot and not message.author.mentioned_in(msg) and (await is_welcome(message.content)):
         repped = [message.author]
     elif await is_thanks(message.content):
         for mention in message.mentions:
