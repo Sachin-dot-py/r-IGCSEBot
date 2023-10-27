@@ -1,6 +1,34 @@
 from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL
-from bot import discord, bot
+from bot import discord, bot, keywords
 from db import gpdb, smdb
+from roles import is_moderator, is_helper
+
+async def counting(message):
+    if message.author.bot:
+        await message.delete()
+        return
+
+    msgs = await message.channel.history(limit=2).flatten()
+    try:
+        msg = msgs[1]
+
+        if "✅" in [str(reaction.emoji) for reaction in msg.reactions]:
+            last_number = int(msg.content)
+            last_author = msg.author
+        else:
+            last_number = 0
+            last_author = None
+    except:
+        last_number = 0
+        last_author = None
+
+    try:
+        if int(message.content) == last_number + 1 and last_author != message.author:
+            await message.add_reaction("✅")
+        else:
+            await message.delete()
+    except:
+        await message.delete()
 
 async def is_welcome(text):
     alternatives = ["you're welcome", "your welcome", "ur welcome", "no problem"]
@@ -142,34 +170,33 @@ async def on_message(message: discord.Message):
         await smdb.check_stick_msg(message)
 
         if message.content.lower() == "pin":  # Pin a message
-            if await isHelper(message.author) or await isModerator(message.author):
+            if await is_helper(message.author) or await is_moderator(message.author):
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.pin()
                 await msg.reply(f"This message has been pinned by {message.author.mention}.")
                 await message.delete()
 
         if message.content.lower() == "unpin":  # Unpin a message
-            if await isHelper(message.author) or await isModerator(message.author):
+            if await is_helper(message.author) or await is_moderator(message.author):
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.unpin()
                 await msg.reply(f"This message has been unpinned by {message.author.mention}.")
                 await message.delete()
         
         if message.content.lower() == "stick": # Stick a message
-            if await isModerator(message.author):
+            if await is_moderator(message.author):
                 if message.reference is not None:
                         reference_msg = await message.channel.fetch_message(message.reference.message_id)
                         if await smdb.stick(reference_msg):
                             await message.reply(f"Sticky message added by {message.author.mention}.")
 
         if message.content.lower() == "unstick": # Unstick a message
-            if await isModerator(message.author):
+            if await is_moderator(message.author):
                 if message.reference is not None:
                     reference_msg = await message.channel.fetch_message(message.reference.message_id)
                     if await smdb.unstick(reference_msg):
                         await message.reply(f"Sticky message removed by {message.author.mention}.")
 
-    global keywords
     if not keywords.get(message.guild.id, None):  # on first message from guild
         keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
     if message.content.lower() in keywords[message.guild.id].keys():

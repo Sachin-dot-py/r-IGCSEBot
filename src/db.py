@@ -101,3 +101,32 @@ class StickyMessageDB:
         return True
 
 smdb = StickyMessageDB(LINK)
+
+class KeywordsDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.keywords = self.db.keywords
+
+    # def bulk_insert_keywords(self, rep_dict: dict, guild_id: int):
+    #     # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
+    #     insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
+    #     result = self.reputation.insert_many(insertion)
+    #     return result
+
+    def get_keywords(self, guild_id: int):
+        result = self.keywords.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0})
+        return {i['keyword'].lower(): i['autoreply'] for i in result}
+    
+    def keyword_list(self, guild_id: int):
+        return self.keywords.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0})
+
+    def add_keyword(self, keyword: str, autoreply: str, guild_id: int):
+        result = self.keywords.insert_one({"keyword": keyword.lower(), "autoreply": autoreply, "guild_id": guild_id})
+        return result
+
+    def remove_keyword(self, keyword: str, guild_id: int):
+        result = self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
+        return result
+
+kwdb = KeywordsDB(LINK)
