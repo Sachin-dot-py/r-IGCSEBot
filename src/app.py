@@ -21,135 +21,133 @@ from db import gpdb, rrdb
 from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
 from bans import is_banned
 
-# class DropdownRR(discord.ui.Select):
-#     def __init__(self, category, options):
-#         self._options = options
-#         selectOptions = [
-#             discord.SelectOption(emoji=option[0], label=option[1], value=option[2]) for option in options
-#         ]
-#         if category == "Colors":
-#             super().__init__(placeholder='Select your Color', min_values=0, max_values=1,
-#                          options=selectOptions)
-#         else:
-#             super().__init__(placeholder=f'Select your {category}', min_values=0, max_values=len(selectOptions),
-#                          options=selectOptions)
+class DropdownRR(discord.ui.Select):
+    def __init__(self, category, options):
+        self._options = options
+        selectOptions = [
+            discord.SelectOption(emoji=option[0], label=option[1], value=option[2]) for option in options
+        ]
+        if category == "Colors":
+            super().__init__(placeholder='Select your Color', min_values=0, max_values=1, options=selectOptions)
+        else:
+            super().__init__(placeholder=f'Select your {category}', min_values=0, max_values=len(selectOptions), options=selectOptions)
 
-#     async def callback(self, interaction: discord.Interaction):
-#         await interaction.response.defer(ephemeral=True)
-#         added_role_names = []
-#         removed_role_names = []
-#         for option in self._options:
-#             role = interaction.guild.get_role(int(option[2]))
-#             if str(option[2]) in self.values:
-#                 if role not in interaction.user.roles:
-#                     await interaction.user.add_roles(role)
-#                     added_role_names.append(role.name)
-#             else:
-#                 if role in interaction.user.roles:
-#                     await interaction.user.remove_roles(role)
-#                     removed_role_names.append(role.name)
-#         if len(added_role_names) > 0 and len(removed_role_names) > 0:
-#             await interaction.send(
-#                 f"Successfully opted for roles: {', '.join(added_role_names)} and unopted from roles: {', '.join(removed_role_names)}.",
-#                 ephemeral=True)
-#         elif len(added_role_names) > 0 and len(removed_role_names) == 0:
-#             await interaction.send(f"Successfully opted for roles: {', '.join(added_role_names)}.", ephemeral=True)
-#         elif len(added_role_names) == 0 and len(removed_role_names) > 0:
-#             await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        added_role_names = []
+        removed_role_names = []
+        for option in self._options:
+            role = interaction.guild.get_role(int(option[2]))
+            if str(option[2]) in self.values:
+                if role not in interaction.user.roles:
+                    await interaction.user.add_roles(role)
+                    added_role_names.append(role.name)
+            else:
+                if role in interaction.user.roles:
+                    await interaction.user.remove_roles(role)
+                    removed_role_names.append(role.name)
+        if len(added_role_names) > 0 and len(removed_role_names) > 0:
+            await interaction.send(
+                f"Successfully opted for roles: {', '.join(added_role_names)} and unopted from roles: {', '.join(removed_role_names)}.",
+                ephemeral=True)
+        elif len(added_role_names) > 0 and len(removed_role_names) == 0:
+            await interaction.send(f"Successfully opted for roles: {', '.join(added_role_names)}.", ephemeral=True)
+        elif len(added_role_names) == 0 and len(removed_role_names) > 0:
+            await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
 
 
-# class DropdownViewRR(discord.ui.View):
-#     def __init__(self, roles_type):
-#         super().__init__(timeout=None)
+class DropdownViewRR(discord.ui.View):
+    def __init__(self, roles_type):
+        super().__init__(timeout=None)
 
-#         for category, options in reactionroles_data[roles_type].items():
-#             self.add_item(DropdownRR(category, options))
+        for category, options in reactionroles_data[roles_type].items():
+            self.add_item(DropdownRR(category, options))
 
-# class RolePickerCategories(discord.ui.Select):
-#     def __init__(self):
-#         options = ["Subject Roles", "Session Roles", "Study Ping Roles", "Server Roles"]
-#         super().__init__(
-#             placeholder="Choose a roles category...",
-#             min_values=1,
-#             max_values=1,
-#             options=[discord.SelectOption(label=option) for option in options],
-#             row=0
-#         )
+class RolePickerCategories(discord.ui.Select):
+    def __init__(self):
+        options = ["Subject Roles", "Session Roles", "Study Ping Roles", "Server Roles"]
+        super().__init__(
+            placeholder="Choose a roles category...",
+            min_values=1,
+            max_values=1,
+            options=[discord.SelectOption(label=option) for option in options],
+            row=0
+        )
 
-#     async def callback(self, interaction: discord.Interaction):
-#         roles_type = self.values[0]
-#         view = DropdownViewRR(roles_type)
-#         await interaction.response.edit_message(content=f"Choose your {roles_type}", view=view)
+    async def callback(self, interaction: discord.Interaction):
+        roles_type = self.values[0]
+        view = DropdownViewRR(roles_type)
+        await interaction.response.edit_message(content=f"Choose your {roles_type}", view=view)
 
-# class RolePickerCategoriesView(discord.ui.View):
-#     def __init__(self):
-#         super().__init__(timeout=None)
-#         self.add_item(RolePickerCategories())
+class RolePickerCategoriesView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(RolePickerCategories())
 
-#     @discord.ui.button(label="Remove all Roles", style=discord.ButtonStyle.red, row=1)
-#     async def remove_roles_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
-#         await interaction.response.defer(ephemeral=True)
-#         removed_role_names = []
-#         for category in reactionroles_data.values():
-#             for options in category.values():
-#                 for option in options:
-#                     role = interaction.guild.get_role(int(option[2]))
-#                     if role in interaction.user.roles:
-#                         await interaction.user.remove_roles(role)
-#                         removed_role_names.append(role.name)
-#         if len(removed_role_names) > 0:
-#             await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
-#         else:
-#             await interaction.send("No roles to remove! Please pick up roles first.", ephemeral=True)
-
-
-# def insert_returns(body):
-
-#     if isinstance(body[-1], ast.Expr):
-#         body[-1] = ast.Return(body[-1].value)
-#         ast.fix_missing_locations(body[-1])
-
-#     if isinstance(body[-1], ast.If):
-#         insert_returns(body[-1].body)
-#         insert_returns(body[-1].orelse)
-
-#     if isinstance(body[-1], ast.With):
-#         insert_returns(body[-1].body)
+    @discord.ui.button(label="Remove all Roles", style=discord.ButtonStyle.red, row=1)
+    async def remove_roles_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        removed_role_names = []
+        for category in reactionroles_data.values():
+            for options in category.values():
+                for option in options:
+                    role = interaction.guild.get_role(int(option[2]))
+                    if role in interaction.user.roles:
+                        await interaction.user.remove_roles(role)
+                        removed_role_names.append(role.name)
+        if len(removed_role_names) > 0:
+            await interaction.send(f"Successfully unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
+        else:
+            await interaction.send("No roles to remove! Please pick up roles first.", ephemeral=True)
 
 
-# class EvalModal(discord.ui.Modal):
-#     def __init__(self):
-#         super().__init__("Execute a piece of code!", timeout = None)
+def insert_returns(body):
 
-#         self.cmd = discord.ui.TextInput(
-#             label = "Code",
-#             style = discord.TextInputStyle.paragraph,
-#             placeholder = "Enter the code that is to be executed over here",
-#             required = True
-#         )
-#         self.add_item(self.cmd)
+    if isinstance(body[-1], ast.Expr):
+        body[-1] = ast.Return(body[-1].value)
+        ast.fix_missing_locations(body[-1])
+
+    if isinstance(body[-1], ast.If):
+        insert_returns(body[-1].body)
+        insert_returns(body[-1].orelse)
+
+    if isinstance(body[-1], ast.With):
+        insert_returns(body[-1].body)
+
+
+class EvalModal(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Execute a piece of code!", timeout = None)
+
+        self.cmd = discord.ui.TextInput(
+            label = "Code",
+            style = discord.TextInputStyle.paragraph,
+            placeholder = "Enter the code that is to be executed over here",
+            required = True
+        )
+        self.add_item(self.cmd)
     
-#     async def callback(self, interaction: discord.Interaction):
-#         fn_name = "_eval_expr"
-#         cmd = self.cmd.value.strip()
-#         cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
-#         body = f"async def {fn_name}():\n{cmd}"
-#         parsed = ast.parse(body)
-#         body = parsed.body[0].body
-#         insert_returns(body)
+    async def callback(self, interaction: discord.Interaction):
+        fn_name = "_eval_expr"
+        cmd = self.cmd.value.strip()
+        cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
+        body = f"async def {fn_name}():\n{cmd}"
+        parsed = ast.parse(body)
+        body = parsed.body[0].body
+        insert_returns(body)
 
-#         env = {
-#             "bot": bot,
-#             "discord": discord,
-#             "interaction": interaction,
-#             "__import__": __import__
-#         }
-#         exec(compile(parsed, filename="<ast>", mode="exec"), env)
+        env = {
+            "bot": bot,
+            "discord": discord,
+            "interaction": interaction,
+            "__import__": __import__
+        }
+        exec(compile(parsed, filename="<ast>", mode="exec"), env)
 
-#         result = (await eval(f"{fn_name}()", env))
-#         await interaction.send(result)
+        result = (await eval(f"{fn_name}()", env))
+        await interaction.send(result)
 
-# @bot.slash_command(name="eval", description="Evaluate a pice of code.", guild_ids=[GUILD_ID])
+# @bot.slash_command(name="eval", description="Evaluate a piece of code.", guild_ids=[GUILD_ID])
 # async def _eval(interaction: discord.Interaction):
 #     if not await is_moderator(interaction.user):
 #         await interaction.send("This is not for you.", ephemeral=True)
@@ -287,34 +285,31 @@ from bans import is_banned
 #     await msg1.add_reaction('✅')
 #     await msg1.add_reaction('❌')
 
+class CancelPingBtn(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=890)
+        self.value = True
 
-# # Helper
+    @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
+    async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
+        if (interaction_b.user != self.user) and (not await is_helper(interaction_b.user)) and (not await is_moderator(interaction_b.user)):
+            await interaction_b.send("You do not have permission to do this.", ephemeral=True)
+            return
+        button.disabled = True
+        self.value = False
+        await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", embed=None, view=None)
 
-# class CancelPingBtn(discord.ui.View):
-#     def __init__(self):
-#         super().__init__(timeout=890)
-#         self.value = True
-
-#     @discord.ui.button(label="Cancel Ping", style=discord.ButtonStyle.blurple)
-#     async def cancel_ping_btn(self, button: discord.ui.Button, interaction_b: discord.Interaction):
-#         if (interaction_b.user != self.user) and (not await is_helper(interaction_b.user)) and (not await is_moderator(interaction_b.user)):
-#             await interaction_b.send("You do not have permission to do this.", ephemeral=True)
-#             return
-#         button.disabled = True
-#         self.value = False
-#         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", embed=None, view=None)
-
-#     async def on_timeout(self): # 15 minutes has passed so execute the ping.
-#         await self.message.edit(view=None) # Remove Cancel Ping button
-#         if self.value:
-#             if self.message_id:
-#                 url = f"https://discord.com/channels/{self.guild.id}/{self.channel.id}/{self.message_id}"
-#                 embed = discord.Embed(description=f"[Jump to the message.]({url})")
-#             else:
-#                 embed = discord.Embed()
-#             embed.set_author(name=str(self.user), icon_url=self.user.display_avatar.url)
-#             await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
-#             await self.message.delete()  # Delete original message
+    async def on_timeout(self): # 15 minutes has passed so execute the ping.
+        await self.message.edit(view=None) # Remove Cancel Ping button
+        if self.value:
+            if self.message_id:
+                url = f"https://discord.com/channels/{self.guild.id}/{self.channel.id}/{self.message_id}"
+                embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            else:
+                embed = discord.Embed()
+            embed.set_author(name=str(self.user), icon_url=self.user.display_avatar.url)
+            await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
+            await self.message.delete()  # Delete original message
 
 
 # @bot.slash_command(description="Ping a helper in any subject channel", guild_ids=[GUILD_ID])
@@ -381,68 +376,6 @@ from bans import is_banned
 #         await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
 #     else:
 #         await ctx.message.reply("No changes were made.")
-
-# # Sticky Messages
-
-# class StickyMessage:
-#     def __init__(self, link: str):
-#         self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi("1"))
-#         self.db = self.client.IGCSEBot
-#         self.stickies = self.db.stickies
-
-#     def get_length_stickies(self, criteria={}):
-#         return len(list(self.stickies.find(criteria)))
-
-#     async def check_stick_msg(self, reference_msg):
-#         message_channel = reference_msg.channel
-#         if self.get_length_stickies() > 0:
-#             for stick_entry in self.stickies.find({"channel_id": message_channel.id}):
-#                 if not stick_entry["sticking"]:
-#                     prev_stick = {"message_id": stick_entry["message_id"]}
-
-#                     self.stickies.update_one(prev_stick, {"$set": {"sticking": True}})
-#                     stick_message = await message_channel.fetch_message(stick_entry["message_id"])
-#                     is_present_history = False
-
-#                     async for message in message_channel.history(limit=3):
-#                         if message.id == stick_entry["message_id"]:
-#                             is_present_history = True
-#                             self.stickies.update_one(prev_stick, {"$set": {"sticking": False}})
-
-#                     if not is_present_history:
-#                         stick_embed = stick_message.embeds
-
-#                         self.stickies.delete_one(prev_stick)
-#                         await stick_message.delete()
-
-#                         new_embed = await message_channel.send(embeds=stick_embed)
-#                         self.stickies.insert_one({"channel_id": message_channel.id, "message_id": new_embed.id, "sticking": True})
-
-#                         self.stickies.update_one({"message_id": new_embed.id}, {"$set": {"sticking": False}})
-
-#     async def stick(self, reference_msg):
-#         embeds = reference_msg.embeds
-#         if embeds == [] or self.get_length_stickies({"message_id": reference_msg.id}) > 0:
-#             return
-#         await reference_msg.edit(embed=embeds[0].set_footer(text="Stuck"))
-
-#         self.stickies.insert_one({"channel_id": reference_msg.channel.id, "message_id": reference_msg.id, "sticking": False})
-#         await self.check_stick_msg(reference_msg)
-
-#         return True
-
-#     async def unstick(self, reference_msg):
-#         embeds = reference_msg.embeds
-#         if embeds == []:
-#             return
-#         await reference_msg.edit(embed=embeds[0].remove_footer())
-#         for stick_entry in self.stickies.find({"channel_id": reference_msg.channel.id}):
-#             if stick_entry["message_id"] == reference_msg.id:
-#                 self.stickies.delete_one({"message_id": reference_msg.id})
-
-#         return True
-
-# StickDB = StickyMessage(LINK)
 
 # # Reputation
 

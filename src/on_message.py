@@ -1,6 +1,6 @@
 from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL
 from bot import discord, bot
-from db import gpdb
+from db import gpdb, smdb
 
 async def is_welcome(text):
     alternatives = ["you're welcome", "your welcome", "ur welcome", "your welcome", 'no problem']
@@ -140,7 +140,7 @@ async def on_message(message: discord.Message):
     if message.channel.name == 'counting':  # To facilitate #counting
         await counting(message)
     if message.guild.id == GUILD_ID:
-        await StickDB.check_stick_msg(message)
+        await smdb.check_stick_msg(message)
 
         if message.content.lower() == "pin":  # Pin a message
             if await isHelper(message.author) or await isModerator(message.author):
@@ -160,14 +160,14 @@ async def on_message(message: discord.Message):
             if await isModerator(message.author):
                 if message.reference is not None:
                         reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                        if await StickDB.stick(reference_msg):
+                        if await smdb.stick(reference_msg):
                             await message.reply(f"Sticky message added by {message.author.mention}.")
 
         if message.content.lower() == "unstick": # Unstick a message
             if await isModerator(message.author):
                 if message.reference is not None:
                     reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                    if await StickDB.unstick(reference_msg):
+                    if await smdb.unstick(reference_msg):
                         await message.reply(f"Sticky message removed by {message.author.mention}.")
 
     global keywords

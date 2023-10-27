@@ -41,3 +41,63 @@ class ReactionRolesDB:
             return result
 
 rrdb = ReactionRolesDB(LINK)
+
+class StickyMessageDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi("1"))
+        self.db = self.client.IGCSEBot
+        self.stickies = self.db.stickies
+
+    def get_length_stickies(self, criteria={}):
+        return len(list(self.stickies.find(criteria)))
+
+    async def check_stick_msg(self, reference_msg):
+        message_channel = reference_msg.channel
+        if self.get_length_stickies() > 0:
+            for stick_entry in self.stickies.find({"channel_id": message_channel.id}):
+                if not stick_entry["sticking"]:
+                    prev_stick = {"message_id": stick_entry["message_id"]}
+
+                    self.stickies.update_one(prev_stick, {"$set": {"sticking": True}})
+                    stick_message = await message_channel.fetch_message(stick_entry["message_id"])
+                    is_present_history = False
+
+                    async for message in message_channel.history(limit=3):
+                        if message.id == stick_entry["message_id"]:
+                            is_present_history = True
+                            self.stickies.update_one(prev_stick, {"$set": {"sticking": False}})
+
+                    if not is_present_history:
+                        stick_embed = stick_message.embeds
+
+                        self.stickies.delete_one(prev_stick)
+                        await stick_message.delete()
+
+                        new_embed = await message_channel.send(embeds=stick_embed)
+                        self.stickies.insert_one({"channel_id": message_channel.id, "message_id": new_embed.id, "sticking": True})
+
+                        self.stickies.update_one({"message_id": new_embed.id}, {"$set": {"sticking": False}})
+
+    async def stick(self, reference_msg):
+        embeds = reference_msg.embeds
+        if embeds == [] or self.get_length_stickies({"message_id": reference_msg.id}) > 0:
+            return
+        await reference_msg.edit(embed=embeds[0].set_footer(text="Stuck"))
+
+        self.stickies.insert_one({"channel_id": reference_msg.channel.id, "message_id": reference_msg.id, "sticking": False})
+        await self.check_stick_msg(reference_msg)
+
+        return True
+
+    async def unstick(self, reference_msg):
+        embeds = reference_msg.embeds
+        if embeds == []:
+            return
+        await reference_msg.edit(embed=embeds[0].remove_footer())
+        for stick_entry in self.stickies.find({"channel_id": reference_msg.channel.id}):
+            if stick_entry["message_id"] == reference_msg.id:
+                self.stickies.delete_one({"message_id": reference_msg.id})
+
+        return True
+
+smdb = StickyMessageDB(LINK)
