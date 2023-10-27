@@ -3,26 +3,28 @@ from bot import discord, bot
 from db import gpdb, smdb
 
 async def is_welcome(text):
-    alternatives = ["you're welcome", "your welcome", "ur welcome", "your welcome", 'no problem']
+    alternatives = ["you're welcome", "your welcome", "ur welcome", "no problem"]
     alternatives_2 = ["np", "np!", "yw", "yw!"]
-    if "welcome" == text.lower():
+    lowercase = text.lower()
+    if "welcome" == lowercase:
         return True
     else:
         for alternative in alternatives:
-            if alternative in text.lower():
+            if alternative in lowercase:
                 return True
         for alternative in alternatives_2:
-            if alternative in text.lower().split() or alternative == text.lower():
+            if alternative in lowercase.split() or alternative == lowercase:
                 return True
     return False
 
 async def is_thanks(text):
-    alternatives = ['thanks', 'thank you', 'thx', 'tysm', 'thank u', 'thnks', 'tanks', "thanku", "tyvm", "thankyou"]
-    if "ty" in text.lower().split():
+    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thanku", "tyvm", "thankyou"]
+    lowercase = text.lower()
+    if "ty" in lowercase.split():
         return True
     else:
         for alternative in alternatives:
-            if alternative in text.lower():
+            if alternative in lowercase:
                 return True
 
 async def handle_rep(message):
@@ -104,8 +106,7 @@ async def on_message(message: discord.Message):
             else:
                 member = message.guild.get_member(int(message.channel.topic))
                 if message.content == ".sclose":
-                    embed = discord.Embed(title="DM Channel Silently Closed",
-                                         description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
+                    embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
                     embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
                     await message.channel.delete()
                     await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
@@ -135,9 +136,9 @@ async def on_message(message: discord.Message):
 
                 await message.delete()
 
-    if gpdb.get_pref('rep_enabled', message.guild.id):
+    if gpdb.get_pref("rep_enabled", message.guild.id):
         await handle_rep(message)  # If message is replying to another message
-    if message.channel.name == 'counting':  # To facilitate #counting
+    if message.channel.name == "counting":  # To facilitate #counting
         await counting(message)
     if message.guild.id == GUILD_ID:
         await smdb.check_stick_msg(message)
