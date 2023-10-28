@@ -430,11 +430,7 @@ async def rep(interaction: discord.Interaction,
 
 
 @bot.slash_command(description="Change someone's current rep (for mods)")
-async def change_rep(interaction: discord.Interaction,
-                     user: discord.User = discord.SlashOption(name="user", description="User to view rep of",
-                                                              required=True),
-                     new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True,
-                                                        min_value=0, max_value=9999)):
+async def change_rep(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True), new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=0, max_value=9999)):
     if await is_moderator(interaction.user):
         await interaction.response.defer()
         rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
@@ -444,23 +440,14 @@ async def change_rep(interaction: discord.Interaction,
 
 
 @bot.slash_command(description="View the current rep leaderboard")
-async def leaderboard(interaction: discord.Interaction,
-                      page: int = discord.SlashOption(name="page", description="Page number to to display",
-                                                      required=False, min_value=1, max_value=99999),
-                      user_to_find: discord.User = discord.SlashOption(name="user",
-                                                                       description="User to find on the leaderboard",
-                                                                       required=False)
-                      ):
+async def leaderboard(interaction: discord.Interaction, page: int = discord.SlashOption(name="page", description="Page number to to display", required=False, min_value=1, max_value=99999), user_to_find: discord.User = discord.SlashOption(name="user", description="User to find on the leaderboard", required=False)):
     await interaction.response.defer()
     leaderboard = repDB.rep_leaderboard(interaction.guild.id)  # Rep leaderboard
     leaderboard = [item.values() for item in leaderboard]  # Changing format of leaderboard
-    chunks = [list(leaderboard)[x:x + 9] for x in
-              range(0, len(leaderboard), 9)]  # Split into groups of 9
-
+    chunks = [list(leaderboard)[x:x + 9] for x in range(0, len(leaderboard), 9)]  # Split into groups of 9
     pages = []
     for n, chunk in enumerate(chunks):
-        embed = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}",
-                                 colour=discord.Colour.green())
+        embed = discord.Embed(title="Reputation Leaderboard", description=f"Page {n + 1} of {len(chunks)}", colour=discord.Colour.green())
         for user, rep in chunk:
             if user_to_find:
                 if user_to_find.id == user:
