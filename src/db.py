@@ -130,3 +130,47 @@ class KeywordsDB:
         return result
 
 kwdb = KeywordsDB(LINK)
+
+class ReputationDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.reputation = self.db.reputation
+
+    def bulk_insert_rep(self, rep_dict: dict, guild_id: int):
+        # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
+        insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
+        result = self.reputation.insert_many(insertion)
+        return result
+
+    def get_rep(self, user_id: int, guild_id: int):
+        result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
+        if result is None:
+            return None
+        else:
+            return result['rep']
+
+    def change_rep(self, user_id: int, new_rep: int, guild_id: int):
+        result = self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
+        return new_rep
+
+    def delete_user(self, user_id: int, guild_id: int):
+        result = self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
+        return result
+
+    def add_rep(self, user_id: int, guild_id: int):
+        rep = self.get_rep(user_id, guild_id)
+        if rep is None:
+            rep = 1
+            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": rep})
+        else:
+            rep += 1
+            self.change_rep(user_id, rep, guild_id)
+        return rep
+
+    def rep_leaderboard(self, guild_id):
+        leaderboard = self.reputation.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0}).sort("rep", -1)
+        return list(leaderboard)
+
+
+repdb = ReputationDB(LINK)

@@ -1,6 +1,6 @@
-from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL
+from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
 from bot import discord, bot, keywords
-from db import gpdb, smdb
+from db import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper
 
 async def counting(message):
@@ -73,14 +73,14 @@ async def handle_rep(message):
 
     if repped:
         for user in repped:
-            rep = repDB.add_rep(user.id, message.guild.id)
+            rep = repdb.add_rep(user.id, message.guild.id)
             if rep == 100 or rep == 500:
                 role = discord.utils.get(user.guild.roles, name=f"{rep}+ Rep Club")
                 await user.add_roles(role)
                 await message.channel.send(f"Gave +1 Rep to {user.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
             else:
                 await message.channel.send(f"Gave +1 Rep to {user} ({rep})")
-        leaderboard = repDB.rep_leaderboard(message.guild.id)
+        leaderboard = repdb.rep_leaderboard(message.guild.id)
         members = [list(item.values())[0] for item in leaderboard[:3]]  # Creating list of Reputed member ids
         role = discord.utils.get(message.guild.roles, name="Reputed")
         if [member.id for member in role.members] != members:  # If Reputed has changed

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
-LINK = "" # os.environ.get("MONGO_LINK")
+LINK = os.environ.get("MONGO_LINK")
 
 GUILD_ID = 1111128710133854289 # 576460042774118420
 LOG_CHANNEL_ID = 1152467554321842257 # 1017792876584906782

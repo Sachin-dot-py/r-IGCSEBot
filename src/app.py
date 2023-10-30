@@ -1,5 +1,5 @@
 from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES
-from bot import discord, bot, keywords
+from bot import discord, bot, keywords, typing, tasks, commands
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
 # events
@@ -15,7 +15,7 @@ import on_guild_join
 import on_auto_moderation_action_execution
 
 # mongo
-from db import gpdb, rrdb, kwdb
+from db import gpdb, rrdb, kwdb, repdb
 
 # utility
 from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
@@ -48,8 +48,7 @@ class DropdownRR(discord.ui.Select):
                     removed_role_names.append(role.name)
         if len(added_role_names) > 0 and len(removed_role_names) > 0:
             await interaction.send(
-                f"Successfully opted for roles: {', '.join(added_role_names)} and unopted from roles: {', '.join(removed_role_names)}.",
-                ephemeral=True)
+                f"Successfully opted for roles: {', '.join(added_role_names)} and unopted from roles: {', '.join(removed_role_names)}.", ephemeral=True)
         elif len(added_role_names) > 0 and len(removed_role_names) == 0:
             await interaction.send(f"Successfully opted for roles: {', '.join(added_role_names)}.", ephemeral=True)
         elif len(added_role_names) == 0 and len(removed_role_names) > 0:
@@ -123,7 +122,7 @@ class EvalModal(discord.ui.Modal):
             label = "Code",
             style = discord.TextInputStyle.paragraph,
             placeholder = "Enter the code that is to be executed over here",
-            required = True
+            required = True,
         )
         self.add_item(self.cmd)
     
@@ -140,7 +139,7 @@ class EvalModal(discord.ui.Modal):
             "bot": bot,
             "discord": discord,
             "interaction": interaction,
-            "__import__": __import__
+            "__import__": __import__,
         }
         exec(compile(parsed, filename="<ast>", mode="exec"), env)
 
@@ -369,53 +368,6 @@ async def refreshhelpers(ctx):
     else:
         await ctx.message.reply("No changes were made.")
 
-# Reputation
-
-
-class ReputationDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
-        self.db = self.client.IGCSEBot
-        self.reputation = self.db.reputation
-
-    def bulk_insert_rep(self, rep_dict: dict, guild_id: int):
-        # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
-        insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
-        result = self.reputation.insert_many(insertion)
-        return result
-
-    def get_rep(self, user_id: int, guild_id: int):
-        result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
-        if result is None:
-            return None
-        else:
-            return result['rep']
-
-    def change_rep(self, user_id: int, new_rep: int, guild_id: int):
-        result = self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
-        return new_rep
-
-    def delete_user(self, user_id: int, guild_id: int):
-        result = self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
-        return result
-
-    def add_rep(self, user_id: int, guild_id: int):
-        rep = self.get_rep(user_id, guild_id)
-        if rep is None:
-            rep = 1
-            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": rep})
-        else:
-            rep += 1
-            self.change_rep(user_id, rep, guild_id)
-        return rep
-
-    def rep_leaderboard(self, guild_id):
-        leaderboard = self.reputation.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0}).sort("rep", -1)
-        return list(leaderboard)
-
-
-repDB = ReputationDB(LINK)
-
 
 @bot.slash_command(description="View someone's current rep")
 async def rep(interaction: discord.Interaction,
@@ -423,7 +375,7 @@ async def rep(interaction: discord.Interaction,
     await interaction.response.defer()
     if user is None:
         user = interaction.user
-    rep = repDB.get_rep(user.id, interaction.guild.id)
+    rep = repdb.get_rep(user.id, interaction.guild.id)
     if rep is None:
         rep = 0
     await interaction.send(f"{user} has {rep} rep.", ephemeral=False)
@@ -433,7 +385,7 @@ async def rep(interaction: discord.Interaction,
 async def change_rep(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True), new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=0, max_value=9999)):
     if await is_moderator(interaction.user):
         await interaction.response.defer()
-        rep = repDB.change_rep(user.id, new_rep, interaction.guild.id)
+        rep = repdb.change_rep(user.id, new_rep, interaction.guild.id)
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
     else:
         await interaction.send("You are not authorized to use this command.", ephemeral=True)
@@ -442,7 +394,7 @@ async def change_rep(interaction: discord.Interaction, user: discord.User = disc
 @bot.slash_command(description="View the current rep leaderboard")
 async def leaderboard(interaction: discord.Interaction, page: int = discord.SlashOption(name="page", description="Page number to to display", required=False, min_value=1, max_value=99999), user_to_find: discord.User = discord.SlashOption(name="user", description="User to find on the leaderboard", required=False)):
     await interaction.response.defer()
-    leaderboard = repDB.rep_leaderboard(interaction.guild.id)  # Rep leaderboard
+    leaderboard = repdb.rep_leaderboard(interaction.guild.id)  # Rep leaderboard
     leaderboard = [item.values() for item in leaderboard]  # Changing format of leaderboard
     chunks = [list(leaderboard)[x:x + 9] for x in range(0, len(leaderboard), 9)]  # Split into groups of 9
     pages = []
@@ -454,7 +406,7 @@ async def leaderboard(interaction: discord.Interaction, page: int = discord.Slas
                     page = n + 1
             user_name = interaction.guild.get_member(user)
             if rep == 0 or user_name is None:
-                repDB.delete_user(user, interaction.guild.id)
+                repdb.delete_user(user, interaction.guild.id)
             else:
                 embed.add_field(name=user_name, value=str(rep) + "\n", inline=True)
         pages.append(embed)
@@ -700,20 +652,14 @@ class SendMessage(discord.ui.Modal):
             await interaction.send("Message sent!", ephemeral = True)
 
 @bot.slash_command(description="Send messages using the bot (for mods)")
-async def send_message(interaction: discord.Interaction,
-                       channel_to_send_to: discord.abc.GuildChannel = discord.SlashOption(name="channel_to_send_to",
-                        description="Channel to send the message to",
-                        required=True)):
+async def send_message(interaction: discord.Interaction, channel_to_send_to: discord.abc.GuildChannel = discord.SlashOption(name="channel_to_send_to", description="Channel to send the message to", required=True)):
     if not await is_moderator(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
     await interaction.response.send_modal(modal = SendMessage(channel_to_send_to))
 
 @bot.command(description="Send messages using the bot (for mods)")
-async def send_message(ctx,
-                       message_text: str,
-                       channel_to_send_to: typing.Optional[discord.abc.GuildChannel],
-                       message_to_reply_to: typing.Optional[discord.Message]):
+async def send_message(ctx, message_text: str, channel_to_send_to: typing.Optional[discord.abc.GuildChannel], message_to_reply_to: typing.Optional[discord.Message]):
     if not await is_moderator(ctx.author):
         await ctx.send("You are not authorized to perform this action.")
         return
@@ -1104,11 +1050,12 @@ Moderator: {mod}"""
 
 
 @bot.slash_command(description="Ban a user from the server (for mods)")
-async def ban(interaction: discord.Interaction,
-              user: discord.Member = discord.SlashOption(name="user", description="User to ban",
-                                                       required=True),
-              reason: str = discord.SlashOption(name="reason", description="Reason for ban", required=True),
-              delete_message_days: int = discord.SlashOption(name="delete_messages", choices={"Don't Delete Messages" : 0, "Delete Today's Messages" : 1, "Delete 3 Days of Messages" : 3, 'Delete 1 Week of Messages' : 7}, default=0, description="Duration of messages from the user to delete (defaults to zero)", required=False)):
+async def ban(
+        interaction: discord.Interaction,
+        user: discord.Member = discord.SlashOption(name="user", description="User to ban", required=True),
+        reason: str = discord.SlashOption(name="reason", description="Reason for ban", required=True),
+        delete_message_days: int = discord.SlashOption(name="delete_messages", choices={"Don't Delete Messages" : 0, "Delete Today's Messages" : 1, "Delete 3 Days of Messages" : 3, 'Delete 1 Week of Messages' : 7}, default=0, description="Duration of messages from the user to delete (defaults to zero)", required=False)
+    ):
     action_type = "Ban"
     mod = interaction.user.mention
 
@@ -1148,9 +1095,7 @@ Reason: {reason}"""
 
 
 @bot.slash_command(description="Unban a user from the server (for mods)")
-async def unban(interaction: discord.Interaction,
-                user: discord.User = discord.SlashOption(name="user", description="User to unban",
-                                                required=True)):
+async def unban(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to unban", required=True)):
     action_type = "Unban"
     mod = interaction.user.mention
     if not await is_moderator(interaction.user):
@@ -1706,29 +1651,6 @@ async def lockcommand(interaction: discord.Interaction,
 
   embed = discord.Embed(description=f"Locking channel <t:{max(locktime, t)}:R>.")
   await channelinput.send(embed=embed)
-
-@tasks.loop(seconds=60)
-async def checklocks():
-  """Checks the database every 60 seconds to see if anything needs to be locked or unlocked """
-
-  client = pymongo.MongoClient(LINK)
-  db = client.IGCSEBot
-  locks = db["channellock"]
-
-  try:
-    results = locks.find({"resolved": False})
-
-    for result in results:
-      if result["time"] <= time.time():
-        # finds the unlock time
-        ult = locks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-        await togglechannellock(result["channelid"], result["unlock"], unlocktime=ult)
-
-        # Resolves the database entry (to avoid repeated locking/unlocking)
-        locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
-
-  except Exception as e:
-     print(e)
 
 
 bot.run(TOKEN)
