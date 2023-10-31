@@ -13,9 +13,4 @@ async def on_ready():
     igcse = await bot.fetch_guild(GUILD_ID)
     logs = await igcse.fetch_channel(LOG_CHANNEL_ID)
     await logs.send(embed=embed)
-    for channel in igcse.channels:
-        channel_data = discord.Embed(title=channel.name, description=channel.id)
-        channel_data.add_field(name="Type", value=str(channel.type))
-        channel_data.add_field(name="Category", value=str(channel.category))
-        await logs.send(embed=channel_data)
     checklocks.start()

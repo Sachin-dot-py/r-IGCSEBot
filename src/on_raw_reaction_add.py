@@ -21,9 +21,7 @@ async def on_raw_reaction_add(reaction):
     if author.bot or not await is_moderator(author): return
 
     # Emote voting
-    if message.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(
-            reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
-
+    if message.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
         upvotes = 0
         downvotes = 0
         for r in message.reactions:
