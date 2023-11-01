@@ -1,5 +1,5 @@
 from constants import LINK, GUILD_ID, LOG_CHANNEL_ID
-from bot import bot
+from bot import discord, bot, traceback
 
 @bot.event
 async def on_application_command_error(interaction, exception):

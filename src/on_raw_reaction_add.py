@@ -1,5 +1,5 @@
 from constants import GUILD_ID
-from bot import discord, bot
+from bot import discord, bot, requests
 from db import gpdb, rrdb
 from roles import is_moderator
 
