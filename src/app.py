@@ -634,8 +634,7 @@ class SendMessage(discord.ui.Modal):
         self.message_content = discord.ui.TextInput(
             label = "Content",
             style = discord.TextInputStyle.paragraph,
-            placeholder = "The 
-          body of the message you wish to send",
+            placeholder = "The body of the message you wish to send",
             required = True
         )
         self.add_item(self.message_content)
