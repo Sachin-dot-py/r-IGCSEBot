@@ -1,5 +1,5 @@
 from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES
-from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime
+from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 
 # events
@@ -634,7 +634,7 @@ class SendMessage(discord.ui.Modal):
         self.message_content = discord.ui.TextInput(
             label = "Content",
             style = discord.TextInputStyle.paragraph,
-            placeholder = "The main body of the message you wish to send",
+            placeholder = "The body of the message you wish to send",
             required = True
         )
         self.add_item(self.message_content)
