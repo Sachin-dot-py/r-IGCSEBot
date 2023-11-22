@@ -1,4 +1,5 @@
-from bot import discord
+from bot import discord, bot
+from constants import GUILD_ID
 
 async def has_role(member: discord.Member, role_name: str):
     roles = [role.name.lower() for role in member.roles]
@@ -7,7 +8,6 @@ async def has_role(member: discord.Member, role_name: str):
             return True
     return False
 
-# unused function
 async def get_role(role_name: str):
     guild = bot.get_guild(GUILD_ID)
     role = discord.utils.get(guild.roles, name = role_name)
