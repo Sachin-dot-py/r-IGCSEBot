@@ -2,4 +2,5 @@
 .idea/
 .DS_Store
 app_v1.py
+src/constants.py
 __pycache__
