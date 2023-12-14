@@ -1,6 +1,7 @@
 from constants import GUILD_ID, WELCOME_CHANNEL_ID
-from bot import bot
+from bot import bot, discord
 from db import gpdb
+
 
 @bot.event
 async def on_member_join(member: discord.Member):
