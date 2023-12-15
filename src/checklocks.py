@@ -1,5 +1,29 @@
-from constants import LINK
-from bot import tasks, pymongo
+from constants import LINK, GUILD_ID
+from bot import bot, tasks, pymongo, discord
+import time
+import traceback
+from roles import get_role
+
+async def togglechannellock(channelid, unlock, *, unlocktime=0):
+    """Function for locking/unlocking a discord channel"""
+
+    everyonerole = bot.get_guild(GUILD_ID).default_role
+
+    channel = bot.get_channel(channelid)
+    overwrite = channel.overwrites_for(everyonerole)
+    overwrite.send_messages = unlock
+
+    try:
+        await channel.set_permissions(everyonerole, overwrite=overwrite)
+        await channel.send(f"{'Unl' if unlock else 'L'}ocked channel.")
+
+        if not unlock:
+            # If the channel was locked, send another embed with unlock time
+            embed = discord.Embed(description=f"Unlocking channel <t:{unlocktime}:R>.")
+            await channel.send(embed=embed)
+
+    except:
+        print("failed to set permissions")
 
 @tasks.loop(seconds=60)
 async def checklocks():
@@ -18,5 +42,5 @@ async def checklocks():
                 # Resolves the database entry (to avoid repeated locking/unlocking)
                 locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(traceback.format_exc())
