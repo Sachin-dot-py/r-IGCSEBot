@@ -1,4 +1,4 @@
-from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES
+from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID,
 from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
@@ -1636,7 +1636,7 @@ async def channellockcommand(interaction: discord.Interaction,
         #logging a message in #logs:
         User_ID = f"<@{interaction.user.id}>"
         Channel_ID = f"<#{channelinput.id}>"
-        Logging = bot.get_channel(LOG_CHANNEL_ID)
+        Logging = bot.get_channel(MODLOG_CHANNEL_ID)
         await Logging.send(
                             f"Action Type: Channel Lockdown\n"
                             f"Channel Name: {Channel_ID}\n" 
@@ -1700,7 +1700,7 @@ async def forumlockcommand(interaction: discord.Interaction, threadinput: discor
 
         #logging a message in #logs:
         userid = f"<@{interaction.user.id}>"
-        logging = bot.get_channel(LOG_CHANNEL_ID)
+        logging = bot.get_channel(MODLOG_CHANNEL_ID)
         await logging.send(
                             f"Action Type: Forum Thread Lockdown\n"
                             f"Channel Name: {threadid}\n" 
