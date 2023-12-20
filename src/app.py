@@ -1572,10 +1572,15 @@ class Code(discord.ui.Modal):
             await interaction.send(embed = embed, ephemeral = False)
         else:
             await interaction.send("There was an error compiling the code", ephemeral = True)
-    
+            
 @bot.slash_command(name = "code", description = "Compile a pseudocode code and send it back")
 async def code(interaction: discord.Interaction):
     await interaction.response.send_modal(modal = Code())
+
+@bot.slash_command(name= "current_unixtime", description= "gets the current unix timestamp.")
+async def current_unixtime(interaction: discord.Interaction):
+    timern = int(time.time()) + 1
+    await interaction.send(f"current unix timestamp: {timern}")
 
 @bot.slash_command(name="channellock", description="Locks a channel at a specified time")
 async def lockcommand(interaction: discord.Interaction,
