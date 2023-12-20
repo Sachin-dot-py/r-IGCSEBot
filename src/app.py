@@ -1,7 +1,8 @@
 from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES
-from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
+from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo, MongoClient
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
+import traceback
 
 # events
 import on_ready
@@ -1586,10 +1587,10 @@ class Code(discord.ui.Modal):
 async def code(interaction: discord.Interaction):
     await interaction.response.send_modal(modal = Code())
 
-@bot.slash_command(name= "current_unixtime", description= "gets the current unix timestamp.")
-async def current_unixtime(interaction: discord.Interaction):
+@bot.slash_command(description= "gets the current unix timestamp.")
+async def unixtime(interaction: discord.Interaction):
     timern = int(time.time()) + 1
-    await interaction.send(f"current unix timestamp: {timern}")
+    await interaction.send(f"Current time in unix format: {timern}")
 
 async def togglechannellock(Channel_ID, unlock, *, unlocktime=0):
     #Function for locking/unlocking a discord channel
@@ -1598,7 +1599,6 @@ async def togglechannellock(Channel_ID, unlock, *, unlocktime=0):
     overwrite = channel.overwrites_for(everyone)
     overwrite.send_messages_in_threads = unlock
     overwrite.send_messages = unlock
-    logging = bot.get_channel(LOG_ID)
 
     try:
         await channel.set_permissions(everyone, overwrite=overwrite)
@@ -1609,35 +1609,58 @@ async def togglechannellock(Channel_ID, unlock, *, unlocktime=0):
     except:
         print("failed to set permissions")
 
+async def toggleforumlock(threadid, unlock, unlocktime):
+    thread = bot.get_channel(threadid)
+
+    #Locking the post:
+    try:
+        thread = await thread.edit(locked= not unlock)
+        await thread.send(f"Thread has been {'unl' if unlock else 'l'}ocked.")
+        if not unlock:
+            await thread.send(f"Unlocking channel <t:{unlocktime}:R>.")
+    except:
+        print("failed to set permissions")
+
 @tasks.loop(seconds=60)
-async def checkchannellocks():
+async def checklocks():
     #Checks the database every 60 seconds to see if anything needs to be locked or unlocked
     client = pymongo.MongoClient(LINK)
     db = client.IGCSEBot
-    locks = db["channellock"]
+    clocks = db["channellock"]
+    flocks = db["forumlock"]
+
     try:
-        results = locks.find({"resolved": False})
+        results = clocks.find({"resolved": False})
         for result in results:
             if result["time"] <= time.time():
                 # finds the unlock time
-                ult = locks.find_one({"_id": "u" + result["_id"][1:]})["time"]
+                ult = clocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
                 await togglechannellock(result["Channel_ID"], result["unlock"], unlocktime=ult)
 
                 # Resolves the database entry (to avoid repeated locking/unlocking)
-                locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
+                clocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
+
+        results = flocks.find({"resolved": False})
+        for result in results:
+            if result["time"] <= time.time():
+                # finds the unlock time
+                ult = flocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
+                await toggleforumlock(result["Thread_ID"], result["unlock"], unlocktime=ult)
+                # Resolves the database entry (to avoid repeated locking/unlocking)
+                flocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
     except Exception:
         print(traceback.format_exc())
 
 @bot.slash_command(name="channellock", description="Locks a channel at a specified time")
-async def Channellockcommand(interaction: discord.Interaction,
+async def channellockcommand(interaction: discord.Interaction,
                         channelinput: discord.TextChannel =  discord.SlashOption(name="channel_name", description="Which channel do you want to lock?", required=True),
                         locktime: str = discord.SlashOption(name="lock_time", description="At what time do you want the channel to be locked?", required=True),
                         unlocktime: str = discord.SlashOption(name="unlock_time", description="At what time do you want the channel to be unlocked?", required=True)):
 
         #check if user is moderator or check if "Bot Developer" role is avaliable:
         await interaction.response.defer(ephemeral=True)
-        if not await isModerator(interaction.user) and not await hasRole(interaction.user, "Bot Developer"):
+        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                 await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
                 return
         
@@ -1650,32 +1673,19 @@ async def Channellockcommand(interaction: discord.Interaction,
             for result in results:
                 locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
-        #allow instant unlocking of channels
-        if unlocktime == 'now':
-            locktime = 0
-            unlocktime = time.time() + 5
-
         #Validate Time:
         try:
-                locktime = int(locktime)
-                unlocktime = int(unlocktime)
+            locktime = int(locktime)
+            unlocktime = int(unlocktime)
         except ValueError:
-                await interaction.send(f"Sorry {interaction.user.mention}," " values of the time should be positive integers only. please try again.", ephemeral=True)
-                return
-        
-        timern = int(time.time()) + 1
-        if locktime < 0 or unlocktime < 0:
-                await interaction.send(F"{'L' if locktime < 0 else 'Unl'}ocktime is invalid. please try with values greater than 0.", ephemeral=True)
-                return
-        
-        elif locktime >= unlocktime :
-                await interaction.send("the unlock time has to be after lock time. please try again.", ephemeral=True)
-                return
-        
-        elif locktime < timern or unlocktime < timern:
-            await interaction.send(F"{'L' if locktime < timern else 'Unl'}ocktime has already passed. the current time is {round(time.time())}. please try again.", ephemeral=True)
+            await interaction.send(f"Sorry {interaction.user.mention}," " values of the time should be positive integers only. please try again.", ephemeral=True)
             return
-
+        
+        timern = int(time.time()) + 1        
+        if locktime >= unlocktime :
+            await interaction.send("the unlock time has to be after lock time. please try again.", ephemeral=True)
+            return
+        
         #Getting Valid Unix Timestamp:
         unixlocktime = f"<t:{locktime}:F>"
         unixunlocktime = f"<t:{unlocktime}:F>"
@@ -1687,7 +1697,7 @@ async def Channellockcommand(interaction: discord.Interaction,
         #logging a message in #logs:
         User_ID = f"<@{interaction.user.id}>"
         Channel_ID = f"<#{channelinput.id}>"
-        Logging = bot.get_channel(LOG_ID)
+        Logging = bot.get_channel(LOG_CHANNEL_ID)
         await Logging.send(
                             f"Action Type: Channel Lockdown\n"
                             f"Channel Name: {Channel_ID}\n" 
@@ -1707,48 +1717,15 @@ async def Channellockcommand(interaction: discord.Interaction,
         locks.insert_one({"_id": "u" + str(timern), "Channel_ID": channelinput.id,
                         "unlock": True, "time": unlocktime,
                         "resolved": False})
-        
+
         await channelinput.send(f"This channel has been scheduled to lock <t:{max(locktime, timern)}:R> successfully.")
 
-async def toggleforumlock(Thread_ID, unlock, unlocktime):
-    Thread_id = bot.get_channel(Thread_ID)
-    logging = bot.get_channel(LOG_ID)
-    #Locking the post:
-    try:
-        thread = await Thread_id.edit(locked= not unlock)
-        await thread.send(f"Thread has been {'unl' if unlock else 'l'}ocked.")
-        if not unlock:
-            await Thread_id.send(f"Unlocking channel <t:{unlocktime}:R>.")
-
-    except:
-        print("failed to set permissions")
-
-@tasks.loop(seconds=60)
-async def checkforumlocks():
-    #Checks the database every 60 seconds to see if anything needs to be locked or unlocked
-    client = pymongo.MongoClient(LINK)
-    db = client.IGCSEBot
-    locks = db["forumlock"]
-    try:
-        results = locks.find({"resolved": False})
-        for result in results:
-            if result["time"] <= time.time():
-                # finds the unlock time
-                ult = locks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-                await toggleforumlock(result["Thread_ID"], result["unlock"], unlocktime=ult)
-                # Resolves the database entry (to avoid repeated locking/unlocking)
-                locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
-
-
-    except Exception:
-        print(traceback.format_exc())
-
 @bot.slash_command(name="forumlock", description="Locks a forum thread at a specified time")
-async def Forumlockcommand(interaction: discord.Interaction, threadinput: discord.Thread = discord.SlashOption(name="thread_name", description="Which thread do you want to lock?", required=True), locktime: str = discord.SlashOption(name="lock_time", description="At what time do you want the thread to be locked?", required=True), unlocktime: str = discord.SlashOption(name="unlock_time", description="At what time do you want the thread to be unlocked?", required=True)):
+async def forumlockcommand(interaction: discord.Interaction, threadinput: discord.Thread = discord.SlashOption(name="thread_name", description="Which thread do you want to lock?", required=True), locktime: str = discord.SlashOption(name="lock_time", description="At what time do you want the thread to be locked?", required=True), unlocktime: str = discord.SlashOption(name="unlock_time", description="At what time do you want the thread to be unlocked?", required=True)):
         
         #check if user is moderator or check if "Bot Developer" role is avaliable:
         await interaction.response.defer(ephemeral=True)
-        if not await isModerator(interaction.user) and not await hasRole(interaction.user, "Bot Developer"):
+        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                 await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
                 return
         
@@ -1779,7 +1756,7 @@ async def Forumlockcommand(interaction: discord.Interaction, threadinput: discor
                 await interaction.send(f"Sorry {interaction.user.mention}," " values of the time should be positive integers only. please try again.", ephemeral=True)
                 return
         
-        timern = int(time.time()) + 1
+        t = int(time.time()) + 1
         if locktime < 0 or unlocktime < 0:
                 await interaction.send(F"{'L' if locktime < 0 else 'Unl'}ocktime is invalid. please try with values greater than 0.", ephemeral=True)
                 return
@@ -1788,8 +1765,8 @@ async def Forumlockcommand(interaction: discord.Interaction, threadinput: discor
                 await interaction.send("the unlock time has to be after lock time. please try again.", ephemeral=True)
                 return
         
-        elif locktime < timern or unlocktime < timern:
-            await interaction.send(F"{'L' if locktime < timern else 'Unl'}ocktime has already passed. the current time is {round(time.time())}. please try again.", ephemeral=True)
+        elif locktime < t or unlocktime < t:
+            await interaction.send(F"{'L' if locktime < t else 'Unl'}ocktime has already passed. the current time is {t}. please try again.", ephemeral=True)
             return
 
         #Getting Valid Unix Timestamp:
@@ -1801,29 +1778,29 @@ async def Forumlockcommand(interaction: discord.Interaction, threadinput: discor
         await interaction.send(f"{Thread_ID} is been scheduled to lock on {unixlocktime} and unlock on {unixunlocktime}", ephemeral=True)
 
         #logging a message in #logs:
-        User_ID = f"<@{interaction.user.id}>"
-        Thread_ID = f"<#{threadinput.id}>"
-        Logging = bot.get_channel(LOG_ID)
-        await Logging.send(
+        userid = f"<@{interaction.user.id}>"
+        threadid = f"<#{threadinput.id}>"
+        logging = bot.get_channel(LOG_CHANNEL_ID)
+        await logging.send(
                             f"Action Type: Forum Thread Lockdown\n"
-                            f"Channel Name: {Thread_ID}\n" 
+                            f"Channel Name: {threadid}\n" 
                             f"Lock Time: {locktime} ({unixlocktime})\n" 
                             f"Unlock Time: {unlocktime} ({unixunlocktime})\n" 
-                            f"Moderator: {User_ID}"
+                            f"Moderator: {userid}"
                             )
         
         client = MongoClient(LINK)
         db = client.IGCSEBot
         lock = db["forumlock"]
 
-        lock.insert_one({"_id": "l" + str(timern), "Thread_ID": threadinput.id,
+        lock.insert_one({"_id": "l" + str(t), "Thread_ID": threadinput.id,
                         "unlock": False, "time": locktime,
                         "resolved": False})
 
-        lock.insert_one({"_id": "u" + str(timern), "Thread_ID": threadinput.id,
+        lock.insert_one({"_id": "u" + str(t), "Thread_ID": threadinput.id,
                         "unlock": True, "time": unlocktime,
                         "resolved": False})
 
-        await threadinput.send(f"This thread has been scheduled to lock <t:{max(locktime, timern)}:R> successfully.")
+        await threadinput.send(f"This thread has been scheduled to lock <t:{max(locktime, t)}:R> successfully.")
 
 bot.run(TOKEN)
