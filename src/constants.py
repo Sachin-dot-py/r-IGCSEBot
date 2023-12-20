@@ -3,6 +3,8 @@ import os
 TOKEN = os.environ.get("IGCSEBOT_TOKEN")
 LINK = os.environ.get("MONGO_LINK")
 
+BETA = False
+
 # top: main server, bottom: beta server. comment the unusued one
 GUILD_ID = 576460042774118420
 # GUILD_ID = 1111128710133854289  

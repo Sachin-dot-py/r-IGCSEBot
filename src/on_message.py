@@ -1,4 +1,4 @@
-from constants import GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
+from constants import BETA, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
 from bot import discord, bot, keywords
 from db import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper
@@ -71,7 +71,7 @@ async def handle_rep(message):
             else:
                 repped.append(mention)
 
-    if repped:
+    if repped and not BETA:
         for user in repped:
             rep = repdb.add_rep(user.id, message.guild.id)
             if rep == 100 or rep == 500:
