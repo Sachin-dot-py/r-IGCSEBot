@@ -1,4 +1,4 @@
-from constants import LINK, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
+from constants import GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
 from bot import discord, bot, keywords
 from db import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper
@@ -46,7 +46,7 @@ async def is_welcome(text):
     return False
 
 async def is_thanks(text):
-    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thanku", "tyvm", "thankyou"]
+    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thankss" "thanku", "tyvm", "thankyou"]
     lowercase = text.lower()
     if "ty" in lowercase.split():
         return True

@@ -1,5 +1,5 @@
-from constants import LINK, GUILD_ID, LOG_CHANNEL_ID
-from bot import discord, bot, traceback
+from constants import GUILD_ID, LOG_CHANNEL_ID
+from bot import discord, bot, traceback, commands
 
 @bot.event
 async def on_command_error(ctx, exception):

@@ -1,4 +1,4 @@
-from constants import LINK, GUILD_ID, LOG_CHANNEL_ID
+from constants import GUILD_ID, LOG_CHANNEL_ID
 from bot import discord, bot, traceback
 
 @bot.event
