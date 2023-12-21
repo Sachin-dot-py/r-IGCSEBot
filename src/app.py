@@ -1754,20 +1754,15 @@ async def random_pyp(interaction: discord.Interaction, subject_code: str = disco
             query = f"{sc}%20qp%20{p}{mv}%20{s}%{y}"
             response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
             for n, item in enumerate(response['list'][:1]):
-                qp = f"https://paper.sc/doc/{item['doc']['_id']}"
-                ms = f"https://paper.sc/doc/{item['related'][0]['_id']}"
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_{item['doc']['type']}_{item['doc']['paper']}{item['doc']['variant']}` has been randomly chosen. the links to the question paper and marking scheme is below\n\n**QP LINK**: {qp}\n**MS LINK**: {ms}", color=0xf1c40f)
+                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_{item['doc']['type']}_{item['doc']['paper']}{item['doc']['variant']}` has been randomly chosen. the links to the question paper and marking scheme is below\n\n**QP LINK**: https://paper.sc/doc/{item['doc']['_id']}\n**MS LINK**: https://paper.sc/doc/{item['related'][0]['_id']}", color=0xf1c40f)
                 await interaction.send(embed=embed)
 
         else:
             query = f"{sc}%20qp%20{p}{v}%20{s}%{y}"
             response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
             for n, item in enumerate(response['list'][:1]):
-                qp = f"https://paper.sc/doc/{item['doc']['_id']}"
-                ms = f"https://paper.sc/doc/{item['related'][0]['_id']}"
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_{item['doc']['type']}_{item['doc']['paper']}{item['doc']['variant']}` has been randomly chosen. the links to the question paper and marking scheme is below\n\n**QP LINK**: {qp}\n**MS LINK**: {ms}", color=0xf1c40f)
+                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_{item['doc']['type']}_{item['doc']['paper']}{item['doc']['variant']}` has been randomly chosen. the links to the question paper and marking scheme is below\n\n**QP LINK**: https://paper.sc/doc/{item['doc']['_id']}\n**MS LINK**: https://paper.sc/doc/{item['related'][0]['_id']}", color=0xf1c40f)
                 await interaction.send(embed=embed)
     else:
-        await interaction.send("Please enter a valid subject code for better results.", ephemeral=True)
-
+         await interaction.send("Please enter a valid subject code for better results.", ephemeral=True)
 bot.run(TOKEN)
