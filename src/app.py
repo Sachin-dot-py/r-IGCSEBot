@@ -1725,4 +1725,14 @@ async def forumlockcommand(interaction: discord.Interaction, threadinput: discor
 
         await threadinput.send(f"This thread has been scheduled to lock <t:{max(locktime, t)}:R> successfully.")
 
+@bot.slash_command(description="Get a random fun fact")
+async def funfact(interaction: discord.Interaction):
+    await interaction.response.defer()
+    url = "https://uselessfacts.jsph.pl/random.json?language=en"
+    response = requests.request("GET", url)
+    data = json.loads(response.text)
+    useless_fact = data['text']
+    await interaction.send(useless_fact)
+
+
 bot.run(TOKEN)
