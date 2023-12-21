@@ -1,4 +1,4 @@
-from bot import bot
+from bot import bot, time
 from db import gpdb
 
 SECONDS_PER_MINUTE = 60
