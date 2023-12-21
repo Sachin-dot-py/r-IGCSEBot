@@ -1,4 +1,4 @@
-from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID
+from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID, IGCSE_SUBJECT_CODES, ALEVEL_SUBJECT_CODES
 from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
