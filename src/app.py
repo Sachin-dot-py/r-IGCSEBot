@@ -1761,7 +1761,7 @@ async def random_pyp(interaction: discord.Interaction, subject_code: str = disco
                     embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['related'][0]['_id']}\n**MS LINK**: https://paper.sc/doc/{item['doc']['_id']}", color=0xf4b6c2)
                     await interaction.send(embed=embed)
                 else:
-                    await interaction.send("invalid paper is been chosen. please run the command.", ephemeral=True)
+                    await interaction.send("Hold on! It looks like I've found the wrong paper. Could you please try the command again?", ephemeral=True)
         else:
             query = f"{sc}%20qp%20{p}{v}%20{s}%{y}"
             response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
@@ -1774,9 +1774,9 @@ async def random_pyp(interaction: discord.Interaction, subject_code: str = disco
                     embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['related'][0]['_id']}\n**MS LINK**: https://paper.sc/doc/{item['doc']['_id']}", color=0xf4b6c2)
                     await interaction.send(embed=embed)
                 else:
-                    await interaction.send("invalid paper is been chosen. please run the command.", ephemeral=True)
+                    await interaction.send("Hold on! It looks like I've found the wrong paper. Could you please try the command again?", ephemeral=True)
     else:
-        await interaction.send("Please enter a valid subject code for better results.", ephemeral=True)
+        await interaction.send("Oops! I couldn't find the right paper. Please re-run the command with a different subject code", ephemeral=True)
 
 
 bot.run(TOKEN)
