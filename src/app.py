@@ -1,4 +1,4 @@
-from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID, IGCSE_SUBJECT_CODES, ALEVEL_SUBJECT_CODES
+from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID, IGCSE_SUBJECT_CODES, ALEVEL_SUBJECT_CODES, FEEDBACK_CHANNEL_ID, FEEDBACK_NAME
 from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
@@ -1495,16 +1495,26 @@ class Feedback(discord.ui.Modal):
         self.add_item(self.feedback)
     
     async def callback(self, interaction: discord.Interaction):
-        feedback_channel = await bot.fetch_channel(1057505291014524939)
-        feedback_embed = discord.Embed(title = "Feedback Received", colour = discord.Colour.blue())
+        feedback_channel = await bot.fetch_channel(FEEDBACK_CHANNEL_ID)
+        feedback_embed = discord.Embed(title = f"{FEEDBACK_NAME} Received", description=self.feedback.value, colour = discord.Colour.blue())
         feedback_embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
-        feedback_embed.add_field(name = "Message", value = self.feedback.value)
         await feedback_channel.send(embed = feedback_embed)
         await interaction.send("Feedback sent!", ephemeral = True)
 
 @bot.slash_command(name = "feedback", description = "Submit some feedback to the mods!")
-async def feedback(interaction: discord.Interaction):
-    await interaction.response.send_modal(modal = Feedback())
+async def feedback(interaction: discord.Interaction, target = discord.SlashOption(name="target", choices=["Moderators", "Bot Developers", "Resource Repository Team"], required=True)):
+          await interaction.response.send_modal(modal = Feedback())
+          global FEEDBACK_CHANNEL_ID
+          global FEEDBACK_NAME
+          if target == "Bot Developers":
+               FEEDBACK_CHANNEL_ID = 1189409960875016253
+               FEEDBACK_NAME = "Bot Feedback"
+          elif target == "Moderators":
+               FEEDBACK_CHANNEL_ID = 1057505291014524939
+               FEEDBACK_NAME = "Mod Feedback"
+          else:
+               FEEDBACK_CHANNEL_ID = 1057505291014524939
+               FEEDBACK_NAME = "Repository Feedback"
 
 class ChatModerator(discord.ui.Modal):
     def __init__(self):
