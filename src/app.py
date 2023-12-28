@@ -3,7 +3,6 @@ from bot import discord, bot, keywords, typing, tasks, commands, requests, json,
 from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
 import random 
-#git
 
 
 # events
@@ -17,6 +16,7 @@ import on_raw_reaction_remove
 import on_thread_join
 import on_guild_join
 import on_auto_moderation_action_execution
+import getrole
 
 # mongo
 from db import gpdb, rrdb, kwdb, repdb
