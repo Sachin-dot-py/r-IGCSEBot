@@ -18,7 +18,7 @@ class GetRole(discord.ui.Modal):
         self.question, self.answer = random.choice(list(questions.items()))
 
         self.user_answer = discord.ui.TextInput(
-            label=self.question, style=discord.TextInputStyle.short, placeholder="Please write in lower case and don't use commas...", required=True
+            label=self.question, style=discord.TextInputStyle.short, placeholder="Answers can be found in the r/IGCSE Wrapped document.", required=True
         )
 
         self.add_item(self.user_answer)
@@ -28,7 +28,7 @@ class GetRole(discord.ui.Modal):
         if role in interaction.user.roles:
             await interaction.send("You already have this role!", ephemeral=True)
             return
-        if self.user_answer.value == self.answer:
+        if self.user_answer.value.lower().replace(",", "").replace(".", "") == self.answer.lower():
             await interaction.user.add_roles(role)
             await interaction.send("Correct answer! The <@&1188697866412236800> role has been added to your profile.", ephemeral=True)
         else:
@@ -40,8 +40,9 @@ class GetRole(discord.ui.Modal):
             user['attempts_left'] = user['attempts_left'] - 1
             await interaction.send(f"Incorrect Answer! You have {int(user['attempts_left'])} attempts left.", ephemeral=True)
 
-@bot.slash_command(name="getrole", description="answer the questions to get the 2023 role.", guild_ids=[GUILD_ID])
+@bot.slash_command(name="getrole", description="Get the exclusive 2023 role!", guild_ids=[GUILD_ID])
 async def getrole(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     client = pymongo.MongoClient(LINK)
     db = client.IGCSEBot
     attempts = db["attempts"]
