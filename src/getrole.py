@@ -1,6 +1,7 @@
-from bot import discord, bot, commands, pymongo, traceback, random
+from bot import discord, bot, commands, pymongo, traceback
 from constants import TOKEN, LINK, GUILD_ID
 from roles import is_staff_moderator, has_role
+import random
 
 questions = {
     "No. of members gained on Discord server": "143000",
