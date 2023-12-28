@@ -17,6 +17,7 @@ import on_thread_join
 import on_guild_join
 import on_auto_moderation_action_execution
 import getrole
+import gostudy
 
 # mongo
 from db import gpdb, rrdb, kwdb, repdb
