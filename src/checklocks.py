@@ -1,4 +1,4 @@
-from constants import LINK, GUILD_ID
+from constants import LINK, GUILD_ID, FMROLE
 from bot import tasks, pymongo, bot, guild
 import time, traceback
 
@@ -64,3 +64,25 @@ async def checklocks():
 
     except Exception:
         print(traceback.format_exc())
+
+@tasks.loop(seconds=25)
+async def checktime():
+        timern = int(time.time()) + 1
+        client = pymongo.MongoClient(LINK)
+        db = client.IGCSEBot
+        mute = db["mute"]
+        try:
+            results = mute.find({"muted": True})
+            for result in results:
+                if result["unmute_time"] <= str(timern):
+                    user = int(result["user_id"])
+                    guild = bot.get_guild(GUILD_ID)
+                    member = guild.get_member(user)
+                    forced_mute_role = bot.get_guild(GUILD_ID).get_role(FMROLE)
+                    await member.remove_roles(forced_mute_role)
+                    mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
+                    time.sleep(5)
+                    mute.delete_one({"_id": result["_id"]})
+
+        except Exception:
+            print(traceback.format_exc())
