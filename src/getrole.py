@@ -42,19 +42,17 @@ class GetRole(discord.ui.Modal):
 
 @bot.slash_command(name="getrole", description="Get the exclusive 2023 role!", guild_ids=[GUILD_ID])
 async def getrole(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
     client = pymongo.MongoClient(LINK)
     db = client.IGCSEBot
     attempts = db["attempts"]
     user = attempts.find_one({"id": interaction.user.id})
     if not user:
+        await interaction.response.send_modal(modal=GetRole())
         user = {"id": interaction.user.id, "attempts_left": 3}
         attempts.insert_one(user)
     if user['attempts_left'] == 0:
         await interaction.send("You can't answer more than 3 times.", ephemeral=True)
         return
-
-    await interaction.response.send_modal(modal=GetRole())
 
 
 @bot.slash_command(name = "reset_attempts", description = "Reset the attempts data", guild_ids = [GUILD_ID])
