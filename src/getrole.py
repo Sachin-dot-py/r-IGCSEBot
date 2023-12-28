@@ -13,7 +13,7 @@ questions = {
 
 class GetRole(discord.ui.Modal):
     def __init__(self):
-        super().__init__("Answer a question to get the '2023' role", timeout=None)
+        super().__init__("Get the 2023 role now !!", timeout=None)
 
         self.question, self.answer = random.choice(list(questions.items()))
 
