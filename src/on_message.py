@@ -74,7 +74,7 @@ async def handle_rep(message):
     if repped and not BETA:
         for user in repped:
             rep = repdb.add_rep(user.id, message.guild.id)
-            if rep == 100 or rep == 500:
+            if rep == 100 or rep == 500 or rep == 1000:
                 role = discord.utils.get(user.guild.roles, name=f"{rep}+ Rep Club")
                 await user.add_roles(role)
                 await message.channel.send(f"Gave +1 Rep to {user.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
