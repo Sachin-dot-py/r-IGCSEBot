@@ -397,7 +397,7 @@ async def rep(interaction: discord.Interaction,
 
 @bot.slash_command(description="Change someone's current rep (for mods)")
 async def change_rep(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True), new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=0, max_value=99999)):
-    if await is_moderator(interaction.user) or await has_role(interaction.user, "alts"):
+    if await is_moderator(interaction.user) or await has_role(interaction.user, "Bot Developer"):
         await interaction.response.defer()
         rep = repdb.change_rep(user.id, new_rep, interaction.guild.id)
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
