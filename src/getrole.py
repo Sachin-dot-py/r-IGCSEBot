@@ -9,6 +9,8 @@ questions = {
     "No. of countries users are from (on Discord)": "1100",
     "The month we hit 20,000 users (on Discord)": "august",
     "No. of members gained on Subreddit": "132000",
+    "No. of resource guides published this year": "30",
+    "No. of voice minutes on our Discord server": "90000"
     }
 
 class GetRole(discord.ui.Modal):
