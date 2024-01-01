@@ -170,7 +170,11 @@ async def on_message(message: discord.Message):
         await smdb.check_stick_msg(message)
 
         if message.content.lower() == "pin":  # Pin a message
-            if await is_helper(message.author) or await is_moderator(message.author):
+            if await is_helper(message.author) or await is_staff_moderator(message.author) or await is_chat_moderator(message.author):
+                pins = await message.channel.pins()
+                pin_no = len(pins)
+                if pin_no == 50:
+                    await message.reply(f"Heads up! We've hit the pin limit for this channel. You can unpin some previously pinned messages to free up space.")	
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.pin()
                 await msg.reply(f"This message has been pinned by {message.author.mention}.")
