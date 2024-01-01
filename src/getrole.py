@@ -1,17 +1,7 @@
 from bot import discord, bot, commands, pymongo, traceback
-from constants import TOKEN, LINK, GUILD_ID
+from constants import TOKEN, LINK, GUILD_ID, questions
 from roles import is_moderator, has_role
 import random
-
-questions = {
-    "No. of members gained on Discord server": "10134",
-    "No. of members reached by our repository": "35000",
-    "No. of countries reached by our repository": "159",
-    "The month we hit 20,000 users (on Discord)": "october",
-    "No. of members gained on Subreddit": "17800",
-    "No. of resource guides published this year ":  "18",
-    "No. of voice minutes on our Discord server": "98000"
-    }
 
 class GetRole(discord.ui.Modal):
     def __init__(self):
