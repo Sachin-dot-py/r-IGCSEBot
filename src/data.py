@@ -184,48 +184,62 @@ helper_roles = {
     1032065926595629079: 1032067091131535451  # Test channel/role
 }
 
-subreddits = {"Languages": {
-    "First Language English": "https://sites.google.com/view/igcseresources/languages/first-language-english",
-    "Literature in English": "https://sites.google.com/view/igcseresources/languages/english-literature",
-    "Hindi as a second language": "https://sites.google.com/view/igcseresources/languages/hindi",
-    "French": "https://sites.google.com/view/igcseresources/languages/french",
-    "Other Languages": "https://sites.google.com/view/igcseresources/languages/other-languages"
-},
-
-"Humanities and Social Sciences": {
-    "Economics": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/economics",
-    "History": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/history",
-    "Geography": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/geography",
-    "Islamiyat": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/islamiyat",
-    "Global Perspectives": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/global-perspectives",
-    "Sociology": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/sociology",
-    "Pakistan Studies": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/pakistan-studies"
-},
-
-"Sciences": {
-    "Biology": "https://sites.google.com/view/igcseresources/sciences/biology",
-    "Chemistry": "https://sites.google.com/view/igcseresources/sciences/chemistry",
-    "Physics": "https://sites.google.com/view/igcseresources/sciences/physics",
-    "Combined/Coordinated Sciences": "https://sites.google.com/view/igcseresources/sciences/combinedcoordinated-sciences",
-    "Environmental Management": "https://sites.google.com/view/igcseresources/sciences/environmental-management",
-    "Physical Education": "https://sites.google.com/view/igcseresources/sciences/physical-education",
-    "Psychology": "https://sites.google.com/view/igcseresources/sciences/psychology"
-},
-"Mathematics": {
-    "Mathematics": "https://sites.google.com/view/igcseresources/mathematics/mathematics",
-    "Additional Mathematics": "https://sites.google.com/view/igcseresources/mathematics/additional-mathematics",
-    "International Mathematics": "https://sites.google.com/view/igcseresources/mathematics/international-mathematics"
-},
-
-"Creative and Professional": {
-    "ICT": "https://sites.google.com/view/igcseresources/professional-and-creative/ict",
-    "Computer Science": "https://sites.google.com/view/igcseresources/professional-and-creative/computer-science",
-    "Accounting": "https://sites.google.com/view/igcseresources/professional-and-creative/accounting",
-    "Business Studies": "https://sites.google.com/view/igcseresources/professional-and-creative/business-studies",
-    "Art and Design": "https://sites.google.com/view/igcseresources/professional-and-creative/art-and-design",
-    "Travel and Tourism": "https://sites.google.com/view/igcseresources/professional-and-creative/travel-and-tourism",
-    "Food and Nutrition": "https://sites.google.com/view/igcseresources/professional-and-creative/food-and-nutrition"
-}
+subreddits = {
+    "IGCSE": {
+        "Languages": {
+            "First Language English": "https://sites.google.com/view/igcseresources/languages/first-language-english",
+            "Literature in English": "https://sites.google.com/view/igcseresources/languages/english-literature",
+            "Hindi as a second language": "https://sites.google.com/view/igcseresources/languages/hindi",
+            "French": "https://sites.google.com/view/igcseresources/languages/french",
+            "Other Languages": "https://sites.google.com/view/igcseresources/languages/other-languages",
+        },
+        "Humanities and Social Sciences": {
+            "Economics": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/economics",
+            "History": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/history",
+            "Geography": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/geography",
+            "Islamiyat": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/islamiyat",
+            "Global Perspectives": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/global-perspectives",
+            "Sociology": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/sociology",
+            "Pakistan Studies": "https://sites.google.com/view/igcseresources/humanities-and-social-sciences/pakistan-studies",
+        },
+        "Sciences": {
+            "Biology": "https://sites.google.com/view/igcseresources/sciences/biology",
+            "Chemistry": "https://sites.google.com/view/igcseresources/sciences/chemistry",
+            "Physics": "https://sites.google.com/view/igcseresources/sciences/physics",
+            "Combined/Coordinated Sciences": "https://sites.google.com/view/igcseresources/sciences/combinedcoordinated-sciences",
+            "Environmental Management": "https://sites.google.com/view/igcseresources/sciences/environmental-management",
+            "Physical Education": "https://sites.google.com/view/igcseresources/sciences/physical-education",
+            "Psychology": "https://sites.google.com/view/igcseresources/sciences/psychology",
+        },
+        "Mathematics": {
+            "Mathematics": "https://sites.google.com/view/igcseresources/mathematics/mathematics",
+            "Additional Mathematics": "https://sites.google.com/view/igcseresources/mathematics/additional-mathematics",
+            "International Mathematics": "https://sites.google.com/view/igcseresources/mathematics/international-mathematics",
+        },
+        "Creative and Professional": {
+            "ICT": "https://sites.google.com/view/igcseresources/professional-and-creative/ict",
+            "Computer Science": "https://sites.google.com/view/igcseresources/professional-and-creative/computer-science",
+            "Accounting": "https://sites.google.com/view/igcseresources/professional-and-creative/accounting",
+            "Business Studies": "https://sites.google.com/view/igcseresources/professional-and-creative/business-studies",
+            "Art and Design": "https://sites.google.com/view/igcseresources/professional-and-creative/art-and-design",
+            "Travel and Tourism": "https://sites.google.com/view/igcseresources/professional-and-creative/travel-and-tourism",
+            "Food and Nutrition": "https://sites.google.com/view/igcseresources/professional-and-creative/food-and-nutrition",
+        },
+    },
+    "AS and A Level": {
+        "Sciences": {
+            "Biology": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-biology",
+            "Chemistry": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-chemistry",
+            "Physics": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-physics",
+            "Psychology": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-psychology",
+        },
+        "Mathematics": {
+            "Mathematics": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-mathematics",
+        },
+        "Professional and Creative": {
+            "Computer Science": "https://sites.google.com/view/igcseresources/asa-level-resources_1/asal-computer-science",
+        },
+    },
 }
 
 study_roles = {

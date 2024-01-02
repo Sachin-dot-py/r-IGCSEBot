@@ -1,30 +1,55 @@
-from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID, IGCSE_SUBJECT_CODES, ALEVEL_SUBJECT_CODES, FEEDBACK_CHANNEL_ID, FEEDBACK_NAME
-from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
-from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
-import random 
+import random
 
-
-# events
-import on_ready
-import on_command_error
-import on_application_command_error
-import on_message
-import on_voice_state_update
-import on_raw_reaction_add
-import on_raw_reaction_remove
-import on_thread_join
-import on_guild_join
-import on_auto_moderation_action_execution
 import getrole
 import gostudy
+import on_application_command_error
+import on_auto_moderation_action_execution
+import on_command_error
+import on_guild_join
+import on_message
+import on_raw_reaction_add
+import on_raw_reaction_remove
+import on_ready
+import on_thread_join
+import on_voice_state_update
+from bans import is_banned
+from bot import (
+    bot,
+    commands,
+    datetime,
+    discord,
+    json,
+    keywords,
+    pymongo,
+    requests,
+    tasks,
+    time,
+    typing,
+)
+from constants import (
+    ALEVEL_SUBJECT_CODES,
+    CREATE_DM_CHANNEL_ID,
+    FEEDBACK_CHANNEL_ID,
+    FEEDBACK_NAME,
+    GUILD_ID,
+    IGCSE_SUBJECT_CODES,
+    LINK,
+    LOG_CHANNEL_ID,
+    MODLOG_CHANNEL_ID,
+    SESSION_ROLES,
+    SUBJECT_ROLES,
+    TOKEN,
+    WELCOME_CHANNEL_ID,
+)
+from data import helper_roles, reactionroles_data, study_roles, subreddits
 
 # mongo
-from db import gpdb, rrdb, kwdb, repdb
+from db import gpdb, kwdb, repdb, rrdb
 
 # utility
-from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
-from bans import is_banned
+from roles import get_role, has_role, is_helper, is_moderator, is_server_booster
+
 
 @bot.event
 async def on_member_join(member: discord.Member):
@@ -782,10 +807,29 @@ async def joke(interaction: discord.Interaction):
 # Resources Command
 
 
-class Groups(discord.ui.Select):
+class Level(discord.ui.Select):
     def __init__(self):
         options = []
         for group in subreddits.keys():
+            options.append(discord.SelectOption(label=group))
+        super().__init__(
+            placeholder="Choose a level...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.clear_items()
+        self.view.add_item(Groups(self.values[0]))
+        await interaction.response.edit_message(view=self.view)
+
+
+class Groups(discord.ui.Select):
+    def __init__(self, level):
+        options = []
+        self.level = level
+        for group in subreddits[level].keys():
             options.append(discord.SelectOption(label=group))
         super().__init__(
             placeholder="Choose a subject group...",
@@ -797,19 +841,22 @@ class Groups(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         group = self.values[0]
         view = discord.ui.View(timeout=None)
-        for subject in subreddits[group].keys():
+        for subject in subreddits[self.level][group].keys():
             view.add_item(
-                discord.ui.Button(label=subject, style=discord.ButtonStyle.url, url=subreddits[group][subject]))
+                discord.ui.Button(
+                    label=subject, style=discord.ButtonStyle.url, url=subreddits[self.level][group][subject]
+                )
+            )
         await interaction.response.edit_message(view=view)
 
 
 class DropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.add_item(Groups())
+        self.add_item(Level())
 
 
-@bot.slash_command(description="View the r/igcse resources repository", guild_ids=[GUILD_ID])
+@bot.slash_command(description="View the r/igcse resources repository")
 async def resources(interaction: discord.Interaction):
     await interaction.send(view=DropdownView())
 
