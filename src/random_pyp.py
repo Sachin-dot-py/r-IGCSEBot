@@ -15,6 +15,7 @@ async def random_pyp(interaction: discord.Interaction,
             LAT_SES = ["m", "s"]
             PAPER_VARIANT = ["1", "2", "3"]
             SESSIONS = ["s", "w", "m"]
+            PAPER_VARIANT_TWO = ["1", "2"]
 
 
             #USAGE OF THE RANDOM VARIABLE
@@ -61,7 +62,7 @@ async def random_pyp(interaction: discord.Interaction,
                                 else:
                                     if ranses == "s":
                                         sesh = "June"
-                                        ranvar = ["1", "2"]
+                                        ranvar = random.choice(PAPER_VARIANT_TWO)
                                     else:
                                         sesh = "March"
                                         ranvar = "1"
