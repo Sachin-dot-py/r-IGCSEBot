@@ -9,6 +9,7 @@ async def gostudy(interaction: discord.Interaction,
       forced_mute_role = bot.get_guild(GUILD_ID).get_role(FMROLE)
       if user == None:
             user_id = interaction.user.id
+            user = bot.get_guild(GUILD_ID).get_member(user_id)        
             view = discord.ui.View(timeout=None)
             proceedBTN = discord.ui.Button(label="Proceed", style=discord.ButtonStyle.blurple)
             cancelBTN = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.red)
