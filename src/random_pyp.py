@@ -25,8 +25,6 @@ async def random_pyp(interaction: discord.Interaction,
 
             #EMPTY_VARIABLES
             sesh = ""
-            paper_variant = ""
-            level = ""
 
             in_validation = insert_codes.__contains__(subject_code)
             pn_validation = len(paper_number)
