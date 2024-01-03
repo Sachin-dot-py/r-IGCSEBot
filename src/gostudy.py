@@ -18,6 +18,7 @@ async def gostudy(interaction: discord.Interaction,
                  dm = await interaction.user.create_dm()
                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
+                 await user.add_roles(forced_mute_role)
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
                  client = pymongo.MongoClient(LINK)
