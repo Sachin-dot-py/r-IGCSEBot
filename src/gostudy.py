@@ -4,7 +4,7 @@ from constants import TOKEN, LINK, GUILD_ID, FMROLE
 
 @bot.slash_command(name="gostudy", description="disables the access to the offtopics for 1 hour.")
 async def gostudy(interaction: discord.Interaction,
-                  user: discord.User = discord.SlashOption(name="name", description="who do you want to use this command on?", required=False)):
+                  user: discord.User = discord.SlashOption(name="name", description="who do you want to use this command on? (for mods)", required=False)):
         
       forced_mute_role = bot.get_guild(GUILD_ID).get_role(FMROLE)
       if user == None:
@@ -16,7 +16,7 @@ async def gostudy(interaction: discord.Interaction,
                  unmute_tim = int(((time.time()) + 1) + 3600)
                  await message.delete()
                  dm = await interaction.user.create_dm()
-                 await dm.send(f"Study time! You've been given a temporary break from the off-topic channels for the next hour. Use this time to focus on your studies and make the most of it!\n\n Role will be removed <t:{unmute_tim}:R>")
+                 await dm.send(f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\n Role will be removed <t:{unmute_tim}:R>")
                  await interaction.user.add_roles(forced_mute_role)
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
@@ -34,7 +34,7 @@ async def gostudy(interaction: discord.Interaction,
             message = await interaction.send("Are we ready to move forward?", view=view, ephemeral=True)
       else:
             unmute_tim = int(((time.time()) + 1) + 3600)
-            if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+            if not await is_staff_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                   await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
                   return
             user_id = user.id
@@ -45,7 +45,8 @@ async def gostudy(interaction: discord.Interaction,
             async def proceedCallBack(interaction):
                  await message.delete()
                  dm = await user.create_dm()
-                 await dm.send(f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\n Role will be removed <t:{unmute_tim}:R>")
+                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!").set_footer(text=f"Role will be removed <t:{unmute_tim}:R>")
+                 await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
@@ -60,13 +61,14 @@ async def gostudy(interaction: discord.Interaction,
             cancelBTN.callback = cancelCallBack
             view.add_item(proceedBTN)
             view.add_item(cancelBTN)
-            message = await interaction.send("Are we ready to move forward?", view=view, ephemeral=True)
+            embed = discord.Embed(title="Are you sure?")
+            message = await interaction.send(embed=embed, view=view, ephemeral=True)
 
-@bot.slash_command(name="remove_gostudy", description="remove the Forced Mute role.")
+@bot.slash_command(name="remove_gostudy", description="remove the Forced Mute role. (for mods)")
 async def remove_gostudy(interaction: discord.Interaction,
                   user: discord.User = discord.SlashOption(name="name", description="who do you want to use this command on?", required=False)):
         await interaction.response.defer(ephemeral = True)
-        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+        if not await is_staff_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                   await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
                   return
         
