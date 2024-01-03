@@ -16,7 +16,7 @@ async def gostudy(interaction: discord.Interaction,
                  unmute_tim = int(((time.time()) + 1) + 3600)
                  await message.delete()
                  dm = await interaction.user.create_dm()
-                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>")
+                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
@@ -45,7 +45,7 @@ async def gostudy(interaction: discord.Interaction,
             async def proceedCallBack(interaction):
                  await message.delete()
                  dm = await user.create_dm()
-                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>")
+                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
                  timern = int(time.time()) + 1
