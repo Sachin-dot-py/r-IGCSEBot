@@ -1,7 +1,7 @@
 from constants import BETA, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
 from bot import discord, bot, keywords
 from db import gpdb, smdb, repdb, kwdb
-from roles import is_moderator, is_helper, is_chat_moderator
+from roles import is_moderator, is_helper
 
 async def counting(message):
     if message.author.bot:
@@ -104,21 +104,18 @@ async def on_message(message: discord.Message):
         await logs.send(embed=embed)
 
     if not message.guild: # Modmail
-        if message.content[0] == "/":
-            await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
-        else:        
-            guild = bot.get_guild(GUILD_ID)
-            category = discord.utils.get(guild.categories, name='COMMS')
-            channel = discord.utils.get(category.channels, topic=str(message.author.id))
-            if not channel:
-                channel = await guild.create_text_channel(str(message.author).replace("#", "-"), category=category, topic=str(message.author.id))
-            embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
-            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-            await channel.send(embed=embed)
-            for attachment in message.attachments:
-                await channel.send(file=await attachment.to_file())
-            await message.add_reaction("✅")
-            return
+        guild = bot.get_guild(GUILD_ID)
+        category = discord.utils.get(guild.categories, name='COMMS')
+        channel = discord.utils.get(category.channels, topic=str(message.author.id))
+        if not channel:
+            channel = await guild.create_text_channel(str(message.author).replace("#", "-"), category=category, topic=str(message.author.id))
+        embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
+        embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+        await channel.send(embed=embed)
+        for attachment in message.attachments:
+            await channel.send(file=await attachment.to_file())
+        await message.add_reaction("✅")
+        return
 
     if message.channel.id == CREATE_DM_CHANNEL_ID:  # Creating modmail channels in #create-dm
         member = message.guild.get_member(int(message.content))
@@ -173,7 +170,7 @@ async def on_message(message: discord.Message):
         await smdb.check_stick_msg(message)
 
         if message.content.lower() == "pin":  # Pin a message
-            if await is_helper(message.author) or await is_moderator(message.author) or await is_chat_moderator(message.author):
+            if await is_helper(message.author) or await is_staff_moderator(message.author) or await is_chat_moderator(message.author):
                 pins = await message.channel.pins()
                 pin_no = len(pins)
                 if pin_no == 50:
