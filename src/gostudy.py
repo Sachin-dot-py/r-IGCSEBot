@@ -34,7 +34,7 @@ async def gostudy(interaction: discord.Interaction,
             message = await interaction.send("Are we ready to move forward?", view=view, ephemeral=True)
       else:
             unmute_tim = int(((time.time()) + 1) + 3600)
-            if not await is_staff_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+            if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                   await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
                   return
             user_id = user.id
@@ -68,7 +68,7 @@ async def gostudy(interaction: discord.Interaction,
 async def remove_gostudy(interaction: discord.Interaction,
                   user: discord.User = discord.SlashOption(name="name", description="who do you want to use this command on?", required=False)):
         await interaction.response.defer(ephemeral = True)
-        if not await is_staff_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
                   await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
                   return
         
