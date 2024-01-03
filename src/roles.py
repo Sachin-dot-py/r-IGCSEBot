@@ -23,6 +23,15 @@ async def is_moderator(member: discord.Member):
         return True
     return False
 
+async def is_chat_moderator(member: discord.Member):
+    roles = [role.id for role in member.roles]
+    # TODO make these constants?
+    if 1071458671835488358 in roles:  # r/igcse moderator role ids
+        return True
+    elif member.guild_permissions.administrator:
+        return True
+    return False
+
 async def is_server_booster(member: discord.Member):
     return await has_role(member, "Server Booster")
 
