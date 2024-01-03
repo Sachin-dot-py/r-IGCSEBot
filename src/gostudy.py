@@ -45,7 +45,7 @@ async def gostudy(interaction: discord.Interaction,
             async def proceedCallBack(interaction):
                  await message.delete()
                  dm = await user.create_dm()
-                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!").set_footer(text=f"Role will be removed <t:{unmute_tim}:R>")
+                 embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed <t:{unmute_tim}:R>")
                  await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
                  timern = int(time.time()) + 1
