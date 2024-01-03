@@ -47,7 +47,7 @@ from data import helper_roles, reactionroles_data, study_roles, subreddits
 from db import gpdb, kwdb, repdb, rrdb
 
 # utility
-from roles import get_role, has_role, is_helper, is_moderator, is_server_booster
+from roles import get_role, has_role, is_helper, is_moderator, is_server_booster, is_chat_moderator
 
 
 @bot.event
@@ -929,7 +929,7 @@ async def set_preferences(interaction: discord.Interaction,
 
 @bot.slash_command(description="Check a user's previous offenses (warns/timeouts/bans)")
 async def history(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
-    if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Chat Moderator"):
+    if not await is_moderator(interaction.user) or not await is_chat_moderator(interaction.user):
         await interaction.send("You are not permitted to use this command.", ephemeral=True)
     await interaction.response.defer()
     modlog = gpdb.get_pref("modlog_channel", interaction.guild.id)
@@ -962,7 +962,7 @@ async def warn(interaction: discord.Interaction, user: discord.Member = discord.
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
-    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await has_role(interaction.user, "Chat Moderator")):
+    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await is_chat_moderator(interaction.user)):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1035,7 +1035,7 @@ async def timeout(interaction: discord.Interaction,
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
-    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await has_role(interaction.user, "Chat Moderator")):
+    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await is_chat_moderator(interaction.user)):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1090,7 +1090,7 @@ async def untimeout(interaction: discord.Interaction,
     if await is_banned(user, interaction.guild):
         await interaction.send("User is banned from the server!", ephemeral=True)
         return
-    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await has_role(interaction.user, "Chat Moderator")):
+    if await is_moderator(user) or (not await is_moderator(interaction.user) and not await is_chat_moderator(interaction.user)):
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
@@ -1659,7 +1659,7 @@ async def channellockcommand(interaction: discord.Interaction,
 
         #check if user is moderator or check if "Bot Developer" role is avaliable:
         await interaction.response.defer(ephemeral=True)
-        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer") or not await is_chat_moderator(interaction.user):
                 await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
                 return
         
@@ -1724,7 +1724,7 @@ async def forumlockcommand(interaction: discord.Interaction, threadinput: discor
         
         #check if user is moderator or check if "Bot Developer" role is avaliable:
         await interaction.response.defer(ephemeral=True)
-        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+        if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer") or not await is_chat_moderator(interaction.user):
                 await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
                 return
         
