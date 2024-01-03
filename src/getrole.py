@@ -51,7 +51,7 @@ async def getrole(interaction: discord.Interaction):
 @bot.slash_command(name = "reset_attempts", description = "Reset the attempts data", guild_ids = [GUILD_ID])
 async def resetgttr(interaction: discord.Interaction,
               user: discord.User = discord.SlashOption(name="user", description="reset someone's current attempts", required=False)):
-    if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+    if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer") and not await has_role(interaction.user, "Chat Moderator"):
         await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
         return
     await interaction.response.defer(ephemeral = True)
