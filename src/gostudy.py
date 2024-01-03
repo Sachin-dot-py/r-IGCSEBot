@@ -61,8 +61,7 @@ async def gostudy(interaction: discord.Interaction,
             cancelBTN.callback = cancelCallBack
             view.add_item(proceedBTN)
             view.add_item(cancelBTN)
-            embed = discord.Embed(title="Are you sure?")
-            message = await interaction.send(embed=embed, view=view, ephemeral=True)
+            message = await interaction.send("Are you sure?", view=view, ephemeral=True)
 
 @bot.slash_command(name="remove_gostudy", description="remove the Forced Mute role. (for mods)")
 async def remove_gostudy(interaction: discord.Interaction,
