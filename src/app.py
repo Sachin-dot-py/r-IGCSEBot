@@ -12,6 +12,7 @@ import on_raw_reaction_add
 import on_raw_reaction_remove
 import on_ready
 import on_thread_join
+import random_pyp
 import on_voice_state_update
 from bans import is_banned
 from bot import (
@@ -28,12 +29,10 @@ from bot import (
     typing,
 )
 from constants import (
-    ALEVEL_SUBJECT_CODES,
     CREATE_DM_CHANNEL_ID,
     FEEDBACK_CHANNEL_ID,
     FEEDBACK_NAME,
     GUILD_ID,
-    IGCSE_SUBJECT_CODES,
     LINK,
     LOG_CHANNEL_ID,
     MODLOG_CHANNEL_ID,
@@ -1792,35 +1791,6 @@ async def funfact(interaction: discord.Interaction):
     data = json.loads(response.text)
     useless_fact = data['text']
     await interaction.send(useless_fact)
-
-@bot.slash_command(name="random_pyp", description="gets a random past year paper.")
-async def random_pyp(interaction: discord.Interaction, subject_code: str = discord.SlashOption(name="subject_code", description="please enter the subject code", required=True)):
-    PAPER_VARIENTS = [1,2,3]
-    PAPER_YEAR = [_ for _ in range(2014, 2024)]
-    SESSION = ['m', 's', 'w']
-    validation = IGCSE_SUBJECT_CODES.__contains__(subject_code) or ALEVEL_SUBJECT_CODES.__contains__(subject_code)
-    if validation:
-        sc = subject_code
-        s = random.choice(SESSION)
-        p = 1
-        v = 2 if s == 'm' else random.choice(PAPER_VARIENTS)
-        y = random.choice(PAPER_YEAR)
-
-        query = f"{sc}%20qp%20{p}{v}%20{s}%{y}"
-
-        response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
-        for n, item in enumerate(response['list'][:1]):
-            type = item['doc']['type']
-            if "qp" in type:
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['doc']['_id']}\n**MS LINK**: https://paper.sc/doc/{item['related'][0]['_id']}", color=0xf4b6c2)
-                await interaction.send(embed=embed)
-            elif "ms" in type:
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['related'][0]['_id']}\n**MS LINK**: https://paper.sc/doc/{item['doc']['_id']}", color=0xf4b6c2)
-                await interaction.send(embed=embed)
-            else:
-                await interaction.send("Hold on! It looks like I've found the wrong paper. Could you please try the command again?", ephemeral=True)
-    else:
-        await interaction.send("Oops! I couldn't find the right paper. Please re-run the command with a different subject code", ephemeral=True)
 
 
 bot.run(TOKEN)
