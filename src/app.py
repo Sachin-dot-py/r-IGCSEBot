@@ -359,7 +359,7 @@ async def helper(interaction: discord.Interaction, message_id: str = discord.Sla
         return
     await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
-    if "server booster" in roles:
+    if "server booster" in roles or await has_role(interaction.user, "Bot Developer"):
         if message_id:
             url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
