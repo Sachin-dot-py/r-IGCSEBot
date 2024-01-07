@@ -804,8 +804,6 @@ async def joke(interaction: discord.Interaction):
 
 
 # Resources Command
-
-
 class Level(discord.ui.Select):
     def __init__(self):
         options = []
@@ -1791,6 +1789,5 @@ async def funfact(interaction: discord.Interaction):
     data = json.loads(response.text)
     useless_fact = data['text']
     await interaction.send(useless_fact)
-
 
 bot.run(TOKEN)
