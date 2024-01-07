@@ -1,4 +1,4 @@
-from constants import BETA, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID
+from constants import BETA, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID, NO_REP_CHANNELS_LIST
 from bot import discord, bot, keywords
 from db import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper
@@ -162,7 +162,8 @@ async def on_message(message: discord.Message):
 
                 await message.delete()
 
-    if gpdb.get_pref("rep_enabled", message.guild.id):
+    isrepchannel = not message.channel.id in NO_REP_CHANNELS_LIST
+    if gpdb.get_pref("rep_enabled", message.guild.id) and isrepchannel:
         await handle_rep(message)  # If message is replying to another message
     if message.channel.name == "counting":  # To facilitate #counting
         await counting(message)

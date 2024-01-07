@@ -780,8 +780,6 @@ async def joke(interaction: discord.Interaction):
 
 
 # Resources Command
-
-
 class Groups(discord.ui.Select):
     def __init__(self):
         options = []
