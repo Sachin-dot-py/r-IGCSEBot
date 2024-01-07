@@ -1,17 +1,7 @@
 from bot import discord, bot, commands, pymongo, traceback
-from constants import TOKEN, LINK, GUILD_ID
+from constants import TOKEN, LINK, GUILD_ID, questions
 from roles import is_moderator, has_role
 import random
-
-questions = {
-    "No. of members gained on Discord server": "143000",
-    "No. of members reached by our repository": "321000",
-    "No. of countries users are from (on Discord)": "1100",
-    "The month we hit 20,000 users (on Discord)": "august",
-    "No. of members gained on Subreddit": "132000",
-    "No. of resource guides published this year": "30",
-    "No. of voice minutes on our Discord server": "90000"
-    }
 
 class GetRole(discord.ui.Modal):
     def __init__(self):
@@ -61,7 +51,7 @@ async def getrole(interaction: discord.Interaction):
 @bot.slash_command(name = "reset_attempts", description = "Reset the attempts data", guild_ids = [GUILD_ID])
 async def resetgttr(interaction: discord.Interaction,
               user: discord.User = discord.SlashOption(name="user", description="reset someone's current attempts", required=False)):
-    if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer"):
+    if not await is_moderator(interaction.user) and not await has_role(interaction.user, "Bot Developer") and not await has_role(interaction.user, "Chat Moderator"):
         await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
         return
     await interaction.response.defer(ephemeral = True)

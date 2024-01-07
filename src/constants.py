@@ -50,3 +50,13 @@ NO_REP_CHANNELS_LIST = [895676056823021589, 965177290814267462, 9042493213383270
 						884695852520701962, 697072778553065542, 669286559404785665,
 						1043297064911638581, 928186859329306695, 873567700633403432,
 						873567700633403432, 1089622395079372800, 874956040016392192]
+
+QUESTIONS = {
+    "No. of members gained on Discord server": "10134",
+    "No. of members reached by our repository": "35000",
+    "No. of countries reached by our repository": "159",
+    "The month we hit 20,000 users (on Discord)": "october",
+    "No. of members gained on Subreddit": "17800",
+    "No. of resource guides published this year ":  "18",
+    "No. of voice minutes on our Discord server": "98000"
+    }

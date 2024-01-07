@@ -1,3 +1,4 @@
 nextcord
 requests
 pymongo[srv]
+pyshorteners

@@ -1,30 +1,54 @@
-from constants import TOKEN, LINK, GUILD_ID, LOG_CHANNEL_ID, CREATE_DM_CHANNEL_ID, WELCOME_CHANNEL_ID, SUBJECT_ROLES, SESSION_ROLES, MODLOG_CHANNEL_ID, IGCSE_SUBJECT_CODES, ALEVEL_SUBJECT_CODES, FEEDBACK_CHANNEL_ID, FEEDBACK_NAME
-from bot import discord, bot, keywords, typing, tasks, commands, requests, json, time, datetime, pymongo
-from data import reactionroles_data, helper_roles, subreddits, study_roles
 import ast
-import random 
+import random
 
-
-# events
-import on_ready
-import on_command_error
-import on_application_command_error
-import on_message
-import on_voice_state_update
-import on_raw_reaction_add
-import on_raw_reaction_remove
-import on_thread_join
-import on_guild_join
-import on_auto_moderation_action_execution
 import getrole
 import gostudy
+import on_application_command_error
+import on_auto_moderation_action_execution
+import on_command_error
+import on_guild_join
+import on_message
+import on_raw_reaction_add
+import on_raw_reaction_remove
+import on_ready
+import on_thread_join
+import random_pyp
+import on_voice_state_update
+from bans import is_banned
+from bot import (
+    bot,
+    commands,
+    datetime,
+    discord,
+    json,
+    keywords,
+    pymongo,
+    requests,
+    tasks,
+    time,
+    typing,
+)
+from constants import (
+    CREATE_DM_CHANNEL_ID,
+    FEEDBACK_CHANNEL_ID,
+    FEEDBACK_NAME,
+    GUILD_ID,
+    LINK,
+    LOG_CHANNEL_ID,
+    MODLOG_CHANNEL_ID,
+    SESSION_ROLES,
+    SUBJECT_ROLES,
+    TOKEN,
+    WELCOME_CHANNEL_ID,
+)
+from data import helper_roles, reactionroles_data, study_roles, subreddits
 
 # mongo
-from db import gpdb, rrdb, kwdb, repdb
+from db import gpdb, kwdb, repdb, rrdb
 
 # utility
-from roles import has_role, get_role, is_moderator, is_moderator, is_server_booster, is_helper
-from bans import is_banned
+from roles import get_role, has_role, is_helper, is_moderator, is_server_booster
+
 
 @bot.event
 async def on_member_join(member: discord.Member):
@@ -335,7 +359,7 @@ async def helper(interaction: discord.Interaction, message_id: str = discord.Sla
         return
     await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
-    if "server booster" in roles:
+    if "server booster" in roles or await has_role(interaction.user, "Bot Developer"):
         if message_id:
             url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
@@ -780,10 +804,29 @@ async def joke(interaction: discord.Interaction):
 
 
 # Resources Command
-class Groups(discord.ui.Select):
+class Level(discord.ui.Select):
     def __init__(self):
         options = []
         for group in subreddits.keys():
+            options.append(discord.SelectOption(label=group))
+        super().__init__(
+            placeholder="Choose a level...",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        self.view.clear_items()
+        self.view.add_item(Groups(self.values[0]))
+        await interaction.response.edit_message(view=self.view)
+
+
+class Groups(discord.ui.Select):
+    def __init__(self, level):
+        options = []
+        self.level = level
+        for group in subreddits[level].keys():
             options.append(discord.SelectOption(label=group))
         super().__init__(
             placeholder="Choose a subject group...",
@@ -795,19 +838,22 @@ class Groups(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         group = self.values[0]
         view = discord.ui.View(timeout=None)
-        for subject in subreddits[group].keys():
+        for subject in subreddits[self.level][group].keys():
             view.add_item(
-                discord.ui.Button(label=subject, style=discord.ButtonStyle.url, url=subreddits[group][subject]))
+                discord.ui.Button(
+                    label=subject, style=discord.ButtonStyle.url, url=subreddits[self.level][group][subject]
+                )
+            )
         await interaction.response.edit_message(view=view)
 
 
 class DropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.add_item(Groups())
+        self.add_item(Level())
 
 
-@bot.slash_command(description="View the r/igcse resources repository", guild_ids=[GUILD_ID])
+@bot.slash_command(description="View the r/igcse resources repository")
 async def resources(interaction: discord.Interaction):
     await interaction.send(view=DropdownView())
 
@@ -1743,35 +1789,5 @@ async def funfact(interaction: discord.Interaction):
     data = json.loads(response.text)
     useless_fact = data['text']
     await interaction.send(useless_fact)
-
-@bot.slash_command(name="random_pyp", description="gets a random past year paper.")
-async def random_pyp(interaction: discord.Interaction, subject_code: str = discord.SlashOption(name="subject_code", description="please enter the subject code", required=True)):
-    PAPER_VARIENTS = [1,2,3]
-    PAPER_YEAR = [_ for _ in range(2014, 2024)]
-    SESSION = ['m', 's', 'w']
-    validation = IGCSE_SUBJECT_CODES.__contains__(subject_code) or ALEVEL_SUBJECT_CODES.__contains__(subject_code)
-    if validation:
-        sc = subject_code
-        s = random.choice(SESSION)
-        p = 1
-        v = 2 if s == 'm' else random.choice(PAPER_VARIENTS)
-        y = random.choice(PAPER_YEAR)
-
-        query = f"{sc}%20qp%20{p}{v}%20{s}%{y}"
-
-        response = requests.get(f"https://paper.sc/search/?as=json&query={query}").json()
-        for n, item in enumerate(response['list'][:1]):
-            type = item['doc']['type']
-            if "qp" in type:
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['doc']['_id']}\n**MS LINK**: https://paper.sc/doc/{item['related'][0]['_id']}", color=0xf4b6c2)
-                await interaction.send(embed=embed)
-            elif "ms" in type:
-                embed = discord.Embed(title="Random Paper Chosen", description=f"`{item['doc']['subject']}_{item['doc']['time']}_qp_{item['doc']['paper']}{item['doc']['variant']}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: https://paper.sc/doc/{item['related'][0]['_id']}\n**MS LINK**: https://paper.sc/doc/{item['doc']['_id']}", color=0xf4b6c2)
-                await interaction.send(embed=embed)
-            else:
-                await interaction.send("Hold on! It looks like I've found the wrong paper. Could you please try the command again?", ephemeral=True)
-    else:
-        await interaction.send("Oops! I couldn't find the right paper. Please re-run the command with a different subject code", ephemeral=True)
-
 
 bot.run(TOKEN)
