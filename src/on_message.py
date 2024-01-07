@@ -1,7 +1,7 @@
 from constants import BETA, GUILD_ID, LOG_CHANNEL_ID, SHOULD_LOG_ALL, CREATE_DM_CHANNEL_ID, NO_REP_CHANNELS_LIST
 from bot import discord, bot, keywords
 from db import gpdb, smdb, repdb, kwdb
-from roles import is_moderator, is_helper
+from roles import has_role, is_moderator, is_helper
 
 async def counting(message):
     if message.author.bot:
@@ -174,7 +174,7 @@ async def on_message(message: discord.Message):
         await smdb.check_stick_msg(message)
 
         if message.content.lower() == "pin":  # Pin a message
-            if await is_helper(message.author) or await is_moderator(message.author) or await has_role(interaction.user, "Chat Moderator"):
+            if await is_helper(message.author) or await is_moderator(message.author) or await has_role(message.author, "Chat Moderator"):
                 pins = await message.channel.pins()
                 pin_no = len(pins)
                 if pin_no == 50:
@@ -185,7 +185,7 @@ async def on_message(message: discord.Message):
                 await message.delete()
 
         if message.content.lower() == "unpin":  # Unpin a message
-            if await is_helper(message.author) or await is_moderator(message.author) or await has_role(interaction.user, "Chat Moderator"):
+            if await is_helper(message.author) or await is_moderator(message.author) or await has_role(message.author, "Chat Moderator"):
                 msg = await message.channel.fetch_message(message.reference.message_id)
                 await msg.unpin()
                 await msg.reply(f"This message has been unpinned by {message.author.mention}.")

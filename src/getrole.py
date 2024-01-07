@@ -1,5 +1,5 @@
 from bot import discord, bot, commands, pymongo, traceback
-from constants import TOKEN, LINK, GUILD_ID, questions
+from constants import TOKEN, LINK, GUILD_ID, QUESTIONS
 from roles import is_moderator, has_role
 import random
 
@@ -7,7 +7,7 @@ class GetRole(discord.ui.Modal):
     def __init__(self):
         super().__init__("Get the 2023 role now !!", timeout=None)
 
-        self.question, self.answer = random.choice(list(questions.items()))
+        self.question, self.answer = random.choice(list(QUESTIONS.items()))
 
         self.user_answer = discord.ui.TextInput(
             label=self.question, style=discord.TextInputStyle.short, placeholder="Answers can be found in the r/IGCSE Wrapped document.", required=True
