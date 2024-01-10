@@ -331,8 +331,8 @@ class CancelPingBtn(discord.ui.View):
         self.value = False
         await self.message.edit(content=f"Ping cancelled by {interaction_b.user}", embed=None, view=None)
 
-    async def on_timeout(self): # 15 minutes has passed so execute the ping.
-        await self.message.edit(view=None) # Remove Cancel Ping button
+    async def on_timeout(self):
+        await self.message.edit(view=None)
         if self.value:
             if self.message_id:
                 url = f"https://discord.com/channels/{self.guild.id}/{self.channel.id}/{self.message_id}"
@@ -340,7 +340,7 @@ class CancelPingBtn(discord.ui.View):
             else:
                 embed = discord.Embed()
             embed.set_author(name=str(self.user), icon_url=self.user.display_avatar.url)
-            await self.message.channel.send(self.helper_role.mention, embed=embed)  # Execute ping
+            await self.message.channel.send(self.helper_role.mention, embed=embed)
             await self.message.delete()  # Delete original message
 
 
@@ -357,16 +357,17 @@ async def helper(interaction: discord.Interaction, message_id: str = discord.Sla
     except:
         await interaction.send("There are no helper roles specified for this channel.", ephemeral=True)
         return
-    await interaction.response.defer()
     roles = [role.name.lower() for role in interaction.user.roles]
-    if "server booster" in roles or await has_role(interaction.user, "Bot Developer"):
+    if "server booster" in roles:
         if message_id:
             url = f"https://discord.com/channels/{interaction.guild.id}/{interaction.channel.id}/{message_id}"
             embed = discord.Embed(description=f"[Jump to the message.]({url})")
+            embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
         else:
             embed = discord.Embed()
-        embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
-        await interaction.send(helper_role.mention, embed=embed)
+            embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+        allowedMentions = discord.AllowedMentions()
+        await interaction.send(content = helper_role.mention, embed = embed, allowed_mentions = allowedMentions)
         return
     view = CancelPingBtn()
     embed = discord.Embed(description=f"The helper role for this channel, `@{helper_role.name}`, will automatically be pinged (<t:{int(time.time() + 890)}:R>).\nIf your query has been resolved by then, please click on the `Cancel Ping` button.")
