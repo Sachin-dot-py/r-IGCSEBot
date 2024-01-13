@@ -7,6 +7,7 @@ from mongodb import gpdb,repdb,rrdb,smdb, kwdb
 
 #Importing Files
 import moderation
+import auto_moderation
 import on_member_join
 import on_ready
 import on_thread_join
