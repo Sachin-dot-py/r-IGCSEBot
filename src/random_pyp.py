@@ -1,6 +1,4 @@
-from bot import bot, commands, datetime, discord, json, keywords, pymongo, requests, tasks, time, typing
-import random
-import pyshorteners
+from bot import bot, commands, discord, random, pyshorteners
 from data import CIE_IGCSE_SUBJECT_CODES, CIE_OLEVEL_SUBJECT_CODES, CIE_ALEVEL_SUBJECT_CODES, ciealsubjectsdata, cieigsubjectsdata, cieolsubjectsdata
 
 @bot.slash_command(name="random_pyp", description="Gets a random CAIE past year paper.")

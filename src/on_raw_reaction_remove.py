@@ -1,6 +1,6 @@
+from bot import bot, discord
 from constants import GUILD_ID
-from bot import bot
-from db import rrdb
+from mongodb import rrdb
 
 @bot.event
 async def on_raw_reaction_remove(reaction):
@@ -16,7 +16,7 @@ async def on_raw_reaction_remove(reaction):
     channel = bot.get_channel(reaction.channel_id)
     message = await channel.fetch_message(reaction.message_id)
 
-    vote = 0  # Suggestions voting system - remove vote
+    vote = 0 
     for reaction in message.reactions:
         if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
             async for user in reaction.users():
