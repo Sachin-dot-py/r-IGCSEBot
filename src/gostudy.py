@@ -10,6 +10,8 @@ async def gostudy(interaction: discord.Interaction,
       client = pymongo.MongoClient(LINK)
       db = client.IGCSEBot
       mute = db["mute"]
+
+      channel = interaction.channel
       
       forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
       if user == None:
@@ -26,7 +28,7 @@ async def gostudy(interaction: discord.Interaction,
                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
-                 await interaction.channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
+                 await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
                  mute.insert_one({"_id": str(timern), "user_id": str(user_id), "unmute_time": str(unmute_time), "muted": True})
@@ -55,7 +57,7 @@ async def gostudy(interaction: discord.Interaction,
                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
-                 await interaction.channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
+                 await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
                  mute.insert_one({"_id": str(timern), "user_id": str(user_id), "unmute_time": str(unmute_time), "muted": True})
