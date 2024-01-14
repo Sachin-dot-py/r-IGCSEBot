@@ -7,7 +7,6 @@ from mongodb import gpdb,repdb,rrdb,smdb, kwdb
 
 #Importing Files
 import moderation
-import auto_moderation
 import on_member_join
 import on_ready
 import on_thread_join
@@ -316,7 +315,6 @@ async def study_session(interaction: discord.Interaction):
         await voice_channel.channel.edit(
             name=f"{role.name.lower().replace(' study ping', '').title()} Study Session")
 
-
 class Feedback(discord.ui.Modal):
     def __init__(self):
         super().__init__("Feedback!", timeout = None)
@@ -360,62 +358,66 @@ async def funfact(interaction: discord.Interaction):
     useless_fact = data['text']
     await interaction.send(useless_fact)
 
-@bot.slash_command(description= "gets the current unix timestamp.")
-async def unixtime(interaction: discord.Interaction):
-    timern = int(time.time()) + 1
-    await interaction.send(f"Current time in unix format: `{timern}`")
-
-@bot.slash_command(name="instant_forumlock", description="Instantly locks/unlocks a forum thread (for mods)")
-async def InstantForumunlockcommand(interaction: discord.Interaction, threadinput: discord.Thread = discord.SlashOption(name="thread_name", description="Which thread do you want to perform the action on?", required=True)):
-    if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
-            await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
-            return
+@bot.slash_command(name="instant_lockdown", description="Instantly locks/unlocks a channel/thread (for mods)")
+async def Instantlockcommand(interaction: discord.Interaction,
+                                    action_type: str = discord.SlashOption(name="action_type", description= "FORUM THREAD OR CHANNEL?", choices=["Channel Lock", "Forum Lock"], required=True),
+                                    channelinput: discord.TextChannel = discord.SlashOption(name="channel_name", description="Which channel do you want to perform the action on? (for channel lock)", required=False),
+                                    threadinput: discord.Thread = discord.SlashOption(name="thread_name", description="Which thread do you want to perform the action on? (for forum lock)", required=False)):
     await interaction.response.defer(ephemeral=True)
-    thread_id = bot.get_channel(threadinput.id)
-    if thread_id.locked == False:
-        thread = await thread_id.edit(locked=True)
-        await interaction.send(f"<#{threadinput.id}> has been locked", ephemeral=True)
-        await thread.send(f"This thread has been locked.")
-    else:             
-        client = pymongo.MongoClient(LINK)
-        db = client.IGCSEBot
-        locks = db["forumlock"]
-        thread = await thread_id.edit(locked=False)
-        await interaction.send(f"<#{threadinput.id}> has been unlocked", ephemeral=True)
-        await thread.send(f"This thread has been unlocked.")
-        results = locks.find({"thread_id": threadinput.id, "resolved": False})
-        for result in results:
-            try:
-                locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
-            except Exception:
-                print(traceback.format_exc())
-
-@bot.slash_command(name="instant_channellock", description="Instantly locks/unlocks a channel (for mods)")
-async def InstantChannellockcommand(interaction: discord.Interaction, channelinput: discord.TextChannel = discord.SlashOption(name="channel", description="Which channel do you want to perform the action on?", required=True)):
-    
     if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
-            await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
-            return
-    await interaction.response.defer(ephemeral=True)
-    channel = bot.get_channel(channelinput.id)
-    overwrite = channel.overwrites_for(interaction.guild.default_role)
-    if overwrite.send_messages == True and overwrite.send_messages_in_threads == True:
-        await channel.set_permissions(interaction.guild.default_role, send_messages=False, send_messages_in_threads=False)
-        await interaction.send(f"<#{channelinput.id}> has been locked", ephemeral=True)
-        await channel.send(f"This channel has been locked.")
-    else:
-        client = pymongo.MongoClient(LINK)
-        db = client.IGCSEBot
-        locks = db["channellock"]
-        await channel.set_permissions(interaction.guild.default_role, send_messages=True, send_messages_in_threads=True)
-        await interaction.send(f"<#{channelinput.id}> has been unlocked", ephemeral=True)
-        await channel.send(f"This channel has been unlocked.")
-        results = locks.find({"channel_id": channelinput.id, "resolved": False})
-        for result in results:
-            try:
-                locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
-            except Exception:
-                print(traceback.format_exc())
+        await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
+        return
+
+    if action_type == "Forum Lock":
+        if threadinput == None:
+            await interaction.send(f"Please mention the forum post in the `thread_name` field.", ephemeral=True)
+        else:
+            thread_id = bot.get_channel(threadinput.id)
+            if thread_id.locked == False:
+                thread = await thread_id.edit(locked=True)
+                await interaction.send(f"<#{threadinput.id}> has been locked", ephemeral=True)
+                await thread.send(f"This thread has been locked.")
+            else:             
+                client = pymongo.MongoClient(LINK)
+                db = client.IGCSEBot
+                locks = db["forumlock"]
+                thread = await thread_id.edit(locked=False)
+                await interaction.send(f"<#{threadinput.id}> has been unlocked", ephemeral=True)
+                await thread.send(f"This thread has been unlocked.")
+                results = locks.find({"thread_id": threadinput.id, "resolved": False})
+                for result in results:
+                    try:
+                        locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
+                    except Exception:
+                        print(traceback.format_exc())        
+
+    if action_type == "Channel Lock":
+        if channelinput == None:
+            await interaction.send(f"Please mention the channel in the `channel_name` field.", ephemeral=True)
+        else:
+            channel = bot.get_channel(channelinput.id)
+            overwrite = channel.overwrites_for(interaction.guild.default_role)
+            if overwrite.send_messages == True and overwrite.send_messages_in_threads == True:
+                overwrite.send_messages = False
+                overwrite.send_messages_in_threads = False
+                await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
+                await interaction.send(f"<#{channelinput.id}> has been locked", ephemeral=True)
+                await channel.send(f"This channel has been locked.")
+            else:
+                client = pymongo.MongoClient(LINK)
+                db = client.IGCSEBot
+                locks = db["channellock"]
+                overwrite.send_messages = True
+                overwrite.send_messages_in_threads = True
+                await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
+                await interaction.send(f"<#{channelinput.id}> has been unlocked", ephemeral=True)
+                await channel.send(f"This channel has been unlocked.")
+                results = locks.find({"channel_id": channelinput.id, "resolved": False})
+                for result in results:
+                    try:
+                        locks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
+                    except Exception:
+                        print(traceback.format_exc())
 
 class ChatModerator(discord.ui.Modal):
     def __init__(self):
@@ -669,13 +671,6 @@ class EditMessage(discord.ui.Modal):
         except:
             await interaction.send("Message ID has to be an integer and has to be in the channel chosen!", ephemeral = True)
 
-@bot.slash_command(name = "edit_message", description = "Edit message using the bot (for mods)")
-async def edit_message(interaction: discord.Interaction, channel: discord.abc.GuildChannel = discord.SlashOption(name = "channel", description = "The channel where the message is located", required = True)):
-    if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
-        await interaction.send("You are not authorized to perform this action.", ephemeral = True)
-        return
-    await interaction.response.send_modal(modal = EditMessage(channel))
-
 class SendMessage(discord.ui.Modal):
     def __init__(self, channel: discord.abc.GuildChannel):
         self.channel = channel
@@ -709,12 +704,17 @@ class SendMessage(discord.ui.Modal):
             await self.channel.send(self.message_content.value)
             await interaction.send("Message sent!", ephemeral = True)
 
-@bot.slash_command(description="Send messages using the bot (for mods)")
-async def send_message(interaction: discord.Interaction, channel_to_send_to: discord.abc.GuildChannel = discord.SlashOption(name="channel_to_send_to", description="Channel to send the message to", required=True)):
+@bot.slash_command(name="message", description="Sends or Edits a Message (for mods)")
+async def send_editcommand(interaction: discord.Interaction,
+                        action_type: str = discord.SlashOption(name="action_type", description= "SEND or EDIT?", choices=["Send Message", "Edit Message"], required=True),
+                        channel: discord.TextChannel = discord.SlashOption(name="channel", description = "The channel to send the message to or where the message is located", required=True)):
+    
     if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
         await interaction.send("You are not authorized to perform this action.")
         return
-    await interaction.response.send_modal(modal = SendMessage(channel_to_send_to))
-
+    if action_type == "Send Message":
+        await interaction.response.send_modal(modal = SendMessage(channel))
+    if action_type == "Edit Message":
+        await interaction.response.send_modal(modal = EditMessage(channel))
 
 bot.run(TOKEN) 
