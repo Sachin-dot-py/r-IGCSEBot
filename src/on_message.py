@@ -164,8 +164,11 @@ async def on_message(message: discord.Message):
                               return
 
                         await message.delete()
-
-      isrepchannel = not message.channel.id in REP_DISABLE_CHANNELS
+      channel_id_rep = message.channel.id
+      if (type(message.channel) == discord.threads.Thread):
+          # Threads have different IDs than parent channel
+          channel_id_rep = message.channel.parent_id
+      isrepchannel = not channel_id_rep in REP_DISABLE_CHANNELS
       if gpdb.get_pref("rep_enabled", message.guild.id) and isrepchannel:
             await handle_rep(message)
       if message.channel.name == "counting":
