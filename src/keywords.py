@@ -18,19 +18,29 @@ class AddKeywords(discord.ui.Modal):
         keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
         await interaction.send(f"Created keyword `{self.keyword.value}` for autoresponse `{self.autoresponse.value}`", ephemeral=True, delete_after=2)
 
-@bot.slash_command(name="add_keyword", description="Add keywords (for mods)")
-async def add_keyword(interaction: discord.Interaction):
-    if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
-        return await interaction.send("You do not have the permissions to perform this action")
-    await interaction.response.send_modal(modal=AddKeywords())
+class RemoveKeywords(discord.ui.Modal):
+    def __init__(self):
+        super().__init__("Delete a keyword", timeout=None)
 
-@bot.slash_command(name="delete_keyword", description="Delete keywords (for mods)")
-async def delete_keyword(interaction: discord.Interaction, keyword: str = discord.SlashOption(name="keyword", description="Keyword to delete", required=True)):
-    if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
-        return await interaction.send("You do not have the permissions to perform this action")
-    kwdb.remove_keyword(keyword, interaction.guild.id)
-    keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
-    await interaction.send(f"Deleted keyword `{keyword}`", ephemeral=True, delete_after=2)
+        self.keyword = discord.ui.TextInput(label="Delete keyword", style=discord.TextInputStyle.short, placeholder="The keyword you would like to delete", required=True)
+
+        self.add_item(self.keyword)
+    
+    async def callback(self, interaction: discord.Interaction):
+        kwdb.remove_keyword(self.keyword.value, interaction.guild.id)
+        keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
+        await interaction.send(f"Deleted keyword `{self.keyword}`", ephemeral=True, delete_after=2)
+
+@bot.slash_command(name="keywords", description="Adds or Deletes a keyword (for mods)")
+async def keywordscommand(interaction: discord.Interaction,
+                        action_type: str = discord.SlashOption(name="action_type", description= "ADD or DELETE?", choices=["Add Keywords", "Delete Keywords"], required=True)):
+        if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
+            await interaction.send("You do not have the permissions to perform this action")
+            return
+        if action_type == "Add Keywords":
+            await interaction.response.send_modal(modal=AddKeywords())
+        elif action_type == "Delete Keywords":
+            await interaction.response.send_modal(modal=RemoveKeywords())
 
 @bot.slash_command(description="Display all keywords")
 async def list_keywords(interaction: discord.Interaction):
