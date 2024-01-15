@@ -21,7 +21,7 @@ import role_command
 import colorroles
 import reputation
 import hotm
-import locks
+import Locks
 import keywords
 import on_message
 
