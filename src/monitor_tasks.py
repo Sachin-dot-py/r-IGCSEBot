@@ -66,18 +66,21 @@ async def checkmute():
     mute = db["mute"]
     Logging = bot.get_channel(MODLOG_CHANNEL_ID)
     timern = int(time.time()) + 1
-    try:
-        results = mute.find({"muted": True})
-        for result in results:
-            if result["unmute_time"] <= str(timern):
+    results = mute.find({"muted": True})
+    for result in results:
+        try:
+            if int(result["unmute_time"]) <= timern:
                 user_id = int(result["user_id"])
                 guild = bot.get_guild(GUILD_ID)
                 # The user ID may not be present in cache.
                 user = guild.get_member(user_id) or await guild.fetch_member(user_id)
                 if user == None:
-                    mute.delete_many({"user_id": user_id})
+                    mute.delete_many({"user_id": str(user_id)})
                     return
-                forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
+                forced_mute_role = guild.get_role(FORCED_MUTE_ROLE)
+                if forced_mute_role not in user.roles:
+                   mute.delete_many({"user_id": str(user_id)})
+                   return
                 await user.remove_roles(forced_mute_role)
                 #mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
                 embed = discord.Embed(description="Go Study Mode Deactivated", colour=discord.Colour.green())                
@@ -88,8 +91,8 @@ async def checkmute():
                 embed.set_footer(text=f"r/IGCSE Bot#2063")
                 await Logging.send(embed=embed)
                 mute.delete_one({"_id": result["_id"]})
-    except Exception:
-        print(traceback.format_exc())
+        except Exception:
+            print(traceback.format_exc())
 
 @tasks.loop(seconds=30)
 async def handle_slowmode():
