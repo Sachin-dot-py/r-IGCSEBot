@@ -367,7 +367,8 @@ async def Instantlockcommand(interaction: discord.Interaction,
     if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user):
         await interaction.send(f"Sorry {interaction.user.mention}," " you don't have the permission to perform this action.", ephemeral=True)
         return
-
+    Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+    timenow = int(time.time()) + 1
     if action_type == "Forum Lock":
         if threadinput == None:
             await interaction.send(f"Please mention the forum post in the `thread_name` field.", ephemeral=True)
@@ -375,12 +376,26 @@ async def Instantlockcommand(interaction: discord.Interaction,
             thread_id = bot.get_channel(threadinput.id)
             if thread_id.locked == False:
                 thread = await thread_id.edit(locked=True)
+                embed = discord.Embed(description="Instant Forum Lockdown", colour=discord.Colour.red())
+                embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+                embed.add_field(name="Locked Thread", value=f"<#{threadinput.id}>", inline=False)
+                embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+                embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nThread = {threadinput.id}```", inline=False)
+                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                await Logging.send(embed=embed)
                 await interaction.send(f"<#{threadinput.id}> has been locked", ephemeral=True)
                 await thread.send(f"This thread has been locked.")
             else:             
                 client = pymongo.MongoClient(LINK)
                 db = client.IGCSEBot
                 locks = db["forumlock"]
+                embed = discord.Embed(description="Instant Forum Lockdown", colour=discord.Colour.green())
+                embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+                embed.add_field(name="Unlocked Thread", value=f"<#{threadinput.id}>", inline=False)
+                embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+                embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nThread = {threadinput.id}```", inline=False)
+                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                await Logging.send(embed=embed)      
                 thread = await thread_id.edit(locked=False)
                 await interaction.send(f"<#{threadinput.id}> has been unlocked", ephemeral=True)
                 await thread.send(f"This thread has been unlocked.")
@@ -400,6 +415,13 @@ async def Instantlockcommand(interaction: discord.Interaction,
             if overwrite.send_messages == True and overwrite.send_messages_in_threads == True:
                 overwrite.send_messages = False
                 overwrite.send_messages_in_threads = False
+                embed = discord.Embed(description="Instant Channel Lockdown", colour=discord.Colour.red())
+                embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+                embed.add_field(name="Locked Channel", value=f"<#{channelinput.id}>", inline=False)
+                embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+                embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {channelinput.id}```", inline=False)
+                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                await Logging.send(embed=embed)                    
                 await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
                 await interaction.send(f"<#{channelinput.id}> has been locked", ephemeral=True)
                 await channel.send(f"This channel has been locked.")
@@ -409,6 +431,13 @@ async def Instantlockcommand(interaction: discord.Interaction,
                 locks = db["channellock"]
                 overwrite.send_messages = True
                 overwrite.send_messages_in_threads = True
+                embed = discord.Embed(description="Instant Channel Lockdown", colour=discord.Colour.green())
+                embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+                embed.add_field(name="Unlocked Channel", value=f"<#{channelinput.id}>", inline=False)
+                embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+                embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {channelinput.id}```", inline=False)
+                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                await Logging.send(embed=embed)                 
                 await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
                 await interaction.send(f"<#{channelinput.id}> has been unlocked", ephemeral=True)
                 await channel.send(f"This channel has been unlocked.")
