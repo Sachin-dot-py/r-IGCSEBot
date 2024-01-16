@@ -123,7 +123,7 @@ async def remove_gostudy(interaction: discord.Interaction, user: discord.User = 
             embed = discord.Embed(description="Go Study Mode Deactivated", colour=discord.Colour.green())
             embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
             embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
-            embed.add_field(name="Date", value=f"<t:{timern}:F>, inline=False)
+            embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
             embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nRole = {FORCED_MUTE_ROLE}```", inline=False)
             embed.set_footer(text=f"r/IGCSE Bot#2063")
             await Logging.send(embed=embed)              
