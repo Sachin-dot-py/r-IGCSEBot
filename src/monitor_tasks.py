@@ -63,7 +63,7 @@ async def checklock():
 async def checkmute():
     client = pymongo.MongoClient(LINK)
     db = client.IGCSEBot
-    mute = db["forcedmute"]
+    mute = db["mute"]
     Logging = bot.get_channel(MODLOG_CHANNEL_ID)
     timern = int(time.time()) + 1
     try:
@@ -72,13 +72,14 @@ async def checkmute():
             if result["unmute_time"] <= str(timern):
                 user_id = int(result["user_id"])
                 guild = bot.get_guild(GUILD_ID)
-                user = guild.get_member(user_id)
+                # The user ID may not be present in cache.
+                user = guild.get_member(user_id) or await guild.fetch_member(user_id)
                 if user == None:
                     mute.delete_many({"user_id": user_id})
                     return
                 forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
                 await user.remove_roles(forced_mute_role)
-                mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
+                #mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
                 embed = discord.Embed(description="Go Study Mode Deactivated", colour=discord.Colour.green())                
                 embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
                 embed.add_field(name="User", value=f"{user.mention}", inline=False)
@@ -86,7 +87,6 @@ async def checkmute():
                 embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nRole = {FORCED_MUTE_ROLE}```", inline=False)
                 embed.set_footer(text=f"r/IGCSE Bot#2063")
                 await Logging.send(embed=embed)
-                time.sleep(5)
                 mute.delete_one({"_id": result["_id"]})
     except Exception:
         print(traceback.format_exc())
