@@ -79,11 +79,15 @@ async def checkmute():
                     user_id = int(result["user_id"])
                     guild = bot.get_guild(GUILD_ID)
                     user = guild.get_member(user_id)
-                    forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
-                    await user.remove_roles(forced_mute_role)
-                    mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
-                    time.sleep(5)
-                    mute.delete_one({"_id": result["_id"]})
+                    if user is None:
+                        mute.delete_many({"user_id": user_id})
+                        return
+                    else:
+                        forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
+                        await user.remove_roles(forced_mute_role)
+                        mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
+                        time.sleep(5)
+                        mute.delete_one({"_id": result["_id"]})
 
         except Exception:
             print(traceback.format_exc())
