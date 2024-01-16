@@ -17,27 +17,26 @@ async def gostudy(interaction: discord.Interaction,
       forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
       if user == None:
             user_id = interaction.user.id
-            user = bot.get_guild(GUILD_ID).get_member(user_id)    
+            user = bot.get_guild(GUILD_ID).get_member(user_id)
             dm = await user.create_dm()    
             view = discord.ui.View(timeout=None)
             proceedBTN = discord.ui.Button(label="Proceed", style=discord.ButtonStyle.blurple)
             cancelBTN = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.red)		
             async def proceedCallBack(interaction):
-                  unmute_tim = int(((time.time()) + 1) + 120) #+ 3600)
+                  unmute_time = ((int(time.time()) + 1) + 3600)
                   await message.delete()
                   await user.add_roles(forced_mute_role)
                   embed = discord.Embed(description="Go Study Mode Activated", colour=discord.Colour.red())
                   embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
                   embed.add_field(name="User", value=f"{user.mention}", inline=False)
-                  embed.add_field(name="Duration", value= f"<t:{unmute_tim}:R>", inline=False)
+                  embed.add_field(name="Duration", value= f"<t:{unmute_time}:R>", inline=False)
                   embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
                   embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nRole = {FORCED_MUTE_ROLE}```", inline=False)
                   embed.set_footer(text=f"r/IGCSE Bot#2063")
                   await Logging.send(embed=embed)                  
-                  await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
-                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>", color=0xAFE1AF)
+                  await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_time}:f>, which is <t:{unmute_time}:R>.")
+                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_time}:f>, which is <t:{unmute_time}:R>", color=0xAFE1AF)
                   await dm.send(embed=embed)                  
-                  unmute_time = int(((time.time()) + 1) + 120) #+ 3600)
                   mute.insert_one({"_id": timern, "user_id": str(user_id), "unmute_time": str(unmute_time), "muted": True})
             proceedBTN.callback = proceedCallBack
             
@@ -48,7 +47,6 @@ async def gostudy(interaction: discord.Interaction,
             view.add_item(cancelBTN)
             message = await interaction.send("Are we ready to move forward?", view=view, ephemeral=True)
       else:
-            unmute_tim = int(((time.time()) + 1) + 120) #+ 3600)
             if not await is_moderator(interaction.user) and not await is_bot_developer(interaction.user) and not await is_chat_moderator(interaction.user):
                   await interaction.send("You do not have the necessary permissions to perform this action", ephemeral = True)
                   return
@@ -60,21 +58,21 @@ async def gostudy(interaction: discord.Interaction,
             cancelBTN = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.red)
             
             async def proceedCallBack(interaction):
-                  unmute_time = int(((time.time()) + 1) + 120) #+ 3600)
+                  unmute_time = int(((time.time()) + 1) + 3600)
                   mute.insert_one({"_id": timern, "user_id": str(user_id), "unmute_time": str(unmute_time), "muted": True})                  
                   await message.delete()
                   await user.add_roles(forced_mute_role)
                   embed = discord.Embed(description="Go Study Mode Activated", colour=discord.Colour.red())
                   embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
                   embed.add_field(name="User", value=f"{user.mention}", inline=False)
-                  embed.add_field(name="Duration", value= f"<t:{unmute_tim}:R>", inline=False)
+                  embed.add_field(name="Duration", value= f"<t:{unmute_time}:R>", inline=False)
                   embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
                   embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nRole = {FORCED_MUTE_ROLE}```", inline=False)
                   embed.set_footer(text=f"r/IGCSE Bot#2063")
                   await Logging.send(embed=embed)                   
-                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>", color=0xAFE1AF)
+                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_time}:f>, which is <t:{unmute_time}:R>", color=0xAFE1AF)
                   await dm.send(embed=embed)                  
-                  await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
+                  await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_time}:f>, which is <t:{unmute_time}:R>.")
             proceedBTN.callback = proceedCallBack
             
             async def cancelCallBack(interaction):
