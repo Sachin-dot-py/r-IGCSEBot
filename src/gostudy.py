@@ -1,5 +1,5 @@
 from bot import bot, discord, time, pymongo
-from constants import GUILD_ID, LINK, FORCED_MUTE_ROLE, MODLOG_CHANNEL_ID
+from constants import GUILD_ID, LINK, FORCED_MUTE_ROLE
 from roles import has_role, get_role, is_helper, is_moderator, is_server_booster, is_bot_developer, is_chat_moderator
 
 
@@ -12,7 +12,7 @@ async def gostudy(interaction: discord.Interaction,
       mute = db["mute"]
 
       channel = interaction.channel
-
+      
       forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
       if user == None:
             user_id = interaction.user.id
@@ -28,15 +28,6 @@ async def gostudy(interaction: discord.Interaction,
                  embed = discord.Embed(description = f"Study time! You've been given a temporary break from the off-topic channels for the next hour, thanks to <@{interaction.user.id}>. Use this time to focus on your studies and make the most of it!\n\nThe role will be removed at <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>", color=0xAFE1AF)
                  await dm.send(embed=embed)
                  await user.add_roles(forced_mute_role)
-                 Logging = bot.get_channel(MODLOG_CHANNEL_ID)
-                 embed = discord.Embed(description="Go Study Mode Activated", color=)
-                 embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
-                 embed.add_field(name="Locked Channel", value=f"{thread_id}", inline=False)
-                 embed.add_field(name="Duration", value=f"lock-time: <t:{locktime}:R>\n unlock-time: <t:{unlocktime}:R>", inline=False)
-                 embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-                 embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {threadinput.id}```", inline=False)
-                 embed.set_footer(text=f"r/IGCSE Bot#2063")
-                 await Logging.send(embed=embed)
                  await channel.send(f"{user.name} has been put on forced mute until <t:{unmute_tim}:f>, which is <t:{unmute_tim}:R>.")
                  timern = int(time.time()) + 1
                  unmute_time = int(((time.time()) + 1) + 3600)
@@ -92,7 +83,6 @@ async def remove_gostudy(interaction: discord.Interaction, user: discord.User = 
         mute = db["mute"] 
 
         forced_mute_role = bot.get_guild(GUILD_ID).get_role(FORCED_MUTE_ROLE)
-                          
         if user == None:
             user_id = interaction.user.id
             guild = bot.get_guild(GUILD_ID)
