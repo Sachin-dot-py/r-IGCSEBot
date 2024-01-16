@@ -84,7 +84,7 @@ async def handle_rep(message):
             leaderboard = repdb.rep_leaderboard(message.guild.id)
             members = [list(item.values())[0] for item in leaderboard[:3]]
             role = discord.utils.get(message.guild.roles, name="Reputed")
-            if [member.id for member in role.members] != members:
+            if [member.id for member in role.members].sort() != members.sort():
                   for m in role.members:
                         await m.remove_roles(role)
                   for member in members:
