@@ -97,12 +97,6 @@ async def on_message(message: discord.Message):
       igcse = await bot.fetch_guild(GUILD_ID)
       logs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)   
 
-      if SHOULD_LOG_ALL:
-            embed = discord.Embed(title="Message", description=message.content)
-            embed.set_author(name=message.author.name, url=message.jump_url, icon_url=message.author.avatar.url)
-            embed.add_field(name="Created", value=f"<t:{int(message.created_at.timestamp())}>")
-            await logs.send(embed=embed) 
-
       if not message.guild:
             if message.content[0] == "/":
                   await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
