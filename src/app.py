@@ -1,5 +1,5 @@
 # Importing Variables
-from bot import bot, commands, datetime, discord, json, keywords, pymongo, requests, tasks, time, typing, random, ast, pyjokes, pyshorteners, traceback
+from bot import bot, datetime, discord, json, pymongo, requests, time, ast, pyjokes, traceback
 from constants import CREATE_DM_CHANNEL_ID, FEEDBACK_CHANNEL_ID, FEEDBACK_NAME, GUILD_ID, LINK, BOTLOG_CHANNEL_ID, MODLOG_CHANNEL_ID, TOKEN, WELCOME_CHANNEL_ID, FORCED_MUTE_ROLE, CHATMOD_APP_CHANNEL, MOD_CHANNEL, CONFESSION_CHANNEL, STUDY_SESSION_CHANNEL
 from data import helper_roles, reactionroles_data, study_roles, subreddits, CIE_IGCSE_SUBJECT_CODES, CIE_ALEVEL_SUBJECT_CODES, CIE_OLEVEL_SUBJECT_CODES, ciealsubjectsdata, cieigsubjectsdata, cieolsubjectsdata, SESSION_ROLES, SUBJECT_ROLES, REP_DISABLE_CHANNELS
 from roles import is_moderator, is_server_booster, is_helper, get_role, has_role, is_bot_developer, is_chat_moderator
