@@ -33,7 +33,7 @@ async def random_pyp(interaction: discord.Interaction,
 
             if programme == "IGCSE":
                 if pn_validation == 1:
-                    if paper_number < "6" and paper_number != "0":
+                    if paper_number <= "6" and paper_number != "0":
                         if ig_validation == True:
                             subject_name = cieigsubjectsdata.get(subject_code)
                             if subject_code == "0417" and paper_number in ["2", "3"]:
@@ -113,7 +113,7 @@ async def random_pyp(interaction: discord.Interaction,
 
             elif programme == "O-Level":
                 if pn_validation == 1:
-                    if paper_number < "6" and paper_number != "0":
+                    if paper_number <= "6" and paper_number != "0":
                         if ol_validation == True:
                             subject_name = cieolsubjectsdata.get(subject_code)                 
                             if in_validation == True:
@@ -150,7 +150,7 @@ async def random_pyp(interaction: discord.Interaction,
             
             elif programme == "A-Level":
                 if pn_validation == 1:
-                    if paper_number < "6" and paper_number != "0":
+                    if paper_number <= "6" and paper_number != "0":
                         if al_validation == True:
                             subject_name = ciealsubjectsdata.get(subject_code)
                             if in_validation == True:
