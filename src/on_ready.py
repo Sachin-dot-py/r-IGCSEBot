@@ -15,3 +15,4 @@ async def on_ready():
     igcse = await bot.fetch_guild(GUILD_ID)
     botlogs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
     await botlogs.send(embed=embed)
+    await botlogs.send("embed sent..")
