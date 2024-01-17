@@ -3,53 +3,6 @@ from bans import is_banned
 from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb
 from constants import GUILD_ID
-import regex as re
-
-def convert_time(time: tuple[str, str, str, str]) -> str:
-    time_str = ""
-    if time[0] != "0":
-        time_str += f"{time[0]} day{'s' if int(time[0]) > 1 else ''} "
-    if time[1] != "0":
-        time_str += f"{time[1]} hour{'s' if int(time[1]) > 1 else ''} "
-    if time[2] != "0":
-        time_str += f"{time[2]} min{'s' if int(time[2]) > 1 else ''} "
-    return time_str.strip()
-
-
-async def match_message(message: str) -> dict[str, str]:
-    lines = message.split("\n")
-    lines.pop(1)
-
-    action = ""
-    action_by = ""
-    reason_for_action = ""
-    timeout_duration = ""
-    
-    for line in lines:
-        match_first_line = re.findall(r"Case #\d{4} \| \[(.*)\]", line)
-        if match_first_line:
-            action = match_first_line[0]
-            continue
-        match_third_line = re.findall(r"Moderator: (.*)", line)
-        if match_third_line:
-            action_by = match_third_line[0]
-            continue
-        match_fourth_line = re.findall(r"Reason: (.*)", line)
-        if match_fourth_line:
-            reason_for_action = match_fourth_line[0]
-            continue
-        if action == "Timeout":
-            match_fifth_line = re.findall(r"Duration: (\d+)d (\d+)h (\d+)m (\d+)s", line)
-            if match_fifth_line:
-                timeout_duration = match_fifth_line
-                continue
-    
-    return {
-        "action": action,
-        "action_by": action_by,
-        "reason_for_action": reason_for_action,
-        "timeout_duration": timeout_duration
-    }
 
 @bot.slash_command(description="Check a user's previous offenses (warns/timeouts/bans)")
 async def history(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
@@ -60,37 +13,21 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
     warnlog = gpdb.get_pref("warnlog_channel", interaction.guild.id)
     if modlog and warnlog:
         history = []
-        actions = {}
         modlog = bot.get_channel(modlog)
         warnlog = bot.get_channel(warnlog)
         warn_history = await warnlog.history(limit=750).flatten()
         modlog_history = await modlog.history(limit=500).flatten()
-        messages = warn_history + modlog_history
-        for message in messages:
-            if str(user.id) not in message.clean_content:
-                continue
-            parsed_message = await match_message(message.clean_content)
-            if parsed_message['action'] not in actions:
-                actions[parsed_message['action']] = 1
-            else:
-                actions[parsed_message['action']] += 1
-            date_of_event = message.created_at.strftime("%d %b, %Y at %H:%M")
-            duration = parsed_message['timeout_duration'][0] if parsed_message['action'] == 'Timeout' else ""
-            duration_as_text = f" ({convert_time(duration)})" if parsed_message['action'] == 'Timeout' else ""
-        
-            reason = f" for {parsed_message['reason_for_action']}" if parsed_message['reason_for_action'] else ""
-
-            final_string = f"[{date_of_event}] {parsed_message['action']}{duration_as_text}{reason} by {parsed_message['action_by'].strip()}"
-            history.append(final_string)
-
+        for msg in warn_history:
+            if str(user.id) in msg.content:
+                history.append(msg.clean_content)
+        for msg in modlog_history:
+            if str(user.id) in msg.content:
+                history.append(msg.clean_content)
         if len(history) == 0:
             await interaction.send(f"{user} does not have any previous offenses.", ephemeral=False)
         else:
-            text = f"Moderation History for {user}:\n\n"
-            text += "\n".join(list(map(lambda x:f"{x[0]}: {x[1]}", list(actions.items()))))
-            text += '\n\n'
-            text += ('\n'.join(history))[:1900]
-            await interaction.send(f"```accesslog\n{text}```", ephemeral=False)
+            text = ('\n\n'.join(history))[:1900]
+            await interaction.send(f"{user}'s Moderation History:\n```{text}```", ephemeral=False)
     else:
         await interaction.send("Please set up your moglog and warnlog through `/set_preferences` first!")
 
