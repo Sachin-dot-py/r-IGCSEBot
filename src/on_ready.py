@@ -16,5 +16,6 @@ async def on_ready():
     embed.add_field(name="Bot Information", value=f"```Name: {bot.user}\nCreated on: {'28-02-2022' if BETA else '05-07-2021'}\nJoined on: {'30-09-2022' if BETA else '08-06-2022'}\nBeta: {BETA}\nVerified: {user.verified}\nID: {user.id}```", inline=False)
     embed.add_field(name="Guild Information", value=f"```Name: {igcse.name}\nOwner: {igcse.owner}\nCreated on: {igcse.created_at.strftime(format)}\nMembers: {igcse.member_count}\nBoosts: {igcse.premium_subscription_count}\nID: {igcse.id}```", inline=False)
     embed.add_field(name="Role Statistics", value=f"```IGCSE Helpers: {len(igcse.get_role(IGCSE_HELPER_ROLE).members)}\nAS/AL Helpers: {len(igcse.get_role(AL_HELPER_ROLE).members)}\nBot Developers: {len(igcse.get_role(BOT_DEVELOPER_ROLES).members)}\nStaff Moderators: {len(igcse.get_role(STAFF_MODERATOR_ROLE).members)}\nTemp Moderators: {len(igcse.get_role(TEMP_MOD_ROLE).members)}\nChat Moderators: {len(igcse.get_role(CHAT_MODERATOR_ROLES).members)}```", inline=False)
+     embed.add_field(name="General Statistics", value=f"```No. of commands: {len(bot.get_all_application_commands())}\nNo. of text-channels: {len(igcse.text_channels)}\nNo. of voice-channels: {len(igcse.voice_channels)}```", inline=False)
     embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
     await botlogs.send(embed=embed)
