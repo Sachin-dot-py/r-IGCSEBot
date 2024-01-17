@@ -1,5 +1,5 @@
-from bot import bot, discord, pymongo, keywords
-from constants import LINK, GUILD_ID
+from bot import bot, discord, pymongo, keywords, time
+from constants import LINK, GUILD_ID, MODLOG_CHANNEL_ID
 from mongodb import kwdb
 from roles import is_moderator, is_bot_developer
 
@@ -14,8 +14,18 @@ class AddKeywords(discord.ui.Modal):
         self.add_item(self.autoresponse)
     
     async def callback(self, interaction: discord.Interaction):
+        Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+        timern = int(time.time()) + 1
         kwdb.add_keyword(self.keyword.value, self.autoresponse.value, interaction.guild.id)
         keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
+        embed = discord.Embed(description="Keyword Created", colour=discord.Colour.green())
+        embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.add_field(name="Keyword", value=self.keyword.value, inline=False)
+        embed.add_field(name="Auto Response", value=self.autoresponse.value, inline=False)
+        embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nBot = 861445044790886467```", inline=False)
+        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        await Logging.send(embed=embed)
         await interaction.send(f"Created keyword `{self.keyword.value}` for autoresponse `{self.autoresponse.value}`", ephemeral=True, delete_after=2)
 
 class RemoveKeywords(discord.ui.Modal):
@@ -27,8 +37,17 @@ class RemoveKeywords(discord.ui.Modal):
         self.add_item(self.keyword)
     
     async def callback(self, interaction: discord.Interaction):
+        Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+        timern = int(time.time()) + 1
         kwdb.remove_keyword(self.keyword.value, interaction.guild.id)
         keywords[interaction.guild.id] = kwdb.get_keywords(interaction.guild.id)
+        embed = discord.Embed(description="Keyword Deleted", colour=discord.Colour.green())
+        embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.add_field(name="Keyword", value=self.keyword.value, inline=False)
+        embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nBot = 861445044790886467```", inline=False)
+        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        await Logging.send(embed=embed)        
         await interaction.send(f"Deleted keyword `{self.keyword}`", ephemeral=True, delete_after=2)
 
 @bot.slash_command(name="keywords", description="Adds or Deletes a keyword (for mods)")
