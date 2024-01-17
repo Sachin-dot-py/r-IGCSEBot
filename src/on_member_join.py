@@ -9,3 +9,6 @@ async def on_member_join(member: discord.Member):
         await channel.send(embed=embed)
         welcome = bot.get_channel(WELCOME_CHANNEL_ID)
         await welcome.send(f"Welcome {member.mention}! Pick up your subject roles from <id:customize> to get access to subject channels and resources!")
+        unverified_role = member.guild.get_role(1196933479288557679)
+        if not unverified_role in member.roles:
+            await member.add_roles(unverified_role)
