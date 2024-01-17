@@ -1,6 +1,7 @@
-from bot import bot, discord
+from bot import bot, discord, time
 from mongodb import repdb
 from roles import is_moderator, is_bot_developer
+from  constants import MODLOG_CHANNEL_ID
 
 
 @bot.slash_command(name="rep", description="View someone's current rep")
@@ -18,10 +19,20 @@ async def rep(interaction: discord.Interaction,
 async def change_rep(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view rep of", required=True), new_rep: int = discord.SlashOption(name="new_rep", description="New rep amount", required=True, min_value=0, max_value=99999)):
     if await is_moderator(interaction.user):
         await interaction.response.defer()
+        Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+        timern = int(time.time()) + 1
         user_id = int(user.id)
         new_rep = int(new_rep)
         guild_id = int(interaction.guild.id)
         rep = repdb.change_rep(user_id, new_rep, guild_id)
+        embed = discord.Embed(description="Rep Changed", colour=discord.Colour.blurple())
+        embed.set_author(name=str(interaction.user), icon_url=interaction.user.display_avatar.url)
+        embed.add_field(name="User", value=f"<@{user_id}>", inline=False)
+        embed.add_field(name="New Rep", value={new_rep}, inline=False)
+        embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nBot = 861445044790886467```", inline=False)
+        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        await Logging.send(embed=embed)          
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
     else:
         await interaction.send("You are not authorized to use this command.", ephemeral=True)

@@ -6,28 +6,68 @@ import datetime
 
 async def togglechannellock(channel_id, unlock, *, unlocktime=0):
     everyone = bot.get_guild(GUILD_ID).default_role
+    Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+    timern = int(time.time()) + 1
     channel = bot.get_channel(channel_id)
     overwrite = channel.overwrites_for(everyone)
     overwrite.send_messages_in_threads = unlock
     overwrite.send_messages = unlock
     try:
-        await channel.set_permissions(everyone, overwrite=overwrite)
-        await channel.send(f"Channel has been {'unl' if unlock else 'l'}ocked.")
-        if not unlock:
+        await channel.set_permissions(everyone, overwrite=overwrite)    
+        if unlock:
+            embed = discord.Embed(description="Channel Unlocked", colour=discord.Colour.green())                
+            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed.add_field(name="Channel", value=f"<#{channel_id}>", inline=False)
+            embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```", inline=False)
+            embed.set_footer(text=f"r/IGCSE Bot#2063")
+            await Logging.send(embed=embed)
+            await channel.send(f"Channel has been unlocked.")
+        else:
+            embed = discord.Embed(description="Channel Locked", colour=discord.Colour.red())                
+            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed.add_field(name="Channel", value=f"<#{channel_id}>", inline=False)
+            embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
+            embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```", inline=False)
+            embed.set_footer(text=f"r/IGCSE Bot#2063")
+            await Logging.send(embed=embed)
+            await channel.send(f"Channel has been locked.")
+            time.sleep(1)
             await channel.send(f"Unlocking channel <t:{unlocktime}:R>.")
 
     except Exception as e:
         print(traceback.format_exc())
-        print(e)
         print("failed to set permissions")
 
 async def toggleforumlock(thread_id, unlock, unlocktime):
+    Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+    timern = int(time.time()) + 1
     thread = bot.get_channel(thread_id)
     try:
         thread = await thread.edit(locked= not unlock)
-        await thread.send(f"Thread has been {'unl' if unlock else 'l'}ocked.")
-        if not unlock:
+        if unlock:
+            embed = discord.Embed(description="Thread Unlocked", colour=discord.Colour.green())                
+            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed.add_field(name="Channel", value=f"<#{thread_id}>", inline=False)
+            embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nThread = {thread_id}```", inline=False)
+            embed.set_footer(text=f"r/IGCSE Bot#2063")
+            await Logging.send(embed=embed)
+            await thread.send(f"Thread has been unlocked.")
+        else:
+            embed = discord.Embed(description="Thread Locked", colour=discord.Colour.red())                
+            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed.add_field(name="Thread", value=f"<#{thread_id}>", inline=False)
+            embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
+            embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
+            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nThread = {thread_id}```", inline=False)
+            embed.set_footer(text=f"r/IGCSE Bot#2063")
+            await Logging.send(embed=embed)
+            await thread.send(f"Thread has been locked.")
+            time.sleep(1)
             await thread.send(f"Unlocking thread <t:{unlocktime}:R>.")
+    
     except Exception as e:
         print(traceback.format_exc())
         print(e)
@@ -43,7 +83,6 @@ async def checklock():
         for result in results:
             if result["time"] <= time.time():
                 ult = clocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-                print(result["channel_id"])
                 await togglechannellock(result["channel_id"], result["unlock"], unlocktime=ult)
 
                 clocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
@@ -52,7 +91,6 @@ async def checklock():
         for result in results:
             if result["time"] <= time.time():
                 ult = flocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-                print(result["thread_id"])
                 await toggleforumlock(result["thread_id"], result["unlock"], unlocktime=ult)
                 flocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
