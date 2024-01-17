@@ -1,7 +1,7 @@
 from bot import bot, discord, tasks, pymongo, bot, guild
 from constants import LINK, GUILD_ID, FORCED_MUTE_ROLE, MODLOG_CHANNEL_ID
 import time, traceback
-from data import AUTO_SLOWMODE_CHANNELS
+from data import AUTO_SLOWMODE_CHANNELS, helper_roles
 import datetime
 
 async def togglechannellock(channel_id, unlock, *, unlocktime=0):
@@ -71,6 +71,45 @@ async def toggleforumlock(thread_id, unlock, unlocktime):
     except Exception as e:
         print(traceback.format_exc())
         print(e)
+
+@tasks.loop(hours=720)
+async def autorefreshhelpers():
+    changed = []
+    Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+    timenow = int(time.time()) + 1    
+    for chnl, role in helper_roles.items():
+        try:
+            helper_role = discord.utils.get(bot.get_guild(GUILD_ID).roles, id=role)
+            no_of_users = len(helper_role.members)
+            channel = bot.get_channel(chnl)
+            new_topic = None
+            for line in channel.topic.split("\n"):
+                if "No. of helpers" in line:
+                    new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
+                    break
+            else:
+                new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
+            if channel.topic != new_topic:
+                await channel.edit(topic=new_topic)
+                changed.append(channel.mention)
+        except:
+            continue
+    if changed:
+        embed = discord.Embed(description="Helpers Refreshed !!", color=0x51ADBB)
+        embed.set_author(name=str(bot.user), icon_url=bot.user.display_avatar.url)
+        embed.add_field(name="Channels", value=", ".join(changed), inline=False)
+        embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```", inline=False)
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
+        await Logging.send(embed=embed)  
+    else:
+        embed = discord.Embed(description="Helpers Refreshed !!", color=0x51ADBB)
+        embed.set_author(name=str(bot.user), icon_url=bot.user.display_avatar.url)
+        embed.add_field(name="Channels", value="no changes were made.", inline=False)
+        embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```", inline=False)
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
+        await Logging.send(embed=embed)              
 
 @tasks.loop(seconds=20)
 async def checklock():

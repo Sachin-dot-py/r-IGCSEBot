@@ -1,6 +1,6 @@
 from bot import bot, discord
 from constants import GUILD_ID, BOTLOG_CHANNEL_ID, BOTBETA, BOTMAIN, BETA, CHAT_MODERATOR_ROLES, IGCSE_HELPER_ROLE, AL_HELPER_ROLE, BOT_DEVELOPER_ROLES, TEMP_MOD_ROLE, STAFF_MODERATOR_ROLE
-from monitor_tasks import checklock, checkmute, handle_slowmode
+from monitor_tasks import checklock, checkmute, handle_slowmode, autorefreshhelpers
 
 @bot.event
 async def on_ready():
@@ -8,6 +8,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="r/IGCSE"))
     checklock.start()
     checkmute.start()
+    autorefreshhelpers.start()
     handle_slowmode.start()
     igcse = bot.get_guild(GUILD_ID)
     botlogs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
