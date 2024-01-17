@@ -1,5 +1,5 @@
 from bot import discord, bot
-from constants import GUILD_ID, FORCED_MUTE_ROLE, STAFF_MODERATOR_ROLES, CHAT_MODERATOR_ROLES, BOT_DEVELOPER_ROLES
+from constants import GUILD_ID, FORCED_MUTE_ROLE, MODERATOR_ROLES, CHAT_MODERATOR_ROLES, BOT_DEVELOPER_ROLES
 
 async def has_role(member: discord.Member, role_name: str):
     roles = [role.name.lower() for role in member.roles]
@@ -16,7 +16,7 @@ async def get_role(role_name: str):
 
 async def is_moderator(member: discord.Member):
     roles = [role.id for role in member.roles]
-    if STAFF_MODERATOR_ROLES in roles:
+    if MODERATOR_ROLES in roles:
         return True
     elif member.guild_permissions.administrator:
         return True
