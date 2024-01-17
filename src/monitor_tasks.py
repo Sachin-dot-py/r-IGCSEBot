@@ -178,5 +178,3 @@ async def handle_slowmode():
             
         if channel.slowmode_delay != slowmode:
             await channel.edit(slowmode_delay=slowmode)
-
-handle_slowmode.start()
