@@ -17,5 +17,4 @@ async def on_ready():
             embed.add_field(name=guild.name, value=value, inline=True)
         await botlogs.send(embed=embed)
     except Exception:
-        print(Exception)
-    
+        await botlogs.send(f"```py{Exception}````")
