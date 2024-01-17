@@ -66,7 +66,7 @@ async def Channellockcommand(interaction: discord.Interaction,
         embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
         embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
         embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {channelinput.id}```", inline=False)
-        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
         await Logging.send(embed=embed)  
         
         client = pymongo.MongoClient(LINK)
@@ -144,7 +144,7 @@ async def Forumlockcommand(interaction: discord.Interaction, threadinput: discor
         embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
         embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
         embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nThread = {threadinput.id}```", inline=False)
-        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
         await Logging.send(embed=embed)        
         
         client = pymongo.MongoClient(LINK)

@@ -218,6 +218,15 @@ async def refreshhelpers(ctx):
         except:
             continue
     if changed:
+        Logging = bot.get_channel(MODLOG_CHANNEL_ID)
+        timenow = int(time.time()) + 1
+        embed = discord.Embed(description="Helpers Refreshed !!", color=0x51ADBB)
+        embed.set_author(name=str(ctx.author), icon_url=ctx.author.display_avatar.url)
+        embed.add_field(name="Channels", value=", ".join(changed), inline=False)
+        embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
+        embed.add_field(name="ID", value= f"```py\nUser = {ctx.author.id}\nBot = {bot.user.id}```", inline=False)
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
+        await Logging.send(embed=embed)         
         await ctx.message.reply("Done! Changed channels: " + ", ".join(changed))
     else:
         await ctx.message.reply("No changes were made.")
@@ -381,7 +390,7 @@ async def Instantlockcommand(interaction: discord.Interaction,
                 embed.add_field(name="Locked Thread", value=f"<#{threadinput.id}>", inline=False)
                 embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
                 embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nThread = {threadinput.id}```", inline=False)
-                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
                 await Logging.send(embed=embed)
                 await interaction.send(f"<#{threadinput.id}> has been locked", ephemeral=True)
                 await thread.send(f"This thread has been locked.")
@@ -394,7 +403,7 @@ async def Instantlockcommand(interaction: discord.Interaction,
                 embed.add_field(name="Unlocked Thread", value=f"<#{threadinput.id}>", inline=False)
                 embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
                 embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nThread = {threadinput.id}```", inline=False)
-                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
                 await Logging.send(embed=embed)      
                 thread = await thread_id.edit(locked=False)
                 await interaction.send(f"<#{threadinput.id}> has been unlocked", ephemeral=True)
@@ -420,7 +429,7 @@ async def Instantlockcommand(interaction: discord.Interaction,
                 embed.add_field(name="Locked Channel", value=f"<#{channelinput.id}>", inline=False)
                 embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
                 embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {channelinput.id}```", inline=False)
-                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
                 await Logging.send(embed=embed)                    
                 await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
                 await interaction.send(f"<#{channelinput.id}> has been locked", ephemeral=True)
@@ -436,7 +445,7 @@ async def Instantlockcommand(interaction: discord.Interaction,
                 embed.add_field(name="Unlocked Channel", value=f"<#{channelinput.id}>", inline=False)
                 embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
                 embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nChannel = {channelinput.id}```", inline=False)
-                embed.set_footer(text=f"r/IGCSE Bot#2063")
+                embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
                 await Logging.send(embed=embed)                 
                 await channel.set_permissions(interaction.guild.default_role, overwrite=overwrite)
                 await interaction.send(f"<#{channelinput.id}> has been unlocked", ephemeral=True)

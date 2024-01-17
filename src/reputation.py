@@ -31,7 +31,7 @@ async def change_rep(interaction: discord.Interaction, user: discord.User = disc
         embed.add_field(name="New Rep", value=new_rep, inline=False)
         embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
         embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nBot = 861445044790886467```", inline=False)
-        embed.set_footer(text=f"r/IGCSE Bot#2063")
+        embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
         await Logging.send(embed=embed)          
         await interaction.send(f"{user} now has {rep} rep.", ephemeral=False)
     else:
