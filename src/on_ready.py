@@ -4,7 +4,7 @@ from monitor_tasks import checklock, checkmute
 
 @bot.event
 async def on_ready():
-    igcse = await bot.fetch_guild(GUILD_ID)
+    igcse = bot.get_guild(GUILD_ID)
     botlogs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)    
     print(f"Logged in as {str(bot.user)}.")
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="r/IGCSE"))
