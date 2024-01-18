@@ -125,6 +125,7 @@ Reason: {reason}"""
     channel = await user.create_dm()
     await channel.send(
         f"You have been warned in r/IGCSE by moderator {mod} for \"{reason}\".\n\nPlease be mindful in your further interaction in the server to avoid further action being taken against you, such as a timeout or a ban.")
+    punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type)
 
 @bot.slash_command(description="Timeout a user (for mods)")
 async def timeout(interaction: discord.Interaction,
@@ -183,6 +184,8 @@ Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)''')
     await interaction.send(
         f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
+    timeout_duration_simple = convert_time((str(seconds // 86400), str((seconds % 86400) // 3600), str((seconds % 3600) // 60), str(seconds % 60)))
+    punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type, duration=timeout_duration_simple)
     
 @bot.slash_command(description="Untimeout a user (for mods)")
 async def untimeout(interaction: discord.Interaction,
@@ -210,6 +213,7 @@ Username: {str(user)} ({user.id})
 Moderator: {mod}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.send(f"Timeout has been removed from {str(user)}.")
+    punishdb.add_punishment(case_no, user.id, interaction.user.id, "", action_type)
 
 @bot.slash_command(description="Kick a user from the server (for mods)")
 async def kick(interaction: discord.Interaction,
@@ -243,6 +247,7 @@ Reason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.kick(user)
     await interaction.send(f"{str(user)} has been kicked.")
+    punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type)
 
 @bot.slash_command(description="Ban a user from the server (for mods)")
 async def ban(interaction: discord.Interaction,
@@ -285,6 +290,7 @@ Reason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.ban(user, delete_message_days=delete_message_days)
     await interaction.send(f"{str(user)} has been banned.")
+    punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type)
 
 @bot.slash_command(description="Unban a user from the server (for mods)")
 async def unban(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to unban", required=True)):
@@ -308,3 +314,4 @@ async def unban(interaction: discord.Interaction, user: discord.User = discord.S
 Username: {str(user)} ({user.id})
 Moderator: {mod}"""
         await ban_msg_channel.send(ban_msg)
+        punishdb.add_punishment(case_no, user.id, interaction.user.id, "", action_type)
