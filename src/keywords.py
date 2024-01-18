@@ -48,7 +48,7 @@ class RemoveKeywords(discord.ui.Modal):
         embed.add_field(name="ID", value= f"```py\nUser = {interaction.user.id}\nBot = 861445044790886467```", inline=False)
         embed.set_footer(text=f"r/IGCSE Bot#2063")
         await Logging.send(embed=embed)        
-        await interaction.send(f"Deleted keyword `{self.keyword}`", ephemeral=True, delete_after=2)
+        await interaction.send(f"Deleted keyword `{self.keyword.value}`", ephemeral=True, delete_after=2)
 
 @bot.slash_command(name="keywords", description="Adds or Deletes a keyword (for mods)")
 async def keywordscommand(interaction: discord.Interaction,
