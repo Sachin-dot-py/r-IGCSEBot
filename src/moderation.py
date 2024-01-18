@@ -56,43 +56,32 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
     if not await is_moderator(interaction.user) and not await is_chat_moderator(interaction.user):
         await interaction.send("You are not permitted to use this command.", ephemeral=True)
     await interaction.response.defer()
-    modlog = gpdb.get_pref("modlog_channel", interaction.guild.id)
-    warnlog = gpdb.get_pref("warnlog_channel", interaction.guild.id)
-    if modlog and warnlog:
-        history = []
-        actions = {}
-        modlog = bot.get_channel(modlog)
-        warnlog = bot.get_channel(warnlog)
-        warn_history = await warnlog.history(limit=750).flatten()
-        modlog_history = await modlog.history(limit=500).flatten()
-        messages = warn_history + modlog_history
-        for message in messages:
-            if str(user.id) not in message.clean_content:
-                continue
-            parsed_message = await match_message(message.clean_content)
-            if parsed_message['action'] not in actions:
-                actions[parsed_message['action']] = 1
-            else:
-                actions[parsed_message['action']] += 1
-            date_of_event = message.created_at.strftime("%d %b, %Y at %H:%M")
-            duration = parsed_message['timeout_duration'][0] if parsed_message['action'] == 'Timeout' else ""
-            duration_as_text = f" ({convert_time(duration)})" if parsed_message['action'] == 'Timeout' else ""
-        
-            reason = f" for {parsed_message['reason_for_action']}" if parsed_message['reason_for_action'] else ""
+    actions = {}
+    history = []
+    results = punishdb.get_punishments_by_user(user.id)
+    for result in results:
 
-            final_string = f"[{date_of_event}] {parsed_message['action']}{duration_as_text}{reason} by {parsed_message['action_by'].strip()}"
-            history.append(final_string)
-
-        if len(history) == 0:
-            await interaction.send(f"{user} does not have any previous offenses.", ephemeral=False)
+        if result['action'] not in actions:
+            actions[result['action']] = 1
         else:
-            text = f"Moderation History for {user}:\n\n"
-            text += "\n".join(list(map(lambda x:f"{x[0]}: {x[1]}", list(actions.items()))))
-            text += '\n\n'
-            text += ('\n'.join(history))[:1900]
-            await interaction.send(f"```accesslog\n{text}```", ephemeral=False)
+            actions[result['action']] += 1
+
+        date_of_event = result['when'].strftime("%d %b, %Y at %H:%M")
+        duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
+        
+        reason = f" for {result['reason']}" if result['reason'] else ""
+
+        final_string = f"[{date_of_event}] {result['action']}{duration_as_text}{reason} by {result['action_by'].strip()}"
+        history.append(final_string)
+
+    if len(history) == 0:
+        await interaction.send(f"{user} does not have any previous offenses.", ephemeral=False)
     else:
-        await interaction.send("Please set up your moglog and warnlog through `/set_preferences` first!")
+        text = f"Moderation History for {user}:\n\n"
+        text += "\n".join(list(map(lambda x:f"{x[0]}: {x[1]}", list(actions.items()))))
+        text += '\n\n'
+        text += ('\n'.join(history))[:1900]
+        await interaction.send(f"```accesslog\n{text}```", ephemeral=False)
 
 @bot.slash_command(description="Warn a user (for mods)")
 async def warn(interaction: discord.Interaction, 

@@ -188,7 +188,7 @@ class PunishmentsDB:
             "when": when
         })
     
-    def get_punishments_by_user(self, user_id):
+    def get_punishments_by_user(self, user_id: int):
         return self.punishment_history.find({"action_against": user_id})
 
 punishdb = PunishmentsDB(LINK)
