@@ -4,7 +4,7 @@ from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb, punishdb
 from constants import GUILD_ID
 import re
-from datetime import datetime
+import datetime
 
 def convert_time(time: tuple[str, str, str, str]) -> str:
     time_str = ""
@@ -72,7 +72,7 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
         if result['action'] in allowed_actions_for_total:
             total += 1
 
-        date_of_event = datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %I:%M %p")
+        date_of_event = datetime.datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %I:%M %p")
         duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
         
         reason = f" for {result['reason']}" if result['reason'] else ""
@@ -164,7 +164,7 @@ async def timeout(interaction: discord.Interaction,
     if seconds == 0:
         await interaction.send("You can't timeout for zero seconds!", ephemeral=True)
         return
-    await user.edit(timeout=discord.utils.utcnow() + datetime.timedelta(seconds=seconds))
+    await user.edit(timeout=datetime.timedelta(seconds=seconds))
     human_readable_time = f"{seconds // 86400}d {(seconds % 86400) // 3600}h {(seconds % 3600) // 60}m {seconds % 60}s"
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
