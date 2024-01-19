@@ -4,6 +4,7 @@ from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb, punishdb
 from constants import GUILD_ID
 import re
+from datetime import datetime
 
 def convert_time(time: tuple[str, str, str, str]) -> str:
     time_str = ""
