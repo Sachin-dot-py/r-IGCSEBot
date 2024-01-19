@@ -180,8 +180,8 @@ class PunishmentsDB:
     def add_punishment(self, case_id: int, action_against: int, action_by: int, reason: str, action: str, when: datetime = datetime.utcnow(), duration: str = None):
         self.punishment_history.insert_one({
             "case_id": case_id,
-            "action_against": action_against,
-            "action_by": action_by,
+            "action_against": str(action_against),
+            "action_by": str(action_by),
             "reason": reason,
             "action": action,
             "duration": duration,
@@ -189,6 +189,6 @@ class PunishmentsDB:
         })
     
     def get_punishments_by_user(self, user_id: int):
-        return self.punishment_history.find({"action_against": user_id})
+        return self.punishment_history.find({"action_against": str(user_id)})
 
 punishdb = PunishmentsDB(LINK)

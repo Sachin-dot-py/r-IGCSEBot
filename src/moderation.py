@@ -66,12 +66,18 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
         else:
             actions[result['action']] += 1
 
-        date_of_event = result['when'].strftime("%d %b, %Y at %H:%M")
+        date_of_event = datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %H:%M")
         duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
         
         reason = f" for {result['reason']}" if result['reason'] else ""
 
-        final_string = f"[{date_of_event}] {result['action']}{duration_as_text}{reason} by {result['action_by'].strip()}"
+        if "#" not in result['action_by'] and result['action_by'].isnumeric():
+            moderator = interaction.guild.get_member(int(result['action_by'])) or await interaction.guild.fetch_member(int(result['action_by']))
+            moderator = moderator.name
+        else:
+            moderator = result['action_by'].strip()
+
+        final_string = f"[{date_of_event}] {result['action']}{duration_as_text}{reason} by {moderator.strip()}"
         history.append(final_string)
 
     if len(history) == 0:
