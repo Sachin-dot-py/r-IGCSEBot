@@ -90,9 +90,9 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
         await interaction.send(f"{user} does not have any previous offenses.", ephemeral=False)
     else:
         text = f"Moderation History for {user}:\n\n"
-        text = f"No. of offences:\n"
+        text = f"\nNo. of offences:\n"
         text += "\n".join(list(map(lambda x:f"{x[0]}: {x[1]}", list(actions.items()))))
-        text += f"\nTotal no. of offences: {total}\n\n"
+        text += f"\nTotal no. of offences: {total}\n"
         text += f"\nFurther Details:\n"
         text += ('\n'.join(history))[:1900]
         await interaction.send(f"```{text}```", ephemeral=False)
