@@ -72,7 +72,7 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
         if result['action'] in allowed_actions_for_total:
             total += 1
 
-        date_of_event = datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %H:%M")
+        date_of_event = datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %I:%M %p")
         duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
         
         reason = f" for {result['reason']}" if result['reason'] else ""
@@ -94,7 +94,7 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
         text += f"\nTotal number of offences: {total}"
         text += '\n\n'
         text += ('\n'.join(history))[:1900]
-        await interaction.send(f"```accesslog\n{text}```", ephemeral=False)
+        await interaction.send(f"```{text}```", ephemeral=False)
 
 @bot.slash_command(description="Warn a user (for mods)")
 async def warn(interaction: discord.Interaction, 
