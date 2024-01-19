@@ -164,7 +164,7 @@ async def timeout(interaction: discord.Interaction,
     if seconds == 0:
         await interaction.send("You can't timeout for zero seconds!", ephemeral=True)
         return
-    await user.edit(timeout=discord.utils.utcnow() + datetime.datetime.timedelta(seconds=seconds))
+    await user.edit(timeout=discord.utils.utcnow() + datetime.timedelta(seconds=seconds))
     human_readable_time = f"{seconds // 86400}d {(seconds % 86400) // 3600}h {(seconds % 3600) // 60}m {seconds % 60}s"
     ban_msg_channel = bot.get_channel(gpdb.get_pref("modlog_channel", interaction.guild.id))
     if ban_msg_channel:
