@@ -71,8 +71,10 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
 
         if result['action'] in allowed_actions_for_total:
             total += 1
-
-        date_of_event = datetime.datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %I:%M %p")
+        if type(result['when']) == datetime.datetime:
+            date_of_event = result['when'].strftime("%d %b, %Y at %I:%M %p")
+        else:
+            date_of_event = datetime.datetime.fromisoformat(str(result['when'])).strftime("%d %b, %Y at %I:%M %p")
         duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
         
         reason = f" for {result['reason']}" if result['reason'] else ""
