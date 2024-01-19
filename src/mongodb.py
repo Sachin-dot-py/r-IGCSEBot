@@ -1,5 +1,6 @@
 from bot import pymongo
 from constants import LINK
+from datetime import datetime
 
 
 class ReactionRolesDB:
@@ -169,3 +170,25 @@ class KeywordsDB:
         return result
 
 kwdb = KeywordsDB(LINK)
+
+class PunishmentsDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.punishment_history = self.db.punishment_history
+    
+    def add_punishment(self, case_id: int, action_against: int, action_by: int, reason: str, action: str, when: datetime = datetime.utcnow(), duration: str = None):
+        self.punishment_history.insert_one({
+            "case_id": case_id,
+            "action_against": str(action_against),
+            "action_by": str(action_by),
+            "reason": reason,
+            "action": action,
+            "duration": duration,
+            "when": when
+        })
+    
+    def get_punishments_by_user(self, user_id: int):
+        return self.punishment_history.find({"action_against": str(user_id)})
+
+punishdb = PunishmentsDB(LINK)
