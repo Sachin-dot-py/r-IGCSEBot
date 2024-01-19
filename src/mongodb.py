@@ -177,9 +177,9 @@ class PunishmentsDB:
         self.db = self.client.IGCSEBot
         self.punishment_history = self.db.punishment_history
     
-    def add_punishment(self, case_id: int, action_against: int, action_by: int, reason: str, action: str, when: datetime = datetime.utcnow(), duration: str = None):
+    def add_punishment(self, case_id: int | str, action_against: int, action_by: int, reason: str, action: str, when: datetime = datetime.utcnow(), duration: str = None):
         self.punishment_history.insert_one({
-            "case_id": case_id,
+            "case_id": str(case_id),
             "action_against": str(action_against),
             "action_by": str(action_by),
             "reason": reason,

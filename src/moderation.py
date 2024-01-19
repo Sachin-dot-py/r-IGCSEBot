@@ -4,6 +4,7 @@ from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb, punishdb
 from constants import GUILD_ID
 import re
+from datetime import datetime
 
 def convert_time(time: tuple[str, str, str, str]) -> str:
     time_str = ""
@@ -58,6 +59,8 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
     await interaction.response.defer()
     actions = {}
     history = []
+    total = 0
+    allowed_actions_for_total = ["Warn", "Timeout", "Mute", "Ban", "Kick"]
     results = punishdb.get_punishments_by_user(user.id)
     for result in results:
 
@@ -65,6 +68,9 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
             actions[result['action']] = 1
         else:
             actions[result['action']] += 1
+
+        if result['action'] in allowed_actions_for_total:
+            total += 1
 
         date_of_event = datetime.fromisoformat(result['when']).strftime("%d %b, %Y at %H:%M")
         duration_as_text = f" ({result['duration']})" if result['action'] == 'Timeout' else ""
@@ -85,6 +91,7 @@ async def history(interaction: discord.Interaction, user: discord.User = discord
     else:
         text = f"Moderation History for {user}:\n\n"
         text += "\n".join(list(map(lambda x:f"{x[0]}: {x[1]}", list(actions.items()))))
+        text += f"\nTotal number of offences: {total}"
         text += '\n\n'
         text += ('\n'.join(history))[:1900]
         await interaction.send(f"```accesslog\n{text}```", ephemeral=False)
