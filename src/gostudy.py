@@ -7,7 +7,7 @@ from typing import Optional
 
 @bot.slash_command(name="gostudy", description="disables the access to the offtopics for 1 hour.")
 async def gostudy(interaction: discord.Interaction,
-                  time: Optional[str] = discord.SlashOption(name="time", description="how long should the mute last for? (default: 1 hour)", required=False),
+                  mute_time: Optional[str] = discord.SlashOption(name="time", description="how long should the mute last for? (default: 1 hour)", required=False),
                   user: Optional[discord.User] = discord.SlashOption(name="name", description="who do you want to use this command on? (for mods)", required=False)):
       
       client = pymongo.MongoClient(LINK)
@@ -18,8 +18,8 @@ async def gostudy(interaction: discord.Interaction,
       Logging = bot.get_channel(MODLOG_CHANNEL_ID)
       forced_mute_role = interaction.guild.get_role(FORCED_MUTE_ROLE)
       time_to_mute = 3600
-      if time:
-            time_to_mute = parse(time) or 3600
+      if mute_time:
+            time_to_mute = parse(mute_time) or 3600
             if time_to_mute < 600:
                   await interaction.send("The minimum time for gostudy is 10 minutes!", ephemeral=True)
                   return
