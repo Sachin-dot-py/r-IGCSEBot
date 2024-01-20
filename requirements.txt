@@ -3,3 +3,4 @@ requests
 pymongo[srv]
 pyshorteners
 pyjokes
+pytimeparse
