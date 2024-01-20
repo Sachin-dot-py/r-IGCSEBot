@@ -187,7 +187,7 @@ Reason: {reason}
 Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)''')
     await interaction.send(
-        f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is <t:{int(time.time()) + seconds}:R>.")
+        f"{str(user)} has been put on time out until <t:{int(time.time()) + seconds}>, which is (<t:{int(time.time()) + seconds}:R>).")
     timeout_duration_simple = convert_time((str(seconds // 86400), str((seconds % 86400) // 3600), str((seconds % 3600) // 60), str(seconds % 60)))
     punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type, duration=timeout_duration_simple)
     
