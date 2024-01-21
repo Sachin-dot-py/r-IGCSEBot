@@ -35,4 +35,4 @@ Duration: {human_readable_time}
 Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + timeout_time_seconds}:R>)"""
 
             await ban_message_channel.send(timeout_message)
-            punishdb.add_punishment(case_no, user.id, interaction.user.id, "", action_type)
+            punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type, duration=timeout_duration_simple)
