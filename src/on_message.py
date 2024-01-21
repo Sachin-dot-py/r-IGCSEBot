@@ -81,15 +81,6 @@ async def handle_rep(message):
                         await message.channel.send(f"Gave +1 Rep to {user.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
                   else:
                         await message.channel.send(f"Gave +1 Rep to {user} ({rep})")
-            leaderboard = repdb.rep_leaderboard(message.guild.id)
-            members = [list(item.values())[0] for item in leaderboard[:3]]
-            role = discord.utils.get(message.guild.roles, name="Reputed")
-            if [member.id for member in role.members].sort() != members.sort():
-                  for m in role.members:
-                        await m.remove_roles(role)
-                  for member in members:
-                        member = message.guild.get_member(member)
-                        await member.add_roles(role)
 
 @bot.event
 async def on_message(message: discord.Message):
