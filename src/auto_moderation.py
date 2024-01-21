@@ -1,5 +1,5 @@
 from bot import bot, time
-from mongodb import gpdb, punishdb
+from mongodb import gpdb
 
 SECONDS_PER_MINUTE = 60
 SECONDS_PER_HOUR = SECONDS_PER_MINUTE * 60
@@ -35,4 +35,3 @@ Duration: {human_readable_time}
 Until: <t:{int(time.time()) + timeout_time_seconds}> (<t:{int(time.time()) + timeout_time_seconds}:R>)"""
 
             await ban_message_channel.send(timeout_message)
-            punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type, duration=timeout_duration_simple)
