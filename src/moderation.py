@@ -3,7 +3,6 @@ from bans import is_banned
 from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb, punishdb
 from constants import GUILD_ID
-import re
 import datetime
 
 def convert_time(time: tuple[str, str, str, str]) -> str:
@@ -16,41 +15,6 @@ def convert_time(time: tuple[str, str, str, str]) -> str:
         time_str += f"{time[2]} min{'s' if int(time[2]) > 1 else ''} "
     return time_str.strip()
 
-
-async def match_message(message: str) -> dict[str, str]:
-    lines = message.split("\n")
-    lines.pop(1)
-
-    action = ""
-    action_by = ""
-    reason_for_action = ""
-    timeout_duration = ""
-    
-    for line in lines:
-        match_first_line = re.findall(r"Case #\d{4} \| \[(.*)\]", line)
-        if match_first_line:
-            action = match_first_line[0]
-            continue
-        match_third_line = re.findall(r"Moderator: (.*)", line)
-        if match_third_line:
-            action_by = match_third_line[0]
-            continue
-        match_fourth_line = re.findall(r"Reason: (.*)", line)
-        if match_fourth_line:
-            reason_for_action = match_fourth_line[0]
-            continue
-        if action == "Timeout":
-            match_fifth_line = re.findall(r"Duration: (\d+)d (\d+)h (\d+)m (\d+)s", line)
-            if match_fifth_line:
-                timeout_duration = match_fifth_line
-                continue
-    
-    return {
-        "action": action,
-        "action_by": action_by,
-        "reason_for_action": reason_for_action,
-        "timeout_duration": timeout_duration
-    }
 
 @bot.slash_command(description="Check a user's previous offenses (warns/timeouts/bans)")
 async def history(interaction: discord.Interaction, user: discord.User = discord.SlashOption(name="user", description="User to view history of", required=True)):
