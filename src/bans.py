@@ -1,4 +1,4 @@
-from bot import discord
+from bot import discord, bot
 
 async def is_banned(user, guild):
     try:

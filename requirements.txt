@@ -1,3 +1,6 @@
 nextcord
 requests
 pymongo[srv]
+pyshorteners
+pyjokes
+pytimeparse

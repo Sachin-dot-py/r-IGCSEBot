@@ -1,28 +1,7 @@
-from constants import LINK
 from bot import pymongo
+from constants import LINK
+from datetime import datetime
 
-class GuildPreferencesDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
-        self.db = self.client.IGCSEBot
-        self.pref = self.db.guild_preferences
-
-    def set_pref(self, pref: str, pref_value, guild_id: int):
-        """ 'pref' can be 'modlog_channel' or 'rep_enabled'. """
-        if self.pref.find_one({"guild_id": guild_id}):
-            result = self.pref.update_one({"guild_id": guild_id}, {"$set": {pref: pref_value}})
-        else:
-            result = self.pref.insert_one({"guild_id": guild_id, pref: pref_value})
-        return result
-
-    def get_pref(self, pref: str, guild_id: int):
-        result = self.pref.find_one({"guild_id": guild_id})
-        if result is None:
-            return None
-        else:
-            return result.get(pref, None)
-
-gpdb = GuildPreferencesDB(LINK)
 
 class ReactionRolesDB:
     def __init__(self, link: str):
@@ -41,6 +20,73 @@ class ReactionRolesDB:
             return result
 
 rrdb = ReactionRolesDB(LINK)
+
+class GuildPreferencesDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.pref = self.db.guild_preferences
+
+    def set_pref(self, pref: str, pref_value, guild_id: int):
+        if self.pref.find_one({"guild_id": guild_id}):
+            result = self.pref.update_one({"guild_id": guild_id}, {"$set": {pref: pref_value}})
+        else:
+            result = self.pref.insert_one({"guild_id": guild_id, pref: pref_value})
+        return result
+
+    def get_pref(self, pref: str, guild_id: int):
+        result = self.pref.find_one({"guild_id": guild_id})
+        if result is None:
+            return None
+        else:
+            return result.get(pref, None)
+
+gpdb = GuildPreferencesDB(LINK)
+
+
+class ReputationDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+        self.db = self.client.IGCSEBot
+        self.reputation = self.db.reputation
+
+    def bulk_insert_rep(self, rep_dict: dict, guild_id: int):
+        # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
+        insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
+        result = self.reputation.insert_many(insertion)
+        return result
+
+    def get_rep(self, user_id: int, guild_id: int):
+        result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
+        if result is None:
+            return None
+        else:
+            return result['rep']
+
+    def change_rep(self, user_id, new_rep, guild_id):
+        result = self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
+        return new_rep
+
+    def delete_user(self, user_id: int, guild_id: int):
+        result = self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
+        return result
+
+    def add_rep(self, user_id: int, guild_id: int):
+        rep = self.get_rep(user_id, guild_id)
+        if rep is None:
+            rep = 1
+            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": rep})
+        else:
+            rep += 1
+            self.change_rep(user_id, rep, guild_id)
+        return rep
+
+    def rep_leaderboard(self, guild_id):
+        leaderboard = self.reputation.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0}).sort("rep", -1)
+        return list(leaderboard)
+
+
+repdb = ReputationDB(LINK)
 
 class StickyMessageDB:
     def __init__(self, link: str):
@@ -108,12 +154,6 @@ class KeywordsDB:
         self.db = self.client.IGCSEBot
         self.keywords = self.db.keywords
 
-    # def bulk_insert_keywords(self, rep_dict: dict, guild_id: int):
-    #     # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
-    #     insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
-    #     result = self.reputation.insert_many(insertion)
-    #     return result
-
     def get_keywords(self, guild_id: int):
         result = self.keywords.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0})
         return {i['keyword'].lower(): i['autoreply'] for i in result}
@@ -131,46 +171,24 @@ class KeywordsDB:
 
 kwdb = KeywordsDB(LINK)
 
-class ReputationDB:
+class PunishmentsDB:
     def __init__(self, link: str):
         self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
         self.db = self.client.IGCSEBot
-        self.reputation = self.db.reputation
+        self.punishment_history = self.db.punishment_history
+    
+    def add_punishment(self, case_id: int | str, action_against: int, action_by: int, reason: str, action: str, when: datetime = datetime.utcnow(), duration: str = None):
+        self.punishment_history.insert_one({
+            "case_id": str(case_id),
+            "action_against": str(action_against),
+            "action_by": str(action_by),
+            "reason": reason,
+            "action": action,
+            "duration": duration,
+            "when": when
+        })
+    
+    def get_punishments_by_user(self, user_id: int):
+        return self.punishment_history.find({"action_against": str(user_id)})
 
-    def bulk_insert_rep(self, rep_dict: dict, guild_id: int):
-        # rep_dict = eval("{DICT}".replace("\n","")) to restore reputation from #rep-backup
-        insertion = [{"user_id": user_id, "rep": rep, "guild_id": guild_id} for user_id, rep in rep_dict.items()]
-        result = self.reputation.insert_many(insertion)
-        return result
-
-    def get_rep(self, user_id: int, guild_id: int):
-        result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
-        if result is None:
-            return None
-        else:
-            return result['rep']
-
-    def change_rep(self, user_id: int, new_rep: int, guild_id: int):
-        result = self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
-        return new_rep
-
-    def delete_user(self, user_id: int, guild_id: int):
-        result = self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
-        return result
-
-    def add_rep(self, user_id: int, guild_id: int):
-        rep = self.get_rep(user_id, guild_id)
-        if rep is None:
-            rep = 1
-            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": rep})
-        else:
-            rep += 1
-            self.change_rep(user_id, rep, guild_id)
-        return rep
-
-    def rep_leaderboard(self, guild_id):
-        leaderboard = self.reputation.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0}).sort("rep", -1)
-        return list(leaderboard)
-
-
-repdb = ReputationDB(LINK)
+punishdb = PunishmentsDB(LINK)

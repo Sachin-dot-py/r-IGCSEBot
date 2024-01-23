@@ -1,6 +1,6 @@
-from constants import GUILD_ID
 from bot import discord, bot, requests
-from db import gpdb, rrdb
+from constants import GUILD_ID
+from mongodb import gpdb, rrdb
 from roles import is_moderator
 
 @bot.event
@@ -20,8 +20,7 @@ async def on_raw_reaction_add(reaction):
     author = message.channel.guild.get_member(reaction.user_id)
     if author.bot or not await is_moderator(author): return
 
-    # Emote voting
-    if message.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":  # Emote suggestion channel - Finalise button clicked
+    if message.channel.id == gpdb.get_pref("emote_channel", reaction.guild_id) and str(reaction.emoji) == "🔒":
         upvotes = 0
         downvotes = 0
         for r in message.reactions:
@@ -35,10 +34,9 @@ async def on_raw_reaction_add(reaction):
             await message.reply(f"The submission by {message.mentions[0]} for the emote {str(emoji)} has passed.")
         else:
             await message.reply(f"The submission by {message.mentions[0]} for the emote `:{name}:`has failed.")
-
-    # Suggestions voting
+            
     if str(reaction.emoji) == "🟢" and reaction.user_id != bot.user.id and message.channel.id == gpdb.get_pref(
-            "suggestions_channel", reaction.guild_id):  # Suggestion accepted by mod in #suggestions-voting
+            "suggestions_channel", reaction.guild_id):
         author = message.channel.guild.get_member(reaction.user_id)
         if await is_moderator(author):
             description = message.embeds[0].description
@@ -58,7 +56,7 @@ async def on_raw_reaction_add(reaction):
         return
 
     if str(reaction.emoji) == "🔴" and reaction.user_id != bot.user.id and message.channel.id == gpdb.get_pref(
-        "suggestions_channel", reaction.guild_id):  # Suggestion rejected by mod in #suggestions-voting
+        "suggestions_channel", reaction.guild_id):
         author = message.channel.guild.get_member(reaction.user_id)
         if await is_moderator(author):
             description = message.embeds[0].description
@@ -74,8 +72,7 @@ async def on_raw_reaction_add(reaction):
             embed.add_field(name="Rejected ❌", value=f"This suggestion has been rejected by the moderators. ({author})", inline=False)
             await message.edit(embed=embed)
         return
-
-    # Suggestion voting system
+    
     vote = 0
     for reaction in message.reactions:
         if str(reaction.emoji) == '✅' or str(reaction.emoji) == '❌':
