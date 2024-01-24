@@ -61,7 +61,7 @@ async def cheminfo(interaction: discord.Interaction,
         await interaction.send(embed=embed)
     except Exception as e:
         print(e)
-        await interaction.send("Invalid formula or name (an error occured)", ephemeral=True)
+        await interaction.send("Invalid formula or name (an error occurred)", ephemeral=True)
     
     
 async def get_experimental_properties(cid):
