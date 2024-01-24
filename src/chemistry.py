@@ -60,7 +60,6 @@ async def cheminfo(interaction: discord.Interaction,
 
         await interaction.send(embed=embed)
     except Exception as e:
-        print(e)
         await interaction.send("Invalid formula or name (an error occurred)", ephemeral=True)
     
     
@@ -91,7 +90,6 @@ async def get_experimental_properties(cid):
             "color": color
         }
     except Exception as e:
-        print(e)
         return {
             "description": None,
             "color": None
