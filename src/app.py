@@ -25,6 +25,7 @@ import hotm
 import locks
 import keywords
 import on_message
+import chemistry
 
 def insert_returns(body):
 
