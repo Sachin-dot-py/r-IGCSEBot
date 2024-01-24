@@ -37,7 +37,7 @@ async def cheminfo(interaction: discord.Interaction,
 
         formula_label = format_formula(compound.molecular_formula)
 
-        embed = discord.Embed(title=f"{synonyms[0] if synonyms else compound.iupac_name} ({formula_label})", color=discord.Color.random())
+        embed = discord.Embed(title=f"{synonyms[0] if synonyms else compound.iupac_name} ({formula_label})", color=0x66F18E)
         embed.description = f"For more information, [click here](https://pubchem.ncbi.nlm.nih.gov/compound/{compound.cid})"
         embed.add_field(name="Molecular Weight", value=f"{round(float(compound.molecular_weight))} g/mol", inline=True)
         if is_element:
