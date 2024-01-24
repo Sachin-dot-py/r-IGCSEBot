@@ -4,3 +4,4 @@ pymongo[srv]
 pyshorteners
 pyjokes
 pytimeparse
+pubchempy
