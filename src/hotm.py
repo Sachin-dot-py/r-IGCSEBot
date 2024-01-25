@@ -30,7 +30,8 @@ async def votehotm(interaction: discord.Interaction,
         await interaction.send(f"Done! You have {int(voter['votes_left'])} votes left.", ephemeral=True)
             
         helpers.update_one({"id": helper.id}, {"$inc": {"votes": 1}}, upsert=True) 
-        
+        hotm_log_channel = bot.get_channel(991202262472998962)
+        await hotm_log_channel.send(f"{interaction.user} ({interaction.user.id}) has voted for {helper} ({helper.id})")
 
         messages = [msg for msg in await bot.get_channel(HOTM_VOTING_CHANNEL).history().flatten() if
                     msg.author.id == 861445044790886467 and msg.content == "HOTM Voting Results"] 
