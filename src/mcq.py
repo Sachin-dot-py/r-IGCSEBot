@@ -9,17 +9,23 @@ class Question:
         self.view = view
 
 def build_question(interaction: discord.Interaction, question_pages, question_number: int):
+    if question_number >= len(question_pages):
+        return interaction.send(content="You have already reached the last question!", ephemeral=True)
     question_page = question_pages[question_number]
     html = question_page[0]["problem"][0]["body"]
     pq = PyQuery(html)
     embed = discord.Embed(title=f"Question {question_number + 1}", description=f"{pq.text().replace("  ", " ").replace("\n", "\n\n")}", color=0x5865f2)
     options = []
-    for item in order:
-        option_html = question_page[0][f"choice{item}"][0]["body"]
-        pq = PyQuery(option_html)
-        options.append(pq.text())
-    view = Choice(interaction, options, order.index(question_page[0]["correctChoice"]), question_pages, question_number)
-    return Question(embed, view)
+    try:
+        for item in order:
+            option_html = question_page[0][f"choice{item}"][0]["body"]
+            pq = PyQuery(option_html)
+            options.append(pq.text())
+        view = Choice(interaction, options, order.index(question_page[0]["correctChoice"]), question_pages, question_number)
+        return Question(embed, view)
+    except Exception as e:
+        print(e)
+        return build_question(interaction, question_pages, question_number + 1)
 
 class MultiChoiceButton(discord.ui.Button):
     def __init__(self, name: str, interaction: discord.Interaction):
@@ -51,7 +57,7 @@ class Choice(discord.ui.View):
         self.correct_choice = correct_choice
         self.options = options
         for option in options:
-            self.add_item(MultiChoiceButton(option, interaction))
+            self.add_item(MultiChoiceButton(option, interaction)) # option could be empty string
         self.add_item(SkipButon("Next", interaction, question_pages, question_number))
 
     async def check_answer(self, interaction: discord.Interaction, choice):
