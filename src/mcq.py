@@ -46,14 +46,15 @@ class Choice(discord.ui.View):
         self.options = options
         for option in options:
             self.add_item(MultiChoiceButton(option))
-        self.add_item(SkipButon("Skip", question_pages, question_number))
+        self.add_item(SkipButon("Next", question_pages, question_number))
 
     async def check_answer(self, interaction: discord.Interaction, choice):
         if not await self.interaction_check(interaction):
             return
         selected_choice = self.options.index(choice)
         for i, item in enumerate(self.children):
-            item.disabled = True
+            if item.label != "Next":
+                item.disabled = True
             if i == selected_choice:
                 if i == self.correct_choice:
                     item.style = discord.ButtonStyle.green
