@@ -84,127 +84,130 @@ async def handle_rep(message):
 
 @bot.event
 async def on_message(message: discord.Message):
-      if message.author.bot: return
-      igcse = await bot.fetch_guild(GUILD_ID)
-      logs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)   
+    if message.author.bot: return
+    igcse = await bot.fetch_guild(GUILD_ID)
+    logs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
 
-      if not message.guild:
-            if message.content[0] == "/":
-                  await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
-            else:   
-                  guild = bot.get_guild(GUILD_ID)
-                  category = discord.utils.get(guild.categories, name='COMMS')
-                  channel = discord.utils.get(category.channels, topic=str(message.author.id))
-                  if not channel:
-                        channel = await guild.create_text_channel(str(message.author).replace("#", "-"), category=category, topic=str(message.author.id))
-                  embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
-                  embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                  await channel.send(embed=embed)
-                  for attachment in message.attachments:
-                        await channel.send(file=await attachment.to_file())
-                  await message.add_reaction("✅")
-                  return
-            
-      if message.channel.id == CREATE_DM_CHANNEL_ID:
-            member = message.guild.get_member(int(message.content))
-            category = discord.utils.get(message.guild.categories, name='COMMS')
-            channel = discord.utils.get(category.channels, topic=str(member.id))
-            if not channel:
-                  channel = await message.guild.create_text_channel(str(member).replace("#", "-"), category=category, topic=str(member.id))
-            await message.reply(f"DM Channel has been created at {channel.mention}")            
+    if SHOULD_LOG_ALL:
+        embed = discord.Embed(title="Message", description=message.content, color=0x5865f2)
+        embed.set_author(name=message.author.name, url=message.jump_url, icon_url=message.author.avatar.url)
+        embed.add_field(name="Created", value=f"<t:{int(message.created_at.timestamp())}>")
+        await logs.send(embed=embed)
 
-      if message.guild.id == GUILD_ID and message.channel.category:
-            if message.channel.category.name.lower() == "comms" and not message.author.bot:
-                  if int(message.channel.topic) == message.author.id:
-                        return
-                  else:
-                        member = message.guild.get_member(int(message.channel.topic))
-                        if message.content == ".sclose":
-                              embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
-                              embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                              await message.channel.delete()
-                              await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                              return
-                        channel = await member.create_dm()
-                        if message.content == ".close":
-                              embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                              embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                              await channel.send(embed=embed)
-                              await message.channel.delete()
-                              await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                              return
-                        embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
-                        embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-
-                        try:
-                              await channel.send(embed=embed)
-                              for attachment in message.attachments:
-                                    await channel.send(file=await attachment.to_file())
-                              await message.channel.send(embed=embed)
-                        except:
-                              perms = message.channel.overwrites_for(member)
-                              perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
-                              await message.channel.set_permissions(member, overwrite=perms)
-                              await message.channel.send(f"{member.mention}")
-                              return
-
-                        await message.delete()
-      channel_id_rep = message.channel.id
-      if (type(message.channel) == discord.threads.Thread):
-          # Threads have different IDs than parent channel
-          channel_id_rep = message.channel.parent_id
-      isrepchannel = not channel_id_rep in REP_DISABLE_CHANNELS
-      if gpdb.get_pref("rep_enabled", message.guild.id) and isrepchannel:
-            await handle_rep(message)
-      if message.channel.name == "counting":
-            await counting(message)
-      if message.guild.id == GUILD_ID:
-            await smdb.check_stick_msg(message)
-
-      if message.content.lower() == "pin":
-            if await is_helper(message.author) or await is_moderator(message.author) or await is_chat_moderator(message.author):
-                pins = await message.channel.pins()
-                pin_no = len(pins)
-                if pin_no == 50:
-                    await message.reply(f"Heads up! We've hit the pin limit for this channel. You can unpin some previously pinned messages to free up space.")	
-                msg = await message.channel.fetch_message(message.reference.message_id)
-                await msg.pin()
-                await msg.reply(f"This message has been pinned by {message.author.mention}.")
-                await message.delete()
-
-      if message.content.lower() == "unpin": 
-            if await is_helper(message.author) or await is_moderator(message.author) or await is_chat_moderator(message.author):
-                msg = await message.channel.fetch_message(message.reference.message_id)
-                await msg.unpin()
-                await msg.reply(f"This message has been unpinned by {message.author.mention}.")
-                await message.delete()
+    if not message.guild:
+        if message.content[0] == "/":
+                await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
+        else:   
+                guild = bot.get_guild(GUILD_ID)
+                category = discord.utils.get(guild.categories, name='COMMS')
+                channel = discord.utils.get(category.channels, topic=str(message.author.id))
+                if not channel:
+                    channel = await guild.create_text_channel(str(message.author).replace("#", "-"), category=category, topic=str(message.author.id))
+                embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
+                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                await channel.send(embed=embed)
+                for attachment in message.attachments:
+                    await channel.send(file=await attachment.to_file())
+                await message.add_reaction("✅")
+                return
         
-      if message.content.lower() == "stick":
-            if await is_moderator(message.author) or await is_bot_developer(message.author):
-                if message.reference is not None:
-                        reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                        if await smdb.stick(reference_msg):
-                            await message.reply(f"Sticky message added by {message.author.mention}.")
+    if message.channel.id == CREATE_DM_CHANNEL_ID:
+        member = message.guild.get_member(int(message.content))
+        category = discord.utils.get(message.guild.categories, name='COMMS')
+        channel = discord.utils.get(category.channels, topic=str(member.id))
+        if not channel:
+                channel = await message.guild.create_text_channel(str(member).replace("#", "-"), category=category, topic=str(member.id))
+        await message.reply(f"DM Channel has been created at {channel.mention}")            
 
-      if message.content.lower() == "unstick":
-            if await is_moderator(message.author) or await is_bot_developer(message.author):
-                if message.reference is not None:
+    if message.guild.id == GUILD_ID and message.channel.category:
+        if message.channel.category.name.lower() == "comms" and not message.author.bot:
+                if int(message.channel.topic) == message.author.id:
+                    return
+                else:
+                    member = message.guild.get_member(int(message.channel.topic))
+                    if message.content == ".sclose":
+                            embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
+                            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                            await message.channel.delete()
+                            await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                            return
+                    channel = await member.create_dm()
+                    if message.content == ".close":
+                            embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                            await channel.send(embed=embed)
+                            await message.channel.delete()
+                            await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                            return
+                    embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+
+                    try:
+                            await channel.send(embed=embed)
+                            for attachment in message.attachments:
+                                await channel.send(file=await attachment.to_file())
+                            await message.channel.send(embed=embed)
+                    except:
+                            perms = message.channel.overwrites_for(member)
+                            perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
+                            await message.channel.set_permissions(member, overwrite=perms)
+                            await message.channel.send(f"{member.mention}")
+                            return
+
+                    await message.delete()
+    channel_id_rep = message.channel.id
+    if (type(message.channel) == discord.threads.Thread):
+        # Threads have different IDs than parent channel
+        channel_id_rep = message.channel.parent_id
+    isrepchannel = not channel_id_rep in REP_DISABLE_CHANNELS
+    if gpdb.get_pref("rep_enabled", message.guild.id) and isrepchannel:
+        await handle_rep(message)
+    if message.channel.name == "counting":
+        await counting(message)
+    if message.guild.id == GUILD_ID:
+        await smdb.check_stick_msg(message)
+
+    if message.content.lower() == "pin":
+        if await is_helper(message.author) or await is_moderator(message.author) or await is_chat_moderator(message.author):
+            pins = await message.channel.pins()
+            pin_no = len(pins)
+            if pin_no == 50:
+                await message.reply(f"Heads up! We've hit the pin limit for this channel. You can unpin some previously pinned messages to free up space.")	
+            msg = await message.channel.fetch_message(message.reference.message_id)
+            await msg.pin()
+            await msg.reply(f"This message has been pinned by {message.author.mention}.")
+            await message.delete()
+
+    if message.content.lower() == "unpin": 
+        if await is_helper(message.author) or await is_moderator(message.author) or await is_chat_moderator(message.author):
+            msg = await message.channel.fetch_message(message.reference.message_id)
+            await msg.unpin()
+            await msg.reply(f"This message has been unpinned by {message.author.mention}.")
+            await message.delete()
+    
+    if message.content.lower() == "stick":
+        if await is_moderator(message.author) or await is_bot_developer(message.author):
+            if message.reference is not None:
                     reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                    if await smdb.unstick(reference_msg):
-                        await message.reply(f"Sticky message removed by {message.author.mention}.")            
+                    if await smdb.stick(reference_msg):
+                        await message.reply(f"Sticky message added by {message.author.mention}.")
+
+    if message.content.lower() == "unstick":
+        if await is_moderator(message.author) or await is_bot_developer(message.author):
+            if message.reference is not None:
+                reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                if await smdb.unstick(reference_msg):
+                    await message.reply(f"Sticky message removed by {message.author.mention}.")            
 
 
-      if not keywords.get(message.guild.id, None): 
-            keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
-      if message.content.lower() in keywords[message.guild.id].keys():
-            autoreply = keywords[message.guild.id][message.content.lower()]
-            if not autoreply.startswith("http"):  # If autoreply is a link/image/media
-                  keyword_embed = discord.Embed(description = autoreply, colour = discord.Colour.blue())
-                  await message.channel.send(embed = keyword_embed)
-            else:
-                  await message.channel.send(autoreply)
+    if not keywords.get(message.guild.id, None): 
+        keywords[message.guild.id] = kwdb.get_keywords(message.guild.id)
+    if message.content.lower() in keywords[message.guild.id].keys():
+        autoreply = keywords[message.guild.id][message.content.lower()]
+        if not autoreply.startswith("http"):  # If autoreply is a link/image/media
+                keyword_embed = discord.Embed(description = autoreply, colour = discord.Colour.blue())
+                await message.channel.send(embed = keyword_embed)
+        else:
+                await message.channel.send(autoreply)
 
-
-
-      await bot.process_commands(message)                        
-                        
+    await bot.process_commands(message)
