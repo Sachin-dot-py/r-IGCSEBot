@@ -8,7 +8,7 @@ class Question:
         self.embed = embed
         self.view = view
 
-def build_question(question_pages, question_number: int):
+def build_question(interaction: discord.Interaction, question_pages, question_number: int):
     question_page = question_pages[question_number]
     html = question_page[0]["problem"][0]["body"]
     pq = PyQuery(html)
@@ -18,39 +18,43 @@ def build_question(question_pages, question_number: int):
         option_html = question_page[0][f"choice{item}"][0]["body"]
         pq = PyQuery(option_html)
         options.append(pq.text())
-    view = Choice(options, order.index(question_page[0]["correctChoice"]), question_pages, question_number)
+    view = Choice(interaction, options, order.index(question_page[0]["correctChoice"]), question_pages, question_number)
     return Question(embed, view)
 
 class MultiChoiceButton(discord.ui.Button):
-    def __init__(self, name: str):
+    def __init__(self, name: str, interaction: discord.Interaction):
         super().__init__(label=name, style=discord.ButtonStyle.blurple)
+        self.author = interaction.user
     
     async def callback(self, interaction: discord.Interaction):
+        if self.author.id != interaction.user.id:
+            return await interaction.send(content="This is not for you!", ephemeral=True)
         view = self.view
         await view.check_answer(interaction, self.label)
 
 class SkipButon(discord.ui.Button):
-    def __init__(self, name: str, question_pages, question_number: int):
+    def __init__(self, name: str, interaction: discord.Interaction, question_pages, question_number: int):
         super().__init__(label=name, style=discord.ButtonStyle.gray)
+        self.author = interaction.user
         self.question_pages = question_pages
         self.question_number = question_number
     
     async def callback(self, interaction: discord.Interaction):
-        question = build_question(self.question_pages, self.question_number + 1)
+        if self.author.id != interaction.user.id:
+            return await interaction.send(content="This is not for you!", ephemeral=True)
+        question = build_question(interaction, self.question_pages, self.question_number + 1)
         await interaction.edit(embed=question.embed, view=question.view)
 
 class Choice(discord.ui.View):
-    def __init__(self, options, correct_choice: int, question_pages, question_number: int):
+    def __init__(self, interaction: discord.Interaction, options, correct_choice: int, question_pages, question_number: int):
         super().__init__()
         self.correct_choice = correct_choice
         self.options = options
         for option in options:
-            self.add_item(MultiChoiceButton(option))
-        self.add_item(SkipButon("Next", question_pages, question_number))
+            self.add_item(MultiChoiceButton(option, interaction))
+        self.add_item(SkipButon("Next", interaction, question_pages, question_number))
 
     async def check_answer(self, interaction: discord.Interaction, choice):
-        if not await self.interaction_check(interaction):
-            return
         selected_choice = self.options.index(choice)
         for i, item in enumerate(self.children):
             if item.label != "Next":
@@ -62,7 +66,9 @@ class Choice(discord.ui.View):
                     item.style = discord.ButtonStyle.red
             else:
                 item.style = discord.ButtonStyle.gray
-        embed = discord.Embed(title="Result", description=f"You selected **{choice}**! The correct answer was **{self.children[self.correct_choice].label}**!", color=0x5865f2)
+        embed = discord.Embed(title="Result", description=f"Your answer was {"correct" if selected_choice == self.correct_choice else "incorrect"}!", color=0x5865f2)
+        embed.add_field(name="Your Answer", value=choice)
+        embed.add_field(name="Correct Answer", value=self.children[self.correct_choice].label)
         await interaction.edit(embed=embed, view=self)
 
 @bot.slash_command(description="Answer multiple choice questions from a savemyexams link")
@@ -75,5 +81,5 @@ async def mcq(interaction: discord.Interaction, url: str = discord.SlashOption(n
     data = json.loads(inner_html)
     question_pages = data["props"]["pageProps"]["pages"]
     question_number = 0
-    question = build_question(question_pages, question_number)
+    question = build_question(interaction, question_pages, question_number)
     await interaction.send(embed=question.embed, view=question.view)

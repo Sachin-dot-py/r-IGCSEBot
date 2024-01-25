@@ -1,6 +1,6 @@
 import os
 
-BETA = False # toggle
+BETA = True # toggle
 
 BOTMAIN = 861445044790886467
 BOTBETA = 947857467726000158
