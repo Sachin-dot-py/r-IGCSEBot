@@ -1,6 +1,6 @@
 import os
 
-BETA = False # toggle
+BETA = os.environ.get("BETA") != 'False'
 
 BOTMAIN = 861445044790886467
 BOTBETA = 947857467726000158

@@ -26,11 +26,18 @@ async def gostudy(interaction: discord.Interaction,
       if user == None:
             user_id = interaction.user.id
             user = interaction.guild.get_member(user_id)
-            dm = await user.create_dm()    
+            dm = await user.create_dm()
+            user_already_fmuted = mute.find_one({"user_id": str(user_id)})
+            if user_already_fmuted:
+                  if int(user_already_fmuted["unmute_time"]) >= ((int(time.time()) + 1) + time_to_mute) :
+                        await interaction.send("You're already muted, and you cannot reduce the time of your mute. Go Study!", ephemeral=True)
+                        return
             view = discord.ui.View(timeout=None)
             proceedBTN = discord.ui.Button(label="Proceed", style=discord.ButtonStyle.blurple)
             cancelBTN = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.red)
             async def proceedCallBack(interaction):
+                  if user_already_fmuted:
+                        mute.delete_many({"user_id": str(user_id)})
                   unmute_time = ((int(time.time()) + 1) + time_to_mute)
                   await message.delete()
                   await user.add_roles(forced_mute_role)
@@ -61,10 +68,17 @@ async def gostudy(interaction: discord.Interaction,
             user_id = user.id
             user = interaction.guild.get_member(user_id)
             dm = await user.create_dm()
+            user_already_fmuted = mute.find_one({"user_id": str(user_id)})
+            if user_already_fmuted:
+                  if int(user_already_fmuted["unmute_time"]) >= ((int(time.time()) + 1) + time_to_mute) :
+                        await interaction.send("This user is already muted and you cannot reduce the time of their mute. LET THEM STUDY!", ephemeral=True)
+                        return
             view = discord.ui.View(timeout=None)
             proceedBTN = discord.ui.Button(label="Proceed", style=discord.ButtonStyle.blurple)
             cancelBTN = discord.ui.Button(label="Cancel", style=discord.ButtonStyle.red)
             async def proceedCallBack(interaction):
+                  if user_already_fmuted:
+                        mute.delete_many({"user_id": str(user_id)})
                   unmute_time = int(((time.time()) + 1) + time_to_mute)
                   mute.insert_one({"_id": timern, "user_id": str(user_id), "unmute_time": str(unmute_time), "muted": True})                  
                   await message.delete()

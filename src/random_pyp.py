@@ -12,6 +12,9 @@ async def random_pyp(interaction: discord.Interaction,
             YEARS = ["2018", "2019", "2020", "2021", "2022", "2023"]
             PAPER_VARIANT = ["1", "2", "3"]
             SESSIONS = ["s", "w", "m"]
+            if programme == "O-Level":
+                SESSIONS = ["s", "w"]
+              
             PAPER_VARIANT_TWO = ["1", "2"]
 
 
