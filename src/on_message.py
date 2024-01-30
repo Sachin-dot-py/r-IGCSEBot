@@ -3,8 +3,31 @@ from data import REP_DISABLE_CHANNELS
 from bot import discord, bot, keywords
 from mongodb import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper, is_chat_moderator, is_bot_developer
+from typing import cast
 
-async def counting(message):
+async def create_dm_thread(message: discord.Message, is_dm: bool):
+    member_id: int = 0
+    if is_dm:
+        member_id = message.author.id
+    else:
+        member_id = int(message.content)
+    guild = cast(discord.guild, bot.get_guild(GUILD_ID))
+    member = cast(discord.Member, guild.get_member(member_id))
+    channel = cast(discord.TextChannel, guild.get_channel(CREATE_DM_CHANNEL_ID))
+    threads = channel.threads
+    thread = discord.utils.get(threads, name=str(member.id))
+    if thread is None:
+        if is_dm:
+            msg = await channel.send(content=str(member_id))
+            thread = await msg.create_thread(name=str(member.id))
+        else:
+            thread = await message.create_thread(name=str(member.id))
+            await message.reply(f"DM Channel has been created at {thread.mention}!")
+    else:
+        await message.reply(f"DM Channel already exists for that user at {thread.mention}!")
+    return thread
+
+async def counting(message: discord.Message):
     if message.author.bot:
         await message.delete()
         return
@@ -31,7 +54,7 @@ async def counting(message):
     except:
         await message.delete()
         
-async def is_welcome(text):
+async def is_welcome(text: str):
     alternatives = ["you're welcome", "your welcome", "ur welcome", "no problem"]
     alternatives_2 = ["np", "np!", "yw", "yw!"]
     lowercase = text.lower()
@@ -46,8 +69,8 @@ async def is_welcome(text):
                 return True
     return False	  
 
-async def is_thanks(text):
-    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thankss" "thanku", "tyvm", "thankyou"]
+async def is_thanks(text: str):
+    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thanku", "tyvm", "thankyou", "ty!"]
     lowercase = text.lower()
     if "ty" in lowercase.split():
         return True
@@ -56,7 +79,7 @@ async def is_thanks(text):
             if alternative in lowercase:
                 return True
             
-async def handle_rep(message):
+async def handle_rep(message: discord.Message):
       repped = []
       if message.reference:
             msg = await message.channel.fetch_message(message.reference.message_id)
@@ -65,22 +88,22 @@ async def handle_rep(message):
             repped = [message.author]
       elif await is_thanks(message.content):
             for mention in message.mentions:
-                  if mention == message.author:
-                        await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep yourself!")
-                  elif mention.bot:
-                        await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep a bot!")
-                  else:
-                        repped.append(mention)
+                if mention == message.author:
+                    await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep yourself!")
+                elif mention.bot:
+                    await message.channel.send(f"Uh-oh, {message.author.mention}, you can't rep a bot!")
+                else:
+                    repped.append(mention)
                     
       if repped and not BETA:
             for user in repped:
-                  rep = repdb.add_rep(user.id, message.guild.id)
-                  if rep == 100 or rep == 500 or rep == 1000:
-                        role = discord.utils.get(user.guild.roles, name=f"{rep}+ Rep Club")
-                        await user.add_roles(role)
-                        await message.channel.send(f"Gave +1 Rep to {user.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
-                  else:
-                        await message.channel.send(f"Gave +1 Rep to {user} ({rep})")
+                rep = repdb.add_rep(user.id, message.guild.id)
+                if rep == 100 or rep == 500 or rep == 1000:
+                    role = discord.utils.get(user.guild.roles, name=f"{rep}+ Rep Club")
+                    await user.add_roles(role)
+                    await message.channel.send(f"Gave +1 Rep to {user.mention} ({rep})\nWelcome to the {rep}+ Rep Club!")
+                else:
+                    await message.channel.send(f"Gave +1 Rep to {user} ({rep})")
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -96,65 +119,56 @@ async def on_message(message: discord.Message):
 
     if not message.guild:
         if message.content[0] == "/":
-                await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
-        else:   
-                guild = bot.get_guild(GUILD_ID)
-                category = discord.utils.get(guild.categories, name='COMMS')
-                channel = discord.utils.get(category.channels, topic=str(message.author.id))
-                if not channel:
-                    channel = await guild.create_text_channel(str(message.author).replace("#", "-"), category=category, topic=str(message.author.id))
-                embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
-                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                await channel.send(embed=embed)
-                for attachment in message.attachments:
-                    await channel.send(file=await attachment.to_file())
-                await message.add_reaction("✅")
-                return
+            await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
+        else:
+            thread = await create_dm_thread(message, True)
+            embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
+            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+            await thread.send(embed=embed)
+            for attachment in message.attachments:
+                await thread.send(file=await attachment.to_file())
+            await message.add_reaction("✅")
+            return
         
     if message.channel.id == CREATE_DM_CHANNEL_ID:
-        member = message.guild.get_member(int(message.content))
-        category = discord.utils.get(message.guild.categories, name='COMMS')
-        channel = discord.utils.get(category.channels, topic=str(member.id))
-        if not channel:
-                channel = await message.guild.create_text_channel(str(member).replace("#", "-"), category=category, topic=str(member.id))
-        await message.reply(f"DM Channel has been created at {channel.mention}")            
+        await create_dm_thread(message, False)
 
     if message.guild.id == GUILD_ID and message.channel.category:
         if message.channel.category.name.lower() == "comms" and not message.author.bot:
-                if int(message.channel.topic) == message.author.id:
-                    return
-                else:
-                    member = message.guild.get_member(int(message.channel.topic))
-                    if message.content == ".sclose":
-                            embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
-                            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                            await message.channel.delete()
-                            await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                            return
-                    channel = await member.create_dm()
-                    if message.content == ".close":
-                            embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                            await channel.send(embed=embed)
-                            await message.channel.delete()
-                            await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                            return
-                    embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
+            if int(message.channel.topic) == message.author.id:
+                return
+            else:
+                member = cast(discord.Member, message.guild.get_member(int(message.channel.topic)))
+                if message.content == ".sclose":
+                    embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
                     embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                    await message.channel.delete()
+                    await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                    return
+                channel = await member.create_dm()
+                if message.content == ".close":
+                    embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                    await channel.send(embed=embed)
+                    await message.channel.delete()
+                    await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                    return
+                embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
+                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
 
-                    try:
-                            await channel.send(embed=embed)
-                            for attachment in message.attachments:
-                                await channel.send(file=await attachment.to_file())
-                            await message.channel.send(embed=embed)
-                    except:
-                            perms = message.channel.overwrites_for(member)
-                            perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
-                            await message.channel.set_permissions(member, overwrite=perms)
-                            await message.channel.send(f"{member.mention}")
-                            return
+                try:
+                    await channel.send(embed=embed)
+                    for attachment in message.attachments:
+                        await channel.send(file=await attachment.to_file())
+                    await message.channel.send(embed=embed)
+                except:
+                    perms = message.channel.overwrites_for(member)
+                    perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
+                    await message.channel.set_permissions(member, overwrite=perms)
+                    await message.channel.send(f"{member.mention}")
+                    return
 
-                    await message.delete()
+                await message.delete()
     channel_id_rep = message.channel.id
     if (type(message.channel) == discord.threads.Thread):
         # Threads have different IDs than parent channel
@@ -188,9 +202,9 @@ async def on_message(message: discord.Message):
     if message.content.lower() == "stick":
         if await is_moderator(message.author) or await is_bot_developer(message.author):
             if message.reference is not None:
-                    reference_msg = await message.channel.fetch_message(message.reference.message_id)
-                    if await smdb.stick(reference_msg):
-                        await message.reply(f"Sticky message added by {message.author.mention}.")
+                reference_msg = await message.channel.fetch_message(message.reference.message_id)
+                if await smdb.stick(reference_msg):
+                    await message.reply(f"Sticky message added by {message.author.mention}.")
 
     if message.content.lower() == "unstick":
         if await is_moderator(message.author) or await is_bot_developer(message.author):
