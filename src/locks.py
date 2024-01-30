@@ -151,12 +151,13 @@ async def Forumlockcommand(interaction: discord.Interaction, threadinput: discor
         db = client.IGCSEBot
         lock = db["forumlock"]
 
-        lock.insert_one({"_id": "l" + str(timenow), "thread_id": threadinput.id,
+        lock.insert_many([
+                {"_id": "l" + str(timenow), "thread_id": threadinput.id,
                         "unlock": False, "time": locktime,
-                        "resolved": False})
-
-        lock.insert_one({"_id": "u" + str(timenow), "thread_id": threadinput.id,
+                        "resolved": False},
+                {"_id": "u" + str(timenow), "thread_id": threadinput.id,
                         "unlock": True, "time": unlocktime,
-                        "resolved": False})
+                        "resolved": False}     
+                ])
 
         await threadinput.send(f"this thread has been scheduled to lock <t:{max(locktime, timenow)}:R> successfully.")
