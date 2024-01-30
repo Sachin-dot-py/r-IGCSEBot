@@ -5,7 +5,7 @@ from data import helper_roles, reactionroles_data, study_roles, subreddits, CIE_
 from roles import is_moderator, is_server_booster, is_helper, get_role, has_role, is_bot_developer, is_chat_moderator
 from mongodb import gpdb,repdb,rrdb,smdb, kwdb
 
-# Importing Files 
+# Importing Files
 import moderation
 import auto_moderation
 import on_member_join
@@ -360,6 +360,13 @@ async def feedback(interaction: discord.Interaction, target = discord.SlashOptio
           else:
                FEEDBACK_CHANNEL_ID = 1057505291014524939
                FEEDBACK_NAME = "Repository Feedback"
+
+@bot.command(name='sync_commands')
+async def sync_commands(ctx):
+    if not await is_moderator(ctx.author) and not await is_bot_developer(ctx.author):
+        return    
+    await ctx.guild.sync_application_commands()
+    await ctx.message.reply('Slash Commands Synchronized !!')
 
 @bot.slash_command(description="Get a random fun fact")
 async def funfact(interaction: discord.Interaction):
