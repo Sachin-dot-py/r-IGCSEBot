@@ -1,7 +1,6 @@
 from bot import bot, discord, commands, traceback
 from constants import GUILD_ID, BOTLOG_CHANNEL_ID
 
-
 @bot.event
 async def on_command_error(ctx, exception):
     if isinstance(exception, commands.CommandNotFound):

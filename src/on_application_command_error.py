@@ -1,7 +1,6 @@
 from bot import bot, discord, traceback
 from constants import GUILD_ID, BOTLOG_CHANNEL_ID
 
-
 @bot.event
 async def on_application_command_error(interaction, exception):
     description = f"Channel: {interaction.channel.mention}\nUser: {interaction.user.mention}\nGuild: {interaction.guild.name} ({interaction.guild.id})\n\nError:\n```{''.join(traceback.format_exception(exception, exception, exception.__traceback__))}```"
