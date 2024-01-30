@@ -24,7 +24,7 @@ async def create_dm_thread(message: discord.Message, is_dm: bool):
             thread = await message.create_thread(name=str(member.id))
             await message.reply(f"DM Channel has been created at {thread.mention}!")
     else:
-        if is_dm:
+        if not is_dm:
             await message.reply(f"DM Channel already exists for that user at {thread.mention}!")
     return thread
 
