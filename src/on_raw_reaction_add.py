@@ -5,10 +5,13 @@ from roles import is_moderator
 
 @bot.event
 async def on_raw_reaction_add(reaction):
-    guild = bot.get_guild(GUILD_ID)
-    user = await guild.fetch_member(reaction.user_id)
-    if user.bot:
+    user = reaction.member
+
+    if not user or user.bot: # reaction.member = None implies that the reaction is in a DM
         return
+    
+    guild = user.guild
+
     is_rr = rrdb.get_rr(str(reaction.emoji), reaction.message_id)
     if is_rr is not None:
         role = guild.get_role(is_rr["role"])
