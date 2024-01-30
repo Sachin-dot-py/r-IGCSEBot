@@ -4,6 +4,7 @@ import time, traceback
 from data import AUTO_SLOWMODE_CHANNELS, helper_roles
 import datetime
 
+
 async def togglechannellock(channel_id, unlock, *, unlocktime=0):
     everyone = bot.get_guild(GUILD_ID).default_role
     Logging = bot.get_channel(MODLOG_CHANNEL_ID)
@@ -13,23 +14,43 @@ async def togglechannellock(channel_id, unlock, *, unlocktime=0):
     overwrite.send_messages_in_threads = unlock
     overwrite.send_messages = unlock
     try:
-        await channel.set_permissions(everyone, overwrite=overwrite)    
+        await channel.set_permissions(everyone, overwrite=overwrite)
         if unlock:
-            embed = discord.Embed(description="Channel Unlocked", colour=discord.Colour.green())                
-            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed = discord.Embed(
+                description="Channel Unlocked", colour=discord.Colour.green()
+            )
+            embed.set_author(
+                name="MongoDB#0082",
+                icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&",
+            )
             embed.add_field(name="Channel", value=f"<#{channel_id}>", inline=False)
             embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```", inline=False)
+            embed.add_field(
+                name="ID",
+                value=f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```",
+                inline=False,
+            )
             embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
             await Logging.send(embed=embed)
             await channel.send(f"Channel has been unlocked.")
         else:
-            embed = discord.Embed(description="Channel Locked", colour=discord.Colour.red())                
-            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed = discord.Embed(
+                description="Channel Locked", colour=discord.Colour.red()
+            )
+            embed.set_author(
+                name="MongoDB#0082",
+                icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&",
+            )
             embed.add_field(name="Channel", value=f"<#{channel_id}>", inline=False)
-            embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
+            embed.add_field(
+                name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False
+            )
             embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```", inline=False)
+            embed.add_field(
+                name="ID",
+                value=f"```py\nUser = {bot.user.id}\nChannel = {channel_id}```",
+                inline=False,
+            )
             embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
             await Logging.send(embed=embed)
             await channel.send(f"Channel has been locked.")
@@ -40,43 +61,65 @@ async def togglechannellock(channel_id, unlock, *, unlocktime=0):
         print(traceback.format_exc())
         print("failed to set permissions")
 
+
 async def toggleforumlock(thread_id, unlock, unlocktime):
     Logging = bot.get_channel(MODLOG_CHANNEL_ID)
     timern = int(time.time()) + 1
     thread = bot.get_channel(thread_id)
     try:
-        thread = await thread.edit(locked= not unlock)
+        thread = await thread.edit(locked=not unlock)
         if unlock:
-            embed = discord.Embed(description="Thread Unlocked", colour=discord.Colour.green())                
-            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed = discord.Embed(
+                description="Thread Unlocked", colour=discord.Colour.green()
+            )
+            embed.set_author(
+                name="MongoDB#0082",
+                icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&",
+            )
             embed.add_field(name="Channel", value=f"<#{thread_id}>", inline=False)
             embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nThread = {thread_id}```", inline=False)
+            embed.add_field(
+                name="ID",
+                value=f"```py\nUser = {bot.user.id}\nThread = {thread_id}```",
+                inline=False,
+            )
             embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
             await Logging.send(embed=embed)
             await thread.send(f"Thread has been unlocked.")
         else:
-            embed = discord.Embed(description="Thread Locked", colour=discord.Colour.red())                
-            embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+            embed = discord.Embed(
+                description="Thread Locked", colour=discord.Colour.red()
+            )
+            embed.set_author(
+                name="MongoDB#0082",
+                icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&",
+            )
             embed.add_field(name="Thread", value=f"<#{thread_id}>", inline=False)
-            embed.add_field(name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False)
+            embed.add_field(
+                name="Unlock time", value=f"<t:{unlocktime}:R>", inline=False
+            )
             embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-            embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nThread = {thread_id}```", inline=False)
+            embed.add_field(
+                name="ID",
+                value=f"```py\nUser = {bot.user.id}\nThread = {thread_id}```",
+                inline=False,
+            )
             embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
             await Logging.send(embed=embed)
             await thread.send(f"Thread has been locked.")
             time.sleep(1)
             await thread.send(f"Unlocking thread <t:{unlocktime}:R>.")
-    
+
     except Exception as e:
         print(traceback.format_exc())
         print(e)
+
 
 @tasks.loop(hours=720)
 async def autorefreshhelpers():
     changed = []
     Logging = bot.get_channel(MODLOG_CHANNEL_ID)
-    timenow = int(time.time()) + 1    
+    timenow = int(time.time()) + 1
     for chnl, role in helper_roles.items():
         try:
             helper_role = discord.utils.get(bot.get_guild(GUILD_ID).roles, id=role)
@@ -85,7 +128,9 @@ async def autorefreshhelpers():
             new_topic = None
             for line in channel.topic.split("\n"):
                 if "No. of helpers" in line:
-                    new_topic = channel.topic.replace(line, f"No. of helpers: {no_of_users}")
+                    new_topic = channel.topic.replace(
+                        line, f"No. of helpers: {no_of_users}"
+                    )
                     break
             else:
                 new_topic = f"{channel.topic}\nNo. of helpers: {no_of_users}"
@@ -99,17 +144,26 @@ async def autorefreshhelpers():
         embed.set_author(name=str(bot.user), icon_url=bot.user.display_avatar.url)
         embed.add_field(name="Channels", value=", ".join(changed), inline=False)
         embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
-        embed.add_field(name="ID", value= f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```", inline=False)
+        embed.add_field(
+            name="ID",
+            value=f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```",
+            inline=False,
+        )
         embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
-        await Logging.send(embed=embed)  
+        await Logging.send(embed=embed)
     else:
         embed = discord.Embed(description="Helpers Refreshed !!", color=0x51ADBB)
         embed.set_author(name=str(bot.user), icon_url=bot.user.display_avatar.url)
         embed.add_field(name="Channels", value="no changes were made.", inline=False)
         embed.add_field(name="Date", value=f"<t:{timenow}:F>", inline=False)
-        embed.add_field(name="ID", value= f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```", inline=False)
+        embed.add_field(
+            name="ID",
+            value=f"```py\nBot = {bot.user.id}\nChannel = 697072778553065542```",
+            inline=False,
+        )
         embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
-        await Logging.send(embed=embed)              
+        await Logging.send(embed=embed)
+
 
 @tasks.loop(seconds=20)
 async def checklock():
@@ -122,7 +176,9 @@ async def checklock():
         for result in results:
             if result["time"] <= time.time():
                 ult = clocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-                await togglechannellock(result["channel_id"], result["unlock"], unlocktime=ult)
+                await togglechannellock(
+                    result["channel_id"], result["unlock"], unlocktime=ult
+                )
 
                 clocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
@@ -130,11 +186,14 @@ async def checklock():
         for result in results:
             if result["time"] <= time.time():
                 ult = flocks.find_one({"_id": "u" + result["_id"][1:]})["time"]
-                await toggleforumlock(result["thread_id"], result["unlock"], unlocktime=ult)
+                await toggleforumlock(
+                    result["thread_id"], result["unlock"], unlocktime=ult
+                )
                 flocks.update_one({"_id": result["_id"]}, {"$set": {"resolved": True}})
 
     except Exception:
         print(traceback.format_exc())
+
 
 @tasks.loop(seconds=20)
 async def checkmute():
@@ -156,20 +215,33 @@ async def checkmute():
                     return
                 forced_mute_role = guild.get_role(FORCED_MUTE_ROLE)
                 if forced_mute_role not in user.roles:
-                   mute.delete_many({"user_id": str(user_id)})
-                   return
+                    mute.delete_many({"user_id": str(user_id)})
+                    return
                 await user.remove_roles(forced_mute_role)
-                #mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
-                embed = discord.Embed(description="Go Study Mode Deactivated", colour=discord.Colour.green())                
-                embed.set_author(name="MongoDB#0082", icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&")
+                # mute.update_one({"_id": result["_id"]}, {"$set": {"muted": False}})
+                embed = discord.Embed(
+                    description="Go Study Mode Deactivated",
+                    colour=discord.Colour.green(),
+                )
+                embed.set_author(
+                    name="MongoDB#0082",
+                    icon_url="https://cdn.discordapp.com/attachments/947859228649992213/1196753678342819933/mongodb.png?ex=65b8c6b7&is=65a651b7&hm=db7fdb12435ba54299497dfb26f65dac5993caa8b48b976cf01238233c54a508&",
+                )
                 embed.add_field(name="User", value=f"{user.mention}", inline=False)
                 embed.add_field(name="Date", value=f"<t:{timern}:F>", inline=False)
-                embed.add_field(name="ID", value= f"```py\nUser = {bot.user.id}\nRole = {FORCED_MUTE_ROLE}```", inline=False)
-                embed.set_footer(text=f"{bot.user}", icon_url=bot.user.display_avatar.url)
+                embed.add_field(
+                    name="ID",
+                    value=f"```py\nUser = {bot.user.id}\nRole = {FORCED_MUTE_ROLE}```",
+                    inline=False,
+                )
+                embed.set_footer(
+                    text=f"{bot.user}", icon_url=bot.user.display_avatar.url
+                )
                 await Logging.send(embed=embed)
                 mute.delete_one({"_id": result["_id"]})
         except Exception:
             print(traceback.format_exc())
+
 
 @tasks.loop(seconds=30)
 async def handle_slowmode():
@@ -178,7 +250,8 @@ async def handle_slowmode():
         current_time = datetime.datetime.now()
         time_15s_ago = current_time - datetime.timedelta(seconds=15)
         channel = bot.get_channel(channel_id)
-        if not channel: continue
+        if not channel:
+            continue
         messages_in15s = await channel.history(after=time_15s_ago, limit=300).flatten()
         number_of_messages = len(messages_in15s)
         if number_of_messages <= 10:
@@ -190,18 +263,23 @@ async def handle_slowmode():
         user_messages = {}
 
         for message in messages_in15s:
-            if message.author.bot: continue
+            if message.author.bot:
+                continue
             if message.author.id not in user_messages:
                 user_messages[message.author.id] = 1
             else:
                 user_messages[message.author.id] += 1
-        
-        sorted_user_messages = dict(sorted(user_messages.items(), key=lambda x: x[1], reverse=True))
+
+        sorted_user_messages = dict(
+            sorted(user_messages.items(), key=lambda x: x[1], reverse=True)
+        )
         for user_id, message_count in sorted_user_messages.items():
             if message_count >= 12:
-                message = await channel.send(f"<@{user_id}> You are sending too many messages. Please slow down.")
+                message = await channel.send(
+                    f"<@{user_id}> You are sending too many messages. Please slow down."
+                )
                 await message.delete(delay=10)
-            
+
         if number_of_messages > 60:
             # 4 messages per second, will likely never happen
             slowmode = 120
@@ -214,6 +292,6 @@ async def handle_slowmode():
             slowmode = 15
         elif number_of_messages > 15:
             slowmode = 7
-            
+
         if channel.slowmode_delay != slowmode:
             await channel.edit(slowmode_delay=slowmode)
