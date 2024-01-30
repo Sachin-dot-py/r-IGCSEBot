@@ -28,11 +28,7 @@ class GuildPreferencesDB:
         self.pref = self.db.guild_preferences
 
     def set_pref(self, pref: str, pref_value, guild_id: int):
-        if self.pref.find_one({"guild_id": guild_id}):
-            result = self.pref.update_one({"guild_id": guild_id}, {"$set": {pref: pref_value}})
-        else:
-            result = self.pref.insert_one({"guild_id": guild_id, pref: pref_value})
-        return result
+        return self.pref.find_one_and_update({"guild_id": guild_id}, {"$set": {pref: pref_value}}, upsert=True)
 
     def get_pref(self, pref: str, guild_id: int):
         result = self.pref.find_one({"guild_id": guild_id})
@@ -64,12 +60,11 @@ class ReputationDB:
             return result['rep']
 
     def change_rep(self, user_id, new_rep, guild_id):
-        result = self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
+        self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
         return new_rep
 
     def delete_user(self, user_id: int, guild_id: int):
-        result = self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
-        return result
+        return self.reputation.delete_one({"user_id": user_id, "guild_id": guild_id})
 
     def add_rep(self, user_id: int, guild_id: int):
         rep = self.get_rep(user_id, guild_id)
@@ -162,12 +157,10 @@ class KeywordsDB:
         return self.keywords.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0})
 
     def add_keyword(self, keyword: str, autoreply: str, guild_id: int):
-        result = self.keywords.insert_one({"keyword": keyword.lower(), "autoreply": autoreply, "guild_id": guild_id})
-        return result
+        return self.keywords.insert_one({"keyword": keyword.lower(), "autoreply": autoreply, "guild_id": guild_id})
 
     def remove_keyword(self, keyword: str, guild_id: int):
-        result = self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
-        return result
+        return self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
 
 kwdb = KeywordsDB(LINK)
 
