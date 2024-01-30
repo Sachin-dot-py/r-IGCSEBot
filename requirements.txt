@@ -6,3 +6,4 @@ pyjokes
 pytimeparse
 pubchempy
 pyquery
+python-dotenv

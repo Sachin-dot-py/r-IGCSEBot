@@ -16,7 +16,7 @@ async def build_question(interaction: discord.Interaction, question_pages, quest
     question_page = question_pages[question_number]
     html = question_page[0]["problem"][0]["body"]
     pq = PyQuery(html)
-    embed = discord.Embed(title=f"Question {question_number + 1}", description=f"{str(pq.text()).replace("  ", " ").replace("\n", "\n\n")}", color=0x5865f2)
+    embed = discord.Embed(title=f"Question {question_number + 1}", description=str(pq.text()).replace("  ", " ").replace("\n", "\n\n"), color=0x5865f2)
     options = []
     try:
         for item in order:

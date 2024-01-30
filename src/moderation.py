@@ -112,21 +112,23 @@ async def timeout(interaction: discord.Interaction,
         await interaction.send(f"Sorry {mod}, you don't have the permission to perform this action.", ephemeral=True)
         return
     await interaction.response.defer()
-    if time_.lower() == "unspecified" or time_.lower() == "permanent" or time_.lower() == "undecided":
+    
+    lowered_time = time_.lower()
+    if lowered_time in ["unspecified", "permanent", "undecided"]:
         seconds = 86400 * 28
     else:
         seconds = 0
-        if "d" in time_:
-            seconds += int(time_.split("d")[0]) * 86400
-            time_ = time_.split("d")[1]
-        if "h" in time_:
-            seconds += int(time_.split("h")[0]) * 3600
-            time_ = time_.split("h")[1]
-        if "m" in time_:
-            seconds += int(time_.split("m")[0]) * 60
-            time_ = time_.split("m")[1]
-        if "s" in time_:
-            seconds += int(time_.split("s")[0])
+        for character in time_: # Side effect of this is that 9d9d or 10h10h would work, but that's fine?
+            match character:
+                case "d":
+                    seconds += int(time_.split("d")[0]) * 86400
+                case "h":
+                    seconds += int(time_.split("h")[0]) * 3600
+                case "m":
+                    seconds += int(time_.split("m")[0]) * 60
+                case "s":
+                    seconds += int(time_.split("s")[0])
+    
     if seconds == 0:
         await interaction.send("You can't timeout for zero seconds!", ephemeral=True)
         return
