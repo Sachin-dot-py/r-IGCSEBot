@@ -185,7 +185,7 @@ async def handle_slowmode():
             slowmode = 0
             if channel.slowmode_delay != 0:
                 await channel.edit(slowmode_delay=slowmode)
-            continue
+            return
 
         user_messages = {}
 
@@ -201,18 +201,18 @@ async def handle_slowmode():
             if message_count >= 12:
                 message = await channel.send(f"<@{user_id}> You are sending too many messages. Please slow down.")
                 await message.delete(delay=10)
-            
-        if number_of_messages > 60:
+        
+        if number_of_messages >= 60:
             # 4 messages per second, will likely never happen
             slowmode = 120
-        elif number_of_messages > 45:
+        elif number_of_messages >= 45:
             # chat is absolute chaos
             slowmode = 60
-        elif number_of_messages > 30:
+        elif number_of_messages >= 30:
             slowmode = 45
-        elif number_of_messages > 20:
+        elif number_of_messages >= 20:
             slowmode = 15
-        elif number_of_messages > 15:
+        elif number_of_messages >= 15:
             slowmode = 7
             
         if channel.slowmode_delay != slowmode:
