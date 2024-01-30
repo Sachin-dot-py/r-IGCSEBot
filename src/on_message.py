@@ -108,10 +108,10 @@ async def handle_rep(message: discord.Message):
 @bot.event
 async def on_message(message: discord.Message):
     if message.author.bot: return
-    igcse = await bot.fetch_guild(GUILD_ID)
-    logs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
 
     if SHOULD_LOG_ALL:
+        igcse = bot.get_guild(GUILD_ID) or await bot.fetch_guild(GUILD_ID)
+        logs = igcse.get_channel(BOTLOG_CHANNEL_ID) or await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
         embed = discord.Embed(title="Message", description=message.content, color=0x5865f2)
         embed.set_author(name=message.author.name, url=message.jump_url, icon_url=message.author.avatar.url)
         embed.add_field(name="Created", value=f"<t:{int(message.created_at.timestamp())}>")
