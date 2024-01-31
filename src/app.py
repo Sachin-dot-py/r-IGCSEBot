@@ -25,7 +25,7 @@ import hotm
 import locks
 import keywords
 import on_message
-import mcq
+import practice
 import chem_info
 
 def insert_returns(body):
