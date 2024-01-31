@@ -43,4 +43,4 @@ The `v1.0` version of this bot rolled into use on July 5, 2021 and has come a lo
 2. Generate a Discord Bot API Token from the Discord Developer Portal
 3. Create a MongoDB account and add a new database named `IGCSEBot`.
 4. Set the environment variables `IGCSEBOT_TOKEN` and `MONGO_LINK` as the Bot API Token and MongoDB Access Link respectively.
-5. Run the bot using the command `python3 app.py`
+5. Run the bot using the command `python3 src/app.py`
