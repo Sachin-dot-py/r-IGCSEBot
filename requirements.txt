@@ -7,3 +7,4 @@ pytimeparse
 pubchempy
 pyquery
 python-dotenv
+redis-om

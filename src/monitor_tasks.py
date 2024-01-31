@@ -2,6 +2,9 @@ from bot import bot, discord, tasks, pymongo, bot, guild
 from constants import LINK, GUILD_ID, FORCED_MUTE_ROLE, MODLOG_CHANNEL_ID
 import time, traceback
 from data import AUTO_SLOWMODE_CHANNELS, helper_roles
+from schemas.redis import Session, Question, View
+from ui import MCQButtonsView
+from practice import close_session
 import datetime
 
 async def togglechannellock(channel_id, unlock, *, unlocktime=0):
@@ -217,3 +220,44 @@ async def handle_slowmode():
             
         if channel.slowmode_delay != slowmode:
             await channel.edit(slowmode_delay=slowmode)
+            
+@tasks.loop(seconds=5)
+async def send_questions():
+    sessions = Session.find(Session.paused == 0 and Session.currently_solving == "none").all()
+    for session in sessions:
+        thread = bot.get_channel(int(session["thread_id"]))
+        if not thread:
+            continue
+        
+        questions = Question.find(Question.session_id == session.session_id).all()
+        questions: list[Question] = list(filter(lambda x: x["solved"] == 0, questions))
+        
+        if len(questions) == 0 or not questions:
+            await close_session(session, "No more questions left! Ending the session...")
+            continue
+
+        
+        question = questions[0]
+        
+        session['currently_solving'] = question.question_name
+        session.save()
+        
+
+        embeds = []
+        for qs in question['questions']:
+            embed = discord.Embed()
+            if len(embeds) == 0:
+                embed.title = f"{question['question_name']}"
+            embed.set_image(url=f"https://pub-8153dcb2290449f2924ed014b10896ee.r2.dev/{qs}")
+            embeds.append(embed)
+        
+        mcq = MCQButtonsView(question['question_name'])
+        mcq_msg = await thread.send(embeds=embeds, view=mcq)
+        bot.add_view(mcq, message_id=mcq_msg.id)
+        view = View(
+            view_id=question['question_name'],
+            message_id=mcq_msg.id
+        )
+        view.save()
+        print(bot.views())
+        print(bot.views(persistent=False))

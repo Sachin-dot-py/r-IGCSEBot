@@ -185,3 +185,49 @@ class PunishmentsDB:
         return self.punishment_history.find({"action_against": str(user_id)})
 
 punishdb = PunishmentsDB(LINK)
+
+class QuestionsDB:
+    def __init__(self, link: str):
+        self.client = pymongo.MongoClient(
+            link, server_api=pymongo.server_api.ServerApi("1")
+        )
+        self.db = self.client.IGCSEBot
+        self.igcse_questions = self.db.igcse_questions
+        
+    def get_questions(
+        self,
+        subject_code: str,
+        minimum_year: int,
+        limit: int,
+        topics: list[str],
+        type: str = "mcq",
+    ):
+        if type == "mcq":
+            mcq_filter = {
+                "$expr": {
+                        "$eq": [{"$type": "$answers"}, "string"]
+                },
+            }
+        else:
+            mcq_filter = {}
+        return self.igcse_questions.aggregate([
+            {
+                "$match": {
+                    "subject": subject_code,
+                    "year": {
+                        "$gte": minimum_year
+                    },
+                    "topics": {
+                        "$elemMatch": {"$in": topics}
+                    },
+                    **mcq_filter
+                }
+            },
+            {
+                "$sample": {
+                    "size": limit
+                }
+            },
+        ])
+
+questionsdb = QuestionsDB(LINK)
