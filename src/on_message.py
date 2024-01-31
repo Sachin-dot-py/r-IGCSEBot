@@ -15,13 +15,14 @@ async def create_dm_thread(message: discord.Message, is_dm: bool):
     member = cast(discord.Member, guild.get_member(member_id))
     channel = cast(discord.TextChannel, guild.get_channel(CREATE_DM_CHANNEL_ID))
     threads = channel.threads
-    thread = discord.utils.get(threads, name=str(member.id))
+    thread_name = f"{member.name}:{member.id}"
+    thread = discord.utils.get(threads, name=thread_name)
     if thread is None:
         if is_dm:
             msg = await channel.send(content=str(member_id))
-            thread = await msg.create_thread(name=str(member.id))
+            thread = await msg.create_thread(name=thread_name)
         else:
-            thread = await message.create_thread(name=str(member.id))
+            thread = await message.create_thread(name=thread_name)
             await message.reply(f"DM Channel has been created at {thread.mention}!")
     else:
         if not is_dm:
@@ -134,42 +135,39 @@ async def on_message(message: discord.Message):
     if message.channel.id == CREATE_DM_CHANNEL_ID:
         await create_dm_thread(message, False)
 
-    if message.guild.id == GUILD_ID and message.channel.category:
-        if message.channel.category.name.lower() == "comms" and not message.author.bot:
-            if int(message.channel.topic) == message.author.id:
-                return
-            else:
-                member = cast(discord.Member, message.guild.get_member(int(message.channel.topic)))
-                if message.content == ".sclose":
-                    embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
-                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                    await message.channel.delete()
-                    await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                    return
-                channel = await member.create_dm()
-                if message.content == ".close":
-                    embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
-                    embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                    await channel.send(embed=embed)
-                    await message.channel.delete()
-                    await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
-                    return
-                embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
+    if message.guild.id == GUILD_ID:
+        if str(message.channel.type) in ["public_thread", "private_thread"] and message.channel.parent_id == CREATE_DM_CHANNEL_ID:
+            member = message.guild.get_member(int(message.channel.name.split(":")[1]))
+            if message.content == ".sclose":
+                embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
                 embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                await message.channel.delete()
+                await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                return
+            channel = await member.create_dm()
+            if message.content == ".close":
+                embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
+                embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                await channel.send(embed=embed)
+                await message.channel.delete()
+                await bot.get_channel(CREATE_DM_CHANNEL_ID).send(embed=embed)
+                return
+            embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
+            embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
 
-                try:
-                    await channel.send(embed=embed)
-                    for attachment in message.attachments:
-                        await channel.send(file=await attachment.to_file())
-                    await message.channel.send(embed=embed)
-                except:
-                    perms = message.channel.overwrites_for(member)
-                    perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
-                    await message.channel.set_permissions(member, overwrite=perms)
-                    await message.channel.send(f"{member.mention}")
-                    return
+            try:
+                await channel.send(embed=embed)
+                for attachment in message.attachments:
+                    await channel.send(file=await attachment.to_file())
+                await message.channel.send(embed=embed)
+            except:
+                perms = message.channel.overwrites_for(member)
+                perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
+                await message.channel.set_permissions(member, overwrite=perms)
+                await message.channel.send(f"{member.mention}")
+                return
 
-                await message.delete()
+            await message.delete()
     channel_id_rep = message.channel.id
     if (type(message.channel) == discord.threads.Thread):
         # Threads have different IDs than parent channel
