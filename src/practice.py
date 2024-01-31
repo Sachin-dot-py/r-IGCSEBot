@@ -1,7 +1,7 @@
 from bot import bot, discord
 from redis_om import NotFoundError, Migrator
 from schemas.redis import Session, User, TempSessionData, ExtendedModel, Question, View
-from ui import GetUserInput, SelectMenuSubject, SelectMenuTopic, SelectMenuVisibility, SelectUsersView, MCQButtonsView
+from ui import GetUserInput, SelectMenuSubject, SelectMenuTopic, SelectMenuVisibility, SelectUsersView, JoinSessionListView, AddRemoveUserView
 from mongodb import questionsdb
 from data import practice_subjects
 import uuid
@@ -26,11 +26,17 @@ async def close_session(session: Session, message: str):
     questions = Question.find(Question.session_id == session.session_id).all()
     
     number_of_correct_answers: dict[str, str] = {}
+    number_of_answers = {}
     
     for question in questions:
         user_answers = question["user_answers"]
         correct_answer = question["answers"]
         for user in user_answers.keys():
+            if user not in number_of_answers.keys():
+                number_of_answers[user] = 0
+                
+            number_of_answers[user] += 1
+            
             if user not in number_of_correct_answers.keys():
                 number_of_correct_answers[user] = 0
             if user_answers[user] == correct_answer:
@@ -40,12 +46,12 @@ async def close_session(session: Session, message: str):
     solved_questions = list(filter(lambda x: x["solved"] == 1, questions))
     unsolved_message = ""
     if len(solved_questions) != len(questions):
-        unsolved_message = f" out of which only {len(solved_questions)} were solved"
+        unsolved_message = f" out of which only {len(solved_questions)} were solved by everyone"
     
     embed = discord.Embed(title="Session Ended!")
     embed.description = f"This session had {len(questions)} questions{unsolved_message}.\nThe scores for each user are as follows:\n\n"
     for user, score in number_of_correct_answers.items():
-        embed.description += f"<@{user}>: {score}\n"
+        embed.description += f"<@{user}>: {score}/{number_of_answers[user]}\n"
         
     await thread.send(embed=embed)
     await thread.send(message)
@@ -64,11 +70,7 @@ async def close_session(session: Session, message: str):
         
     Session.delete(session.session_id)
 
-@bot.slash_command(name="practice", description="Choose a subject and practice with your friends.")
-async def practice(interaction):
-    pass
 
-@practice.subcommand(name="new", description="Create a new practice session.")
 async def new_session(interaction: discord.Interaction):
     user_in_session = await get_from_db(str(interaction.user.id), User)
     if user_in_session and user_in_session["playing"]:
@@ -83,7 +85,9 @@ async def new_session(interaction: discord.Interaction):
 
     modal = GetUserInput()
     await interaction.response.send_modal(modal=modal)
-    await modal.wait()
+    timedout = await modal.wait()
+    if timedout:
+        TempSessionData.delete(str(interaction.user.id))
 
     views = [
         SelectMenuSubject,
@@ -95,13 +99,17 @@ async def new_session(interaction: discord.Interaction):
     msg = interaction.message or None
 
     for view in views:
-        view = view(interaction)
+        view: discord.ui.View = view(interaction)
         if msg is None:
             msg = await interaction.send(view=view, ephemeral=True)
         else:
             await msg.edit(view=view)
     
-        await view.wait()
+        timedout = await view.wait()
+        if timedout:
+            await msg.edit(content="Timed out!", view=None)
+            TempSessionData.delete(str(interaction.user.id))
+            return
 
     tempdata = TempSessionData.get(interaction.user.id)
     
@@ -173,7 +181,6 @@ async def new_session(interaction: discord.Interaction):
     session.save()
 
 
-@practice.subcommand(name="leave", description="Leave a practice session.")
 async def leave_session(interaction: discord.Interaction):
     user = await get_from_db(str(interaction.user.id), User)
     if not user or not user["playing"]:
@@ -197,7 +204,6 @@ async def leave_session(interaction: discord.Interaction):
 
     await interaction.response.send_message("Left the session!", ephemeral=True)
 
-@practice.subcommand(name="end", description="End a practice session.")
 async def end_session(interaction: discord.Interaction):
     user = await get_from_db(str(interaction.user.id), User)
     if not user or not user["playing"]:
@@ -216,7 +222,6 @@ async def end_session(interaction: discord.Interaction):
     
     
 
-@practice.subcommand(name="list", description="List all public sessions.")
 async def list_sessions(interaction: discord.Interaction):
     
     sessions = Session.find(Session.private == 0).all()
@@ -231,136 +236,7 @@ async def list_sessions(interaction: discord.Interaction):
     
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-@practice.subcommand(name="join", description="Join a practice session.")
-async def join_session(interaction: discord.Interaction, 
-                       session_id: str = discord.SlashOption(name="session_id", description="ID of the session you want to join", required=True)):
-    user = await get_from_db(str(interaction.user.id), User)
-    if user and user["playing"]:
-        await interaction.response.send_message("You are already in a session! Please leave that session using `/practice leave`.", ephemeral=True)
-        return
-    
-    session = await get_from_db(session_id, Session)
 
-    if not session:
-        await interaction.response.send_message("That session does not exist!", ephemeral=True)
-        return
-    
-    if session["private"] == 1:
-        await interaction.response.send_message("That session is private! Please ask the session owner to add you using `/practice add`", ephemeral=True)
-        return
-    
-    thread = interaction.guild.get_thread(int(session["thread_id"]))
-    await thread.add_user(interaction.user)
-
-    user = User(
-        user_id=str(interaction.user.id),
-        playing=True,
-        session_id=str(session.session_id),
-        subject=session["subject"],
-    )
-    user.save()
-
-    session["users"].append(str(interaction.user.id))
-    session.save()
-
-    await interaction.response.send_message(f"Joined the session, {thread.mention}!", ephemeral=True)
-
-@practice.subcommand(name="add", description="Add a user to your private session.")
-async def add_to_session(interaction: discord.Interaction,
-                            user: discord.User = discord.SlashOption(name="user", description="User you want to add to the session", required=True)):
-    user_in_session = await get_from_db(str(interaction.user.id), User)
-    if not user_in_session or not user_in_session["playing"]:
-        await interaction.response.send_message("You are currently not in a session!", ephemeral=True)
-        return
-
-    user_owns_session = Session.find(Session.started_by == str(interaction.user.id)).all()
-    if not user_owns_session:
-        await interaction.response.send_message("Only the owner of the session can add others!", ephemeral=True)
-        return
-    
-    session = user_owns_session[0]
-
-    if str(user.id) in session["users"]:
-        await interaction.response.send_message("That user is already in this session!", ephemeral=True)
-        return
-    
-    user_in_another_session = await get_from_db(str(user.id), User)
-    if user_in_another_session and user_in_another_session["playing"]:
-        await interaction.response.send_message("That user is already in another session!", ephemeral=True)
-        return
-
-    thread = interaction.guild.get_thread(int(session["thread_id"]))
-    await thread.add_user(user)
-    await thread.send(f"{user.mention} has been added to the session!")
-        
-    user_db = User(
-        user_id=str(user.id),
-        playing=True,
-        session_id=str(session.session_id),
-        subject=session["subject"],
-    )
-    user_db.save()
-
-    session["users"].append(str(user.id))
-    session.save()
-
-    await interaction.response.send_message(f"Added {user.mention} to the session!", ephemeral=True)
-
-@practice.subcommand(name="remove", description="Remove a user from your session.")
-async def remove_from_session(interaction: discord.Interaction,
-                            user: discord.User = discord.SlashOption(name="user", description="User you want to remove from the session", required=True)):
-    user_in_session = await get_from_db(str(interaction.user.id), User)
-    if not user_in_session or not user_in_session["playing"]:
-        await interaction.response.send_message("You are currently not in a session!", ephemeral=True)
-        return
-
-    user_owns_session = Session.find(Session.started_by == str(interaction.user.id)).all()
-    if not user_owns_session:
-        await interaction.response.send_message("Only the owner of the session can remove others!", ephemeral=True)
-        return
-    
-    session = user_owns_session[0]
-    
-    if str(user.id) not in session["users"]:
-        await interaction.response.send_message("That user is not in this session!", ephemeral=True)
-        return
-    
-    thread = interaction.guild.get_thread(int(session["thread_id"]))
-    await thread.send(f"{user.mention} has been removed from the session!")
-        
-    User.delete(str(user.id))
-    
-    await thread.remove_user(user)
-
-    session["users"].remove(str(user.id))
-    session.save()
-
-    await interaction.response.send_message(f"Removed {user.mention} from the session!", ephemeral=True)
-
-@practice.subcommand(name="info", description="Get information about a session.")
-async def session_info(interaction: discord.Interaction,
-                       session_id: str = discord.SlashOption(name="session_id", description="ID of the session you want to get information about", required=True)):
-    session = await get_from_db(session_id, Session)
-
-    if not session:
-        await interaction.response.send_message("That session does not exist!", ephemeral=True)
-        return
-    
-    if session["private"] == 1 and session["started_by"] != str(interaction.user.id):
-        await interaction.response.send_message("That session is private.", ephemeral=True)
-        return
-    
-    embed = discord.Embed(title=f"Session ID: {session.session_id}", color=discord.Color.random())
-    embed.add_field(name="Subject", value=practice_subjects[session["subject"]])
-    embed.add_field(name="Users", value=', '.join(list(map(lambda x: f"<@{x}>", session["users"]))))
-    embed.add_field(name="Started by", value=f"<@{session['started_by']}>")
-    embed.add_field(name="Topics", value='\n'.join(session["topics"]))
-    embed.add_field(name="Limit", value=session["limit"])
-    embed.add_field(name="Minimum year", value=session["minimum_year"])
-
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-@practice.subcommand(name="pause", description="Pause the current session.")
 async def pause_session(interaction: discord.Interaction):
     user = await get_from_db(str(interaction.user.id), User)
     if not user or not user["playing"]:
@@ -386,7 +262,7 @@ async def pause_session(interaction: discord.Interaction):
 
     await interaction.response.send_message("Paused the session!", ephemeral=True)
 
-@practice.subcommand(name="resume", description="Resume the current session.")
+
 async def resume_session(interaction: discord.Interaction):
     user = await get_from_db(str(interaction.user.id), User)
     if not user or not user["playing"]:
@@ -411,6 +287,205 @@ async def resume_session(interaction: discord.Interaction):
     await thread.edit(locked=False)
 
     await interaction.response.send_message("Resumed the session!", ephemeral=True)
+
+
+async def add_to_session(interaction: discord.Interaction):
+    
+    user_in_session = await get_from_db(str(interaction.user.id), User)
+    if not user_in_session or not user_in_session["playing"]:
+        await interaction.response.send_message("You are currently not in a session!", ephemeral=True)
+        return
+
+    user_owns_session = Session.find(Session.started_by == str(interaction.user.id)).all()
+    if not user_owns_session:
+        await interaction.response.send_message("Only the owner of the session can add others!", ephemeral=True)
+        return
+    
+    session = user_owns_session[0]
+    
+    userview = AddRemoveUserView()
+    interaction.message = await interaction.send("Select a user to add to the session!", view=userview, ephemeral=True)
+    
+    timedout = await userview.wait()
+    
+    if timedout or not userview.values:
+        await interaction.edit("Cancelled!", view=None)
+        return
+    
+    user = userview.values[0]
+
+    if str(user.id) in session["users"]:
+        await interaction.edit("That user is already in this session!", ephemeral=True)
+        return
+    
+    user_in_another_session = await get_from_db(str(user.id), User)
+    if user_in_another_session and user_in_another_session["playing"]:
+        await interaction.edit("That user is already in another session!", ephemeral=True)
+        return
+
+    thread = interaction.guild.get_thread(int(session["thread_id"]))
+    await thread.add_user(user)
+    await thread.send(f"{user.mention} has been added to the session!")
+        
+    user_db = User(
+        user_id=str(user.id),
+        playing=True,
+        session_id=str(session.session_id),
+        subject=session["subject"],
+    )
+    user_db.save()
+
+    session["users"].append(str(user.id))
+    session.save()
+
+    await interaction.edit(f"Added {user.mention} to the session!", view=None)
+
+
+async def remove_from_session(interaction: discord.Interaction):
+    
+    user_in_session = await get_from_db(str(interaction.user.id), User)
+    if not user_in_session or not user_in_session["playing"]:
+        await interaction.response.send_message("You are currently not in a session!", ephemeral=True)
+        return
+
+    user_owns_session = Session.find(Session.started_by == str(interaction.user.id)).all()
+    if not user_owns_session:
+        await interaction.response.send_message("Only the owner of the session can remove others!", ephemeral=True)
+        return
+    
+    session = user_owns_session[0]
+    
+    userview = AddRemoveUserView()
+    interaction.message = await interaction.send("Select a user to remove from the session!", view=userview, ephemeral=True)
+    
+    timedout = await userview.wait()
+    
+    if timedout or not userview.values:
+        await interaction.edit("Cancelled!", view=None)
+        return
+    
+    user = userview.values[0]
+    
+    if str(user.id) not in session["users"]:
+        await interaction.edit("That user is not in this session!")
+        return
+    
+    thread = interaction.guild.get_thread(int(session["thread_id"]))
+    await thread.send(f"{user.mention} has been removed from the session!")
+        
+    User.delete(str(user.id))
+    
+    await thread.remove_user(user)
+
+    session["users"].remove(str(user.id))
+    session.save()
+
+    await interaction.edit(f"Removed {user.mention} from the session!", view=None)
+
+
+async def session_info(interaction: discord.Interaction):
+    
+    sessions = Session.find(Session.private == 0 or Session.started_by == interaction.user.id).all()
+    
+    if not sessions:
+        await interaction.response.send_message("There are no public sessions available at the moment!", ephemeral=True)
+        return
+    
+    list_of_sessions = list(map(lambda x: discord.SelectOption(
+        label=f"{practice_subjects[x.subject]} ({x.subject}), {x.session_id}",
+        value=x.session_id
+    ), sessions))
+    
+    view = JoinSessionListView(list_of_sessions, interaction)
+    interaction.message = await interaction.send("Select a session to see more information about!", view=view, ephemeral=True)
+    
+    timedout = await view.wait()
+    if timedout or not view.values:
+        await interaction.edit(content="Cancelled!", view=None)
+        return
+    
+    session = Session.get(view.values[0])
+
+    if not session:
+        await interaction.edit("That session does not exist anymore!")
+        return
+    
+    embed = discord.Embed(title=f"Session ID: {session.session_id}", color=discord.Color.random())
+    embed.add_field(name="Subject", value=practice_subjects[session["subject"]])
+    embed.add_field(name="Users", value=', '.join(list(map(lambda x: f"<@{x}>", session["users"]))))
+    embed.add_field(name="Started by", value=f"<@{session['started_by']}>")
+    embed.add_field(name="Topics", value='\n'.join(session["topics"]))
+    embed.add_field(name="Limit", value=session["limit"])
+    embed.add_field(name="Minimum year", value=session["minimum_year"])
+
+    await interaction.edit(embed=embed, view=None)
+
+async def join_session(interaction: discord.Interaction):
+    user = await get_from_db(str(interaction.user.id), User)
+    if user and user["playing"]:
+        await interaction.response.send_message("You are already in a session! Please leave that session using `/practice leave`.", ephemeral=True)
+        return
+    
+    sessions = Session.find(Session.private == 0).all()
+    
+    if not sessions:
+        await interaction.response.send_message("There are no public sessions available at the moment!", ephemeral=True)
+        return
+    
+    list_of_sessions = list(map(lambda x: discord.SelectOption(
+        label=f"{practice_subjects[x.subject]} ({x.subject}), {x.session_id}",
+        value=x.session_id
+    ), sessions))
+    
+    view = JoinSessionListView(list_of_sessions, interaction)
+    interaction.message = await interaction.send("Select a session to join!", view=view, ephemeral=True)
+    
+    timedout = await view.wait()
+    if timedout or not view.values:
+        await interaction.edit(content="Cancelled!", view=None)
+        return
+    
+    session = Session.get(view.values[0])
+
+    if not session:
+        await interaction.edit("That session does not exist anymore!")
+        return
+    
+    thread = interaction.guild.get_thread(int(session["thread_id"]))
+    await thread.add_user(interaction.user)
+
+    user = User(
+        user_id=str(interaction.user.id),
+        playing=True,
+        session_id=str(session.session_id),
+        subject=session["subject"],
+    )
+    user.save()
+
+    session["users"].append(str(interaction.user.id))
+    session.save()
+
+    await interaction.edit(f"Joined the session, {thread.mention}!", view=None)
+
+
+options = {
+    "New Session": new_session,
+    "Leave Session": leave_session,
+    "End Session": end_session,
+    "List Sessions": list_sessions,
+    "Join Session": join_session,
+    "Pause Session": pause_session,
+    "Resume Session": resume_session,
+    "Add to Session": add_to_session,
+    "Remove from Session": remove_from_session,
+    "Session Info": session_info
+}
+
+@bot.slash_command(name="practice", description="Choose a subject and practice with your friends.")
+async def practice(interaction: discord.Interaction,
+                   action: str = discord.SlashOption(name="action", description="Action to perform", required=True, choices=list(options.keys()))):
+    await options[action](interaction)
+    
 
 # Index the schemas in RediSearch to allow search.
 Migrator().run()

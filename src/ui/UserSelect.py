@@ -7,5 +7,7 @@ class UserSelect(discord.ui.UserSelect):
 
     async def callback(self, interaction: discord.Interaction):
         tempdata = TempSessionData.get(interaction.user.id)
+        if interaction.user.id in interaction.data["values"]:
+            interaction.data["values"].remove(interaction.user.id)
         tempdata.users = interaction.data["values"]
         tempdata.save()

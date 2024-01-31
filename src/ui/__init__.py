@@ -4,3 +4,5 @@ from .GetUserInput import GetUserInput
 from .SelectMenuVisibility import SelectMenuVisibility
 from .SelectUsersView import SelectUsersView
 from .MCQButtonsView import MCQButtonsView
+from .JoinSessionListView import JoinSessionListView
+from .AddRemoveUserView import AddRemoveUserView
