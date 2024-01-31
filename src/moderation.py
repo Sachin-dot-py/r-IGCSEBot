@@ -84,10 +84,7 @@ async def warn(interaction: discord.Interaction,
             case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
         except:
             case_no = 1
-        ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {str(user)} ({user.id})
-Moderator: {mod} 
-Reason: {reason}"""
+        ban_msg = f"""Case #{case_no} | [{action_type}]\nUsername: {str(user)} ({user.id})\nModerator: {mod} \nReason: {reason}"""
         await interaction.send(f"{str(user)} has been warned.")
         await ban_msg_channel.send(ban_msg)
     channel = await user.create_dm()
@@ -210,10 +207,7 @@ f"Hi there from {interaction.guild.name}. You have been kicked from the server d
             case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
         except:
             case_no = 1
-        ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {str(user)} ({user.id})
-Moderator: {mod} 
-Reason: {reason}"""
+        ban_msg = f"""Case #{case_no} | [{action_type}]\nUsername: {str(user)} ({user.id})\nModerator: {mod} \nReason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.kick(user)
     await interaction.send(f"{str(user)} has been kicked.")
@@ -253,10 +247,7 @@ async def ban(interaction: discord.Interaction,
             case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
         except:
             case_no = 1
-        ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {str(user)} ({user.id})
-Moderator: {mod} 
-Reason: {reason}"""
+        ban_msg = f"""Case #{case_no} | [{action_type}]\nUsername: {str(user)} ({user.id})\nModerator: {mod} \nReason: {reason}"""
         await ban_msg_channel.send(ban_msg)
     await interaction.guild.ban(user, delete_message_days=delete_message_days)
     await interaction.send(f"{str(user)} has been banned.")
@@ -280,8 +271,6 @@ async def unban(interaction: discord.Interaction, user: discord.User = discord.S
             case_no = int(''.join(list(filter(str.isdigit, last_ban_msg[0].content.splitlines()[0])))) + 1
         except:
             case_no = 1
-        ban_msg = f"""Case #{case_no} | [{action_type}]
-Username: {str(user)} ({user.id})
-Moderator: {mod}"""
+        ban_msg = f"""Case #{case_no} | [{action_type}]\nUsername: {str(user)} ({user.id})\nModerator: {mod}"""
         await ban_msg_channel.send(ban_msg)
         punishdb.add_punishment(case_no, user.id, interaction.user.id, "", action_type)

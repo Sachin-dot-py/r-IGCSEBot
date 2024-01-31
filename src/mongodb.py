@@ -54,10 +54,7 @@ class ReputationDB:
 
     def get_rep(self, user_id: int, guild_id: int):
         result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
-        if result is None:
-            return None
-        else:
-            return result['rep']
+        return result.get("rep", None)
 
     def change_rep(self, user_id, new_rep, guild_id):
         self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
@@ -69,12 +66,12 @@ class ReputationDB:
     def add_rep(self, user_id: int, guild_id: int):
         rep = self.get_rep(user_id, guild_id)
         if rep is None:
-            rep = 1
-            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": rep})
+            self.reputation.insert_one({"user_id": user_id, "guild_id": guild_id, "rep": 1})
+            return 1
         else:
             rep += 1
             self.change_rep(user_id, rep, guild_id)
-        return rep
+            return rep
 
     def rep_leaderboard(self, guild_id):
         leaderboard = self.reputation.find({"guild_id": guild_id}, {"_id": 0, "guild_id": 0}).sort("rep", -1)

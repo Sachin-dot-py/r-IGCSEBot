@@ -3,7 +3,6 @@ from data import REP_DISABLE_CHANNELS
 from bot import discord, bot, keywords
 from mongodb import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper, is_chat_moderator, is_bot_developer
-from typing import cast
 
 async def create_dm_thread(message: discord.Message, is_dm: bool):
     member_id: int = 0
@@ -11,9 +10,9 @@ async def create_dm_thread(message: discord.Message, is_dm: bool):
         member_id = message.author.id
     else:
         member_id = int(message.content)
-    guild = cast(discord.guild, bot.get_guild(GUILD_ID))
-    member = cast(discord.Member, guild.get_member(member_id))
-    channel = cast(discord.TextChannel, guild.get_channel(CREATE_DM_CHANNEL_ID))
+    guild = bot.get_guild(GUILD_ID)
+    member = guild.get_member(member_id)
+    channel = guild.get_channel(CREATE_DM_CHANNEL_ID)
     threads = channel.threads
     thread_name = f"{member.name}:{member.id}"
     thread = discord.utils.get(threads, name=thread_name)

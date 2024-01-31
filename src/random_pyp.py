@@ -8,7 +8,7 @@ async def random_pyp(interaction: discord.Interaction,
                      paper_number: str = discord.SlashOption(name="paper_no", description= "Enter a paper number", required=True)):
 
             #PAPER_INFORMATION
-            insert_codes = ["0410", "0445", "0448", "0449", "0450", "0454", "0457", "0460", "0471", "0500", "0501", "0502", "0503", "0504", "0505", "0508", "0509", "0513", "0514", "0516", "0518", "0538", "9609"]
+            INSERT_CODES = ["0410", "0445", "0448", "0449", "0450", "0454", "0457", "0460", "0471", "0500", "0501", "0502", "0503", "0504", "0505", "0508", "0509", "0513", "0514", "0516", "0518", "0538", "9609"]
             YEARS = ["2018", "2019", "2020", "2021", "2022", "2023"]
             PAPER_VARIANT = ["1", "2", "3"]
             SESSIONS = ["s", "w", "m"]
@@ -26,7 +26,7 @@ async def random_pyp(interaction: discord.Interaction,
             #EMPTY_VARIABLES
             sesh = ""
 
-            in_validation = insert_codes.__contains__(subject_code)
+            in_validation = INSERT_CODES.__contains__(subject_code)
             pn_validation = len(paper_number)
             ig_validation = CIE_IGCSE_SUBJECT_CODES.__contains__(subject_code)     
             al_validation = CIE_ALEVEL_SUBJECT_CODES.__contains__(subject_code)
@@ -35,7 +35,7 @@ async def random_pyp(interaction: discord.Interaction,
             if programme == "IGCSE":
                 if pn_validation == 1:
                     if paper_number <= "6" and paper_number != "0":
-                        if ig_validation == True:
+                        if ig_validation:
                             subject_name = cieigsubjectsdata.get(subject_code)
                             if subject_code == "0417" and paper_number in ["2", "3"]:
                                 if ranses == "w" and ranyear != ["2019"]:
@@ -80,7 +80,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and the insert.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}", color=0xf4b6c2)
                                     await interaction.send(embed=embed)
                             else:
-                                if in_validation == True:
+                                if in_validation:
                                     if ranses == "s":
                                         sesh = "June"
                                     elif ranses == "w":
@@ -115,9 +115,9 @@ async def random_pyp(interaction: discord.Interaction,
             elif programme == "O-Level":
                 if pn_validation == 1:
                     if paper_number <= "6" and paper_number != "0":
-                        if ol_validation == True:
+                        if ol_validation:
                             subject_name = cieolsubjectsdata.get(subject_code)                 
-                            if in_validation == True:
+                            if in_validation:
                                 if ranses == "s":
                                     sesh = "June"
                                 elif ranses == "w":
@@ -152,9 +152,9 @@ async def random_pyp(interaction: discord.Interaction,
             elif programme == "A-Level":
                 if pn_validation == 1:
                     if paper_number <= "6" and paper_number != "0":
-                        if al_validation == True:
+                        if al_validation:
                             subject_name = ciealsubjectsdata.get(subject_code)
-                            if in_validation == True:
+                            if in_validation:
                                 if ranses == "s":
                                     sesh = "June"
                                 elif ranses == "w":
