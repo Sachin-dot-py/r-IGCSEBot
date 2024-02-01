@@ -19,7 +19,6 @@ async def on_ready():
         bot.add_view(MCQButtonsView(view["view_id"]), message_id=int(view["message_id"]))
     igcse = bot.get_guild(GUILD_ID)
     botlogs = await igcse.fetch_channel(BOTLOG_CHANNEL_ID)
-    await bot.fetch_channel(DMS_CLOSED_CHANNEL_ID)
     user = bot.user 
     format = "%d-%m-%Y"       
     if not BETA:    

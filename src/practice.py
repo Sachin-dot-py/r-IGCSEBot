@@ -57,11 +57,13 @@ async def close_session(session: Session, message: str):
             for user in list(number_of_correct_answers.keys())[i*25:(i+1)*25]:
                 if len(embeds) != 0:
                     embed = discord.Embed()
-                embed.add_field(name=f"<@{user}>", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
+                member = thread.guild.get_member(int(user)) or await thread.guild.fetch_member(int(user))
+                embed.add_field(name=f"{member.name}", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
             embeds.append(embed)
     else:
         for user in number_of_correct_answers.keys():
-            embed.add_field(name=f"<@{user}>", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
+            member = thread.guild.get_member(int(user)) or await thread.guild.fetch_member(int(user))
+            embed.add_field(name=f"{member.name}", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
         embeds.append(embed)
         
     await thread.send(embeds=embeds)
