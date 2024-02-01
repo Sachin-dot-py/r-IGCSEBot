@@ -1,4 +1,5 @@
 from bot import bot, discord, pymongo, datetime, time
+from dms import send_dm
 from bans import is_banned
 from roles import is_chat_moderator, is_moderator
 from mongodb import gpdb, punishdb
@@ -87,9 +88,8 @@ async def warn(interaction: discord.Interaction,
         ban_msg = f"""Case #{case_no} | [{action_type}]\nUsername: {str(user)} ({user.id})\nModerator: {mod} \nReason: {reason}"""
         await interaction.send(f"{str(user)} has been warned.")
         await ban_msg_channel.send(ban_msg)
-    channel = await user.create_dm()
-    await channel.send(
-        f"You have been warned in r/IGCSE by moderator {mod} for \"{reason}\".\n\nPlease be mindful in your further interaction in the server to avoid further action being taken against you, such as a timeout or a ban.")
+    await send_dm(user,
+        content=f"You have been warned in r/IGCSE by moderator {mod} for \"{reason}\".\n\nPlease be mindful in your further interaction in the server to avoid further action being taken against you, such as a timeout or a ban.")
     punishdb.add_punishment(case_no, user.id, interaction.user.id, reason, action_type)
 
 @bot.slash_command(description="Timeout a user (for mods)")
@@ -145,7 +145,7 @@ Reason: {reason}
 Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)"""
         await ban_msg_channel.send(ban_msg)
-    await user.send(f'''You have been given a timeout on the r/IGCSE server 
+    await send_dm(user, content=f'''You have been given a timeout on the r/IGCSE server 
 Reason: {reason}
 Duration: {human_readable_time}
 Until: <t:{int(time.time()) + seconds}> (<t:{int(time.time()) + seconds}:R>)''')

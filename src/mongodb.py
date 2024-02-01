@@ -1,11 +1,12 @@
-from bot import pymongo
-from constants import LINK
+from bot import bot, discord, pymongo
+from constants import LINK, DMS_CLOSED_CHANNEL_ID
 from datetime import datetime
 
+client = pymongo.MongoClient(LINK, server_api=pymongo.server_api.ServerApi('1'))
 
 class ReactionRolesDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.reaction_roles = self.db.reaction_roles
     
@@ -19,11 +20,39 @@ class ReactionRolesDB:
         else:
             return result
 
-rrdb = ReactionRolesDB(LINK)
+rrdb = ReactionRolesDB(client)
+
+class PrivateDMThreadDB:
+    def __init__(self, client):
+        self.client = client
+        self.db = self.client.IGCSEBot
+        self.dm_threads = self.db["private_dm_threads"]
+    
+    def new_thread(self, user_id: int, thread_id: int):
+        self.dm_threads.insert_one({"_id": str(user_id), "thread_id": str(thread_id)})
+        return thread_id
+    
+    def del_thread(self, thread: discord.Thread):
+        self.dm_threads.delete_one({"thread_id": str(thread.id)})
+        return thread.delete()
+    
+    async def get_thread(self, member: discord.Member, create_anyway: bool = True):
+        result = self.dm_threads.find_one({"_id": str(member.id)})
+        channel = await bot.fetch_channel(DMS_CLOSED_CHANNEL_ID)
+
+        if result is None and create_anyway:
+            thread = await channel.create_thread(name=member.name)
+            return self.new_thread(member.id, thread.id)
+        elif not create_anyway:
+            return None
+        else:
+            return channel.get_thread(int(result["thread_id"]))
+
+dmsdb = PrivateDMThreadDB(client)
 
 class GuildPreferencesDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.pref = self.db.guild_preferences
 
@@ -37,12 +66,12 @@ class GuildPreferencesDB:
         else:
             return result.get(pref, None)
 
-gpdb = GuildPreferencesDB(LINK)
+gpdb = GuildPreferencesDB(client)
 
 
 class ReputationDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.reputation = self.db.reputation
 
@@ -81,11 +110,11 @@ class ReputationDB:
         return list(leaderboard)
 
 
-repdb = ReputationDB(LINK)
+repdb = ReputationDB(client)
 
 class StickyMessageDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi("1"))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.stickies = self.db.stickies
 
@@ -141,11 +170,11 @@ class StickyMessageDB:
 
         return True
 
-smdb = StickyMessageDB(LINK)
+smdb = StickyMessageDB(client)
 
 class KeywordsDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.keywords = self.db.keywords
 
@@ -162,11 +191,11 @@ class KeywordsDB:
     def remove_keyword(self, keyword: str, guild_id: int):
         return self.keywords.delete_one({"keyword": keyword.lower(), "guild_id": guild_id})
 
-kwdb = KeywordsDB(LINK)
+kwdb = KeywordsDB(client)
 
 class PunishmentsDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(link, server_api=pymongo.server_api.ServerApi('1'))
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.punishment_history = self.db.punishment_history
     
@@ -184,13 +213,11 @@ class PunishmentsDB:
     def get_punishments_by_user(self, user_id: int):
         return self.punishment_history.find({"action_against": str(user_id)})
 
-punishdb = PunishmentsDB(LINK)
+punishdb = PunishmentsDB(client)
 
 class QuestionsDB:
-    def __init__(self, link: str):
-        self.client = pymongo.MongoClient(
-            link, server_api=pymongo.server_api.ServerApi("1")
-        )
+    def __init__(self, client):
+        self.client = client
         self.db = self.client.IGCSEBot
         self.igcse_questions = self.db.igcse_questions
         
@@ -230,4 +257,4 @@ class QuestionsDB:
             },
         ])
 
-questionsdb = QuestionsDB(LINK)
+questionsdb = QuestionsDB(client)
