@@ -54,7 +54,10 @@ class ReputationDB:
 
     def get_rep(self, user_id: int, guild_id: int):
         result = self.reputation.find_one({"user_id": user_id, "guild_id": guild_id})
-        return result.get("rep", None)
+        if result is None:
+             return None
+        else:
+             return result['rep']
 
     def change_rep(self, user_id, new_rep, guild_id):
         self.reputation.update_one({"user_id": user_id, "guild_id": guild_id}, {"$set": {"rep": new_rep}})
