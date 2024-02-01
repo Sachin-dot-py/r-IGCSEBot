@@ -21,10 +21,13 @@ class SelectUsersView(discord.ui.View):
             await interaction.edit(content="Cancelled!", view=None)
             TempSessionData.delete(str(interaction.user.id))
             
+        self.alone_button = discord.ui.Button(label="I'm good alone", style=discord.ButtonStyle.blurple)
 
         self.continue_button.callback = continue_callback
         self.cancel_button.callback = cancel_callback
+        self.alone_button.callback = continue_callback
 
         self.add_item(self.user_select)
         self.add_item(self.continue_button)
         self.add_item(self.cancel_button)
+        self.add_item(self.alone_button)
