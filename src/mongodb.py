@@ -30,17 +30,28 @@ class PrivateDMThreadDB:
     
     def new_thread(self, user_id: int, thread_id: int):
         self.dm_threads.insert_one({"_id": str(user_id), "thread_id": str(thread_id)})
-        return thread_id
+        return bot.get_channel(thread_id)
     
-    def del_thread(self, thread: discord.Thread):
+    async def del_thread(self, member: discord.Member, thread: discord.Thread):
         self.dm_threads.delete_one({"thread_id": str(thread.id)})
+        channel: discord.TextChannel = bot.get_channel(DMS_CLOSED_CHANNEL_ID)
+        await channel.set_permissions(
+            member,
+            overwrite=None
+        )
         return thread.delete()
     
     async def get_thread(self, member: discord.Member, create_anyway: bool = True):
         result = self.dm_threads.find_one({"_id": str(member.id)})
-        channel = await bot.fetch_channel(DMS_CLOSED_CHANNEL_ID)
+        channel: discord.TextChannel = bot.get_channel(DMS_CLOSED_CHANNEL_ID) or await bot.fetch_channel(DMS_CLOSED_CHANNEL_ID)
 
         if result is None and create_anyway:
+            await channel.set_permissions(
+                member,
+                read_messages=True,
+                send_messages=False,
+                send_messages_in_threads=True
+            )
             thread = await channel.create_thread(name=member.name)
             return self.new_thread(member.id, thread.id)
         elif not create_anyway:

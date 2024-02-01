@@ -30,5 +30,5 @@ async def delete_dm_thread(ctx, member: discord.Member = None):
     if not thread:
         await ctx.send("No thread found!")
     else:
-        await dmsdb.del_thread(thread)
+        await dmsdb.del_thread(member, thread)
         await ctx.send("DM thread deleted! If DMs are still closed, a new thread will be made.")
