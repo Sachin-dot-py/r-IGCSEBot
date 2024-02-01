@@ -1,6 +1,6 @@
 from bot import bot, discord
 from constants import GUILD_ID, BOTLOG_CHANNEL_ID, BOTBETA, BOTMAIN, BETA, CHAT_MODERATOR_ROLES, IGCSE_HELPER_ROLE, AL_HELPER_ROLE, BOT_DEVELOPER_ROLES, TEMP_MOD_ROLE, STAFF_MODERATOR_ROLE
-from monitor_tasks import checklock, checkmute, handle_slowmode, autorefreshhelpers, send_questions
+from monitor_tasks import checklock, checkmute, handle_slowmode, autorefreshhelpers, send_questions, expire_sessions
 from schemas.redis import View
 from ui import MCQButtonsView
 
@@ -13,6 +13,7 @@ async def on_ready():
     autorefreshhelpers.start()
     handle_slowmode.start()
     send_questions.start()
+    expire_sessions.start()
     views = View.find().all()
     for view in views:
         bot.add_view(MCQButtonsView(view["view_id"]), message_id=int(view["message_id"]))

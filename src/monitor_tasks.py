@@ -221,7 +221,7 @@ async def handle_slowmode():
         if channel.slowmode_delay != slowmode:
             await channel.edit(slowmode_delay=slowmode)
             
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=8)
 async def send_questions():
     sessions = Session.find(Session.paused == 0 and Session.currently_solving == "none").all()
     for session in sessions:
@@ -261,3 +261,18 @@ async def send_questions():
         view.save()
         print(bot.views())
         print(bot.views(persistent=False))
+
+
+@tasks.loop(minutes=2)
+async def expire_sessions():
+    sessions = Session.find(Session.expire_time <= int(time.time()) + 600).all()
+    for session in sessions:
+        if session.expire_time <= int(time.time()):
+            await close_session(session, "Session expired...")
+        else:
+            thread = bot.get_channel(int(session["thread_id"]))
+            if not thread:
+                Session.delete(session['session_id'])
+                continue
+            await thread.send(f"This session will expire in <t:{session['expire_time']}:R>.")
+            

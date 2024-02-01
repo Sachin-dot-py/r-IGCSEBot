@@ -5,6 +5,7 @@ from ui import GetUserInput, SelectMenuSubject, SelectMenuTopic, SelectMenuVisib
 from mongodb import questionsdb
 from data import practice_subjects
 import uuid
+import time
 
 async def get_from_db(primary_key: str, db: ExtendedModel) -> bool:
     try:
@@ -48,12 +49,22 @@ async def close_session(session: Session, message: str):
     if len(solved_questions) != len(questions):
         unsolved_message = f" out of which only {len(solved_questions)} were solved by everyone"
     
+    embeds = []
     embed = discord.Embed(title="Session Ended!")
     embed.description = f"This session had {len(questions)} questions{unsolved_message}.\nThe scores for each user are as follows:\n\n"
-    for user, score in number_of_correct_answers.items():
-        embed.description += f"<@{user}>: {score}/{number_of_answers[user]}\n"
+    if len(number_of_correct_answers) > 25:
+        for i in range(len(number_of_correct_answers) // 25):
+            for user in list(number_of_correct_answers.keys())[i*25:(i+1)*25]:
+                if len(embeds) != 0:
+                    embed = discord.Embed()
+                embed.add_field(name=f"<@{user}>", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
+            embeds.append(embed)
+    else:
+        for user in number_of_correct_answers.keys():
+            embed.add_field(name=f"<@{user}>", value=f"{number_of_correct_answers[user]}/{number_of_answers[user]}")
+        embeds.append(embed)
         
-    await thread.send(embed=embed)
+    await thread.send(embeds=embeds)
     await thread.send(message)
     
     
@@ -138,6 +149,9 @@ async def new_session(interaction: discord.Interaction):
 
     await msg.edit(content=f"Created a new practice session in {thread.mention}!", view=None)
     
+    if not tempdata["users"]:
+        tempdata["users"] = []
+        
     if str(interaction.user.id) in tempdata["users"]:
         tempdata["users"].remove(str(interaction.user.id))
     
@@ -152,7 +166,8 @@ async def new_session(interaction: discord.Interaction):
         users=tempdata["users"],
         started_by=str(interaction.user.id),
         private=tempdata["private"],
-        paused=False
+        paused=False,
+        expire_time=int(time.time() + 7200) # 2 hours
     )
 
     for user_id in tempdata["users"]:
@@ -166,7 +181,7 @@ async def new_session(interaction: discord.Interaction):
             subject=tempdata["subject"],
         )
         user_db.save()
-
+        
     user = User(
         user_id=str(interaction.user.id),
         playing=True,

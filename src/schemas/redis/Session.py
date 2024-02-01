@@ -17,3 +17,4 @@ class Session(ExtendedModel):
     private: int = Field(index=True)
     paused: int = Field(index=True)
     currently_solving: str = Field(index=True, default="none")
+    expire_time: int = Field(index=True)
