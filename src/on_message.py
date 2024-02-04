@@ -71,7 +71,7 @@ async def is_welcome(text: str):
     return False	  
 
 async def is_thanks(text: str):
-    alternatives = ["thanks", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thanku", "tyvm", "thankyou", "ty!"]
+    alternatives = ["thanks", "thank", "thank you", "thx", "tysm", "thank u", "thnks", "tanks", "thanku", "tyvm", "thankyou", "ty!"]
     lowercase = text.lower()
     if "ty" in lowercase.split():
         return True
