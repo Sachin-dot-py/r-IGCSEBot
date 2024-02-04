@@ -47,7 +47,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{msv}.pdf")
                                     sfurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_sf_{qpv}.zip")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and Source Files.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**SF LINK**: {sfurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)
+                                    await interaction.send(embed=embed, ephemeral=True)
                                 elif ranses == "w" and ranyear == "2019":
                                     sesh = "November"
                                     qpv = f"{paper_number}"
@@ -57,7 +57,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{msv}.pdf")
                                     sfurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_sf_{qpv}.zip")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and Source Files.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**SF LINK**: {sfurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)
+                                    await interaction.send(embed=embed, ephemeral=True)
                                 else:
                                     if ranses == "s":
                                         sesh = "June"
@@ -70,7 +70,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                     sfurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_sf_{paper_number}{ranvar}.zip")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and Source Files.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**SF LINK**: {sfurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)
+                                    await interaction.send(embed=embed, ephemeral=True)
                             elif subject_code == "0547":
                                     sesh == "s"
                                     sesh = "June"
@@ -78,7 +78,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     qpurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{sesh}{ranyear[2:5]}_qp_{paper_number}{ranvar}.pdf")
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and the insert.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)
+                                    await interaction.send(embed=embed, ephemeral=True)
                             else:
                                 if in_validation:
                                     if ranses == "s":
@@ -94,7 +94,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                     inurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_in_{paper_number}{ranvar}.pdf")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and the insert.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**INSERT LINK**: {inurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)
+                                    await interaction.send(embed=embed, ephemeral=True)
                                 else:
                                     if ranses == "s":
                                         sesh = "June"
@@ -107,7 +107,7 @@ async def random_pyp(interaction: discord.Interaction,
                                     qpurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_qp_{paper_number}{ranvar}.pdf")
                                     msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                     embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}", color=0xf4b6c2)
-                                    await interaction.send(embed=embed)                                        
+                                    await interaction.send(embed=embed, ephemeral=True)                                        
                         else: await interaction.send("Invalid Subject Code. Please try again.", ephemeral=True)
                     else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
                 else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
@@ -131,7 +131,7 @@ async def random_pyp(interaction: discord.Interaction,
                                 msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                 inurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_in_{paper_number}{ranvar}.pdf")
                                 embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and the insert.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**INSERT LINK**: {inurl}", color=0xf4b6c2)
-                                await interaction.send(embed=embed)
+                                await interaction.send(embed=embed, ephemeral=True)
                             else:
                                 if ranses == "s":
                                     sesh = "June"
@@ -144,7 +144,7 @@ async def random_pyp(interaction: discord.Interaction,
                                 qpurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_qp_{paper_number}{ranvar}.pdf")
                                 msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                 embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}", color=0xf4b6c2)
-                                await interaction.send(embed=embed)            
+                                await interaction.send(embed=embed, ephemeral=True)            
                         else: await interaction.send("Invalid Subject Code. Please try again.", ephemeral=True)
                     else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
                 else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
@@ -168,7 +168,7 @@ async def random_pyp(interaction: discord.Interaction,
                                 msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                 inurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_in_{paper_number}{ranvar}.pdf")
                                 embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper, marking scheme and the insert.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}\n**INSERT LINK**: {inurl}", color=0xf4b6c2)
-                                await interaction.send(embed=embed)
+                                await interaction.send(embed=embed, ephemeral=True)
                             else:
                                 if ranses == "s":
                                     sesh = "June"
@@ -181,7 +181,7 @@ async def random_pyp(interaction: discord.Interaction,
                                 qpurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_qp_{paper_number}{ranvar}.pdf")
                                 msurl = pyshorteners.Shortener().tinyurl.short(f"https://edupapers.store/wp-content/uploads/simple-file-list/CIE/{programme}/{subject_name}-{subject_code}/{ranyear}/{sesh}/{subject_code}_{ranses}{ranyear[2:5]}_ms_{paper_number}{ranvar}.pdf")
                                 embed = discord.Embed(title=f"Random Paper Chosen", description=f"`{qpcode}` has been chosen at random. Below are links to the question paper and marking scheme.\n\n**QP LINK**: {qpurl}\n**MS LINK**: {msurl}", color=0xf4b6c2)
-                                await interaction.send(embed=embed)  
+                                await interaction.send(embed=embed, ephemeral=True)  
                         else: await interaction.send("Invalid Subject Code. Please try again.", ephemeral=True)
                     else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
                 else: await interaction.send("Invalid Paper Number. Please try again.", ephemeral=True)
