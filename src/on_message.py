@@ -4,29 +4,43 @@ from bot import discord, bot, keywords
 from mongodb import gpdb, smdb, repdb, kwdb
 from roles import is_moderator, is_helper, is_chat_moderator, is_bot_developer
 
-async def create_dm_thread(message: discord.Message, is_dm: bool):
-    member_id: int = 0
-    if is_dm:
-        member_id = message.author.id
-    else:
-        member_id = int(message.content)
-    guild = bot.get_guild(GUILD_ID)
-    member = guild.get_member(member_id)
-    channel = guild.get_channel(CREATE_DM_CHANNEL_ID)
-    threads = channel.threads
-    thread_name = f"{member.name}:{member.id}"
-    thread = discord.utils.get(threads, name=thread_name)
-    if thread is None:
-        if is_dm:
-            msg = await channel.send(content=str(member_id))
-            thread = await msg.create_thread(name=thread_name)
-        else:
-            thread = await message.create_thread(name=thread_name)
-            await message.reply(f"DM Channel has been created at {thread.mention}!")
-    else:
-        if not is_dm:
-            await message.reply(f"DM Channel already exists for that user at {thread.mention}!")
-    return thread
+async def create_thread(message: discord.Message, is_dm: bool):
+      member_id: int = 0
+      if is_dm: member_id = message.author.id
+      else: member_id = int(message.content)
+
+      guild = bot.get_guild(GUILD_ID)
+      member = await guild.fetch_member(member_id)
+      channel = guild.get_channel(FORUMTHREAD_ID)
+      newmsg_channel = guild.get_channel(MESSAGERECIEVED_ID)
+      threads = channel.threads
+      thread_name = f"{member_id}"
+      thread = discord.utils.get(threads, name=thread_name)
+      if is_dm:
+            if thread == None:
+                  thread = await channel.create_thread(name=thread_name, content=f"Username: `{member.name}`\nUser ID: `{member_id}`")
+                  embed = discord.Embed(title="New Message Recieved", description=f"Username: `{member.name}`\nUser ID: `{member_id}`\nThread: {thread.mention}", color=0x8DD5A2)
+                  await newmsg_channel.send(embed=embed)
+                  return thread
+            else:
+                  if "(Closed)" in thread.name:
+                        thread = await channel.create_thread(name=thread_name, content=f"Username: `{member.name}`\nUser ID: `{member_id}`")
+                        embed = discord.Embed(title="New Message Recieved", description=f"Username: `{member.name}`\nUser ID: `{member_id}`\nThread: {thread.mention}", color=0x8DD5A2)
+                        await newmsg_channel.send(embed=embed)
+                        return thread                   
+                  else:
+                        return thread
+                 
+      else:
+            if thread == None:
+                  thread = await channel.create_thread(name=thread_name, content=f"Username: `{member.name}`\nUser ID: `{member_id}`")
+                  await message.reply(f"DM Channel has been created at {thread.mention}!")
+            else:
+                  if "(Closed)" in thread.name:
+                        thread = await channel.create_thread(name=thread_name, content=f"Username: `{member.name}`\nUser ID: `{member_id}`")
+                        await message.reply(f"DM Channel has been created at {thread.mention}!")                                                  
+                  else:    
+                        await message.reply(f"DM Channel already exists for that user at {thread.mention}!")    
 
 async def counting(message: discord.Message):
     if message.author.bot:
@@ -122,7 +136,7 @@ async def on_message(message: discord.Message):
         if message.content[0] == "/":
             await message.reply("Uh-oh. We think you're trying to use a Slash Command. These can only be used within a Discord Server and not within DMs.")
         else:
-            thread = await create_dm_thread(message, True)
+            thread = await create_thread(message, True)
             embed = discord.Embed(title="Message Received", description=message.clean_content, colour=discord.Colour.green())
             embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
             await thread.send(embed=embed)
@@ -131,26 +145,27 @@ async def on_message(message: discord.Message):
             await message.add_reaction("✅")
             return
         
-    if message.channel.id == CREATE_DM_CHANNEL_ID:
-        await create_dm_thread(message, False)
+      if message.channel.id == CREATEDM_ID:
+            await create_thread(message, False)
 
-    if message.guild.id == GUILD_ID:
-            if str(message.channel.type) in ["public_thread", "private_thread"] and message.channel.parent_id == CREATE_DM_CHANNEL_ID:
-                  member = message.guild.get_member(int(message.channel.name.split(":")[1]))
-                  channel = bot.get_channel(1204263251261788201)
+      if message.guild.id == GUILD_ID:
+            if str(message.channel.type) in ["public_thread", "private_thread"] and message.channel.parent_id == FORUMTHREAD_ID:
+                  member = message.guild.get_member(int(message.channel.name))
                   if message.content == ".sclose":
-                        embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
+                        embed = discord.Embed(title="DM Channel Silently Closed", description=f"DM Channel with {member.name} has been closed by the moderators of r/IGCSE, without notifying the user.", colour=discord.Colour.green())
                         embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
-                        await message.channel.delete()
-                        await channel.send(embed=embed)
+                        await message.delete()
+                        await message.channel.send(embed=embed)                      
+                        await message.channel.edit(name=f"{message.channel.name} (Closed)", archived=True)
                         return
                   dmchannel = await member.create_dm()
                   if message.content == ".close":
                         embed = discord.Embed(title="DM Channel Closed", description=f"DM Channel with {member} has been closed by the moderators of r/IGCSE.", colour=discord.Colour.green())
                         embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
+                        await message.delete()
                         await dmchannel.send(embed=embed)
-                        await message.channel.delete()
-                        await channel.send(embed=embed)
+                        await message.channel.send(embed=embed)
+                        await message.channel.edit(name=f"{message.channel.name} (Closed)", archived=True)
                         return
                   embed = discord.Embed(title="Message from r/IGCSE Moderators", description=message.clean_content, colour=discord.Colour.green())
                   embed.set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
@@ -164,7 +179,7 @@ async def on_message(message: discord.Message):
                         perms.send_messages, perms.read_messages, perms.view_channel, perms.read_message_history, perms.attach_files = True, True, True, True, True
                         await message.channel.set_permissions(member, overwrite=perms)
                         await message.channel.send(f"{member.mention}")
-                        return
+                        return   
                   await message.delete()
     channel_id_rep = message.channel.id
     if (type(message.channel) == discord.threads.Thread):
